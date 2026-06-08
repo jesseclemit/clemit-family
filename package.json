@@ -1,0 +1,6 @@
+{
+  "name": "clemit-family",
+  "private": true,
+  "scripts": { "deploy": "wrangler deploy" },
+  "devDependencies": { "wrangler": "^3" }
+}
