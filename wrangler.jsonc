@@ -1,11 +1,35 @@
 {
+  // clemit-family — the family command-center Worker (family.clemits.com, behind Cloudflare Access).
+  // Reconstructed 2026-06-13 from the LIVE deployment's actual bindings (the source was never
+  // in the repo before today). Bindings below are exactly the env.* the code uses: DB, MOV, MUSIC.
   "name": "clemit-family",
   "main": "src/index.js",
-  "compatibility_date": "2026-06-01",
-  "d1_databases": [
-    { "binding": "DB", "database_name": "clemit-family-db", "database_id": "ed8b40b2-7d1d-4860-b7c6-09fb77316bdf" }
-  ],
+
+  // NOTE: the connector can't read the live worker's compatibility_date. This is the ONE value to
+  // confirm against the Cloudflare dashboard (Workers > clemit-family > Settings) before first deploy.
+  // A recent date is safe for this worker (plain fetch + D1 + R2, no node APIs).
+  "compatibility_date": "2025-05-01",
+
+  // Served at family.clemits.com as a custom domain. Cloudflare Access sits IN FRONT of this route
+  // (the email-OTP gate) — that's configured in Zero Trust, not here. DNS/TLS are handled by CF.
   "routes": [
     { "pattern": "family.clemits.com", "custom_domain": true }
-  ]
+  ],
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "clemit-family-db",
+      "database_id": "ed8b40b2-7d1d-4860-b7c6-09fb77316bdf"
+    }
+  ],
+
+  "r2_buckets": [
+    { "binding": "MOV",   "bucket_name": "clemit-movies" },
+    { "binding": "MUSIC", "bucket_name": "clemit-music" },
+    { "binding": "PICS",  "bucket_name": "clemit-pictures" }
+    // Future: clemit-books exists but isn't bound yet. Add here when wired.
+  ],
+
+  "observability": { "enabled": true }
 }
