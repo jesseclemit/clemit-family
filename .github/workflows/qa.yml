@@ -1,0 +1,29 @@
+name: QA
+on:
+  pull_request:
+    branches: [ main ]
+jobs:
+  mechanical-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Worker parses (node --check)
+        run: node --check src/index.js
+      - name: Ends with the default export
+        run: tail -n 5 src/index.js | grep -q 'index_default as default'
+      - name: Backticks balanced (even count)
+        run: |
+          c=$(grep -o '`' src/index.js | wc -l)
+          echo "backtick count: $c"
+          [ $((c % 2)) -eq 0 ]
+      - name: No obvious secrets committed
+        run: |
+          if grep -RInE '(AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|BEGIN [A-Z ]*PRIVATE KEY)' src/; then
+            echo "A secret-like string was found in src/ — blocking."
+            exit 1
+          fi
+      - name: QA passed
+        run: echo "Mechanical QA green — safe to merge."
