@@ -126,6 +126,16 @@ var index_default = {
       return new Response(__portal, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     }
     const me = await getUser(env, whoami(req));
+        if (p === "/api/theme-color" && req.method === "POST") {
+          try {
+            const __b = await req.json();
+            const __hex = String((__b && __b.hex) || "").trim();
+            if (/^#[0-9a-fA-F]{6}$/.test(__hex)) {
+              await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("theme_color", __hex).run();
+            }
+          } catch (e) {}
+          return json({ ok: true });
+        }
         if (p === "/api/access-request" && req.method === "POST") {
           try {
             const __cur = await getSetting(env, "access_requests");
@@ -312,7 +322,7 @@ if (__isKing) { try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key
 let __kingSeen = 0; try { __kingSeen = +((await getSetting(env, "king_seen")) || 0); } catch (e) {}
 let __claim = null; try { const __cl = await getSetting(env, "succession_claim"); __claim = (__cl && __cl !== "") ? JSON.parse(__cl) : null; } catch (e) {}
 let __letter = ""; try { __letter = (await getSetting(env, "king_letter")) || ""; } catch (e) {}
-        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "" }, king: __king, succession: __isKing ? __succ : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", forumGrants: isRoyal ? forumGrants : null, members: forumMembers });
+        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "" }, king: __king, succession: __isKing ? __succ : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", themeColor: (await getSetting(env, "theme_color")) || "#2f9bff", forumGrants: isRoyal ? forumGrants : null, members: forumMembers });
       }
       if (p === "/api/king/succession" && req.method === "POST") {
   const __k = (await getSetting(env, "king")) || OWNER;
@@ -861,7 +871,7 @@ if (p === "/api/king/veto" && req.method === "POST") {
 var HTML = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex, nofollow"><title>Clemit Pulse</title>
 <style>#bootveil{position:fixed;inset:0;background:#0a0608;z-index:99999;opacity:1;transition:opacity .7s ease;pointer-events:none}#bootveil.gone{opacity:0}
-:root{--bg:#0c0408;--panel:#190a12;--panel2:#23101a;--line:#3d1622;--txt:#f1e9ec;--dim:#a98793;--acc:#ff3b54;--acc2:#34e6ff;--warn:#ffb74d;--due:#ef5350;--bad:#ff5d6c;}
+:root{--bg:#0c0408;--panel:#190a12;--panel2:#23101a;--line:#3d1622;--txt:#f1e9ec;--dim:#a98793;--acc:#ff3b54;--acc-bright:#ff8a9b;--acc-glow:rgba(255,59,84,.55);--acc2:#34e6ff;--warn:#ffb74d;--due:#ef5350;--bad:#ff5d6c;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--txt);font:16px/1.55 'Segoe UI',system-ui,sans-serif;min-height:100vh;}
 header{padding:22px 28px 4px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
@@ -1245,8 +1255,30 @@ footer{text-align:center;color:#5a5f6b;font-size:.76rem;padding:10px 22px 22px;}
 #spaceFill{height:100%;width:0;background:var(--acc2);transition:width .3s,background .3s;}
 #spacePod .sp-n{color:var(--dim);}
 @media(max-width:640px){#spacePod{display:none;}}
+.note-cta{display:inline-flex;align-items:center;gap:6px;cursor:pointer;border:1px solid #00e5ff;background:rgba(0,229,255,.10);color:#bff6ff;font-weight:700;font-size:.85rem;padding:7px 14px;border-radius:999px;margin-left:10px;box-shadow:0 0 16px rgba(0,229,255,.35);transition:.15s;vertical-align:middle;}
+.note-cta:hover{background:rgba(0,229,255,.18);box-shadow:0 0 22px rgba(0,229,255,.55);}
+.note-cta:active{transform:scale(.96);}
+.note-cta .nc-h{opacity:.7;font-weight:500;}
+#nqWrap{position:fixed;inset:0;z-index:999;display:none;align-items:flex-start;justify-content:center;background:rgba(4,5,12,.72);backdrop-filter:blur(4px);padding:6vh 16px 16px;}
+#nqWrap.on{display:flex;}
+.nq{width:100%;max-width:440px;background:#10122a;border:1px solid rgba(120,150,230,.22);border-radius:18px;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.6);animation:nqin .25s ease;}
+@keyframes nqin{from{opacity:0;transform:translateY(-14px);}to{opacity:1;transform:none;}}
+.nq h3{margin:0 0 2px;font-size:1.35rem;background:linear-gradient(90deg,#fff,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.nq .nqsub{color:#8b90b8;font-size:.9rem;margin-bottom:14px;}
+.nq .nqtags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.nqtag{border:1px solid rgba(120,150,230,.2);background:rgba(255,255,255,.02);color:#8b90b8;padding:8px 14px;border-radius:999px;font-size:.9rem;font-weight:600;cursor:pointer;user-select:none;transition:.15s;}
+.nqtag.on{color:#06070f;border-color:transparent;background:#00e5ff;box-shadow:0 0 14px rgba(0,229,255,.5);}
+.nq textarea{width:100%;min-height:140px;resize:none;border:1px solid rgba(120,150,230,.2);outline:0;background:#0b0d1c;color:#eaf0ff;border-radius:14px;padding:14px;font:1.1rem/1.5 'Segoe UI',system-ui,sans-serif;}
+.nq textarea:focus{border-color:#00e5ff;box-shadow:0 0 0 1px #00e5ff,0 0 24px rgba(0,229,255,.2);}
+.nq .nqmic{color:#8b90b8;font-size:.8rem;margin:8px 2px 14px;}
+.nq .nqrow{display:flex;gap:10px;}
+.nq .nqsend{flex:1;border:0;cursor:pointer;color:#fff;font-size:1.1rem;font-weight:800;padding:16px;border-radius:14px;background:linear-gradient(100deg,#ff2d55,#b14bff 60%,#00e5ff);box-shadow:0 8px 26px rgba(177,75,255,.35);}
+.nq .nqsend[disabled]{opacity:.4;filter:grayscale(.4);box-shadow:none;}
+.nq .nqcancel{border:1px solid rgba(120,150,230,.25);background:transparent;color:#8b90b8;border-radius:14px;padding:0 18px;cursor:pointer;font-weight:600;}
+.nqtoast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(40px);background:#0d2a1c;border:1px solid #37e08a;color:#9bf5c4;padding:13px 22px;border-radius:12px;font-weight:700;opacity:0;pointer-events:none;transition:.3s;z-index:1000;box-shadow:0 0 24px rgba(55,224,138,.35);}
+.nqtoast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 </style></head><body><div id="bootveil"></div>
-<header><h1>Clemit <span>Pulse</span></h1><span style="color:var(--dim);font-size:.8rem">&mdash; the pulse of our lives</span><span class="role" id="role">...</span><span id="crownBadge" style="cursor:help;margin-left:6px;font-size:1.05rem"></span>
+<header><h1>Clemit <span>Pulse</span></h1><span style="color:var(--dim);font-size:.8rem">&mdash; the pulse of our lives</span><span class="role" id="role">...</span><span id="crownBadge" style="cursor:help;margin-left:6px;font-size:1.05rem"></span><label title="Choose your PULSE color" style="display:inline-flex;align-items:center;gap:6px;margin-left:14px;cursor:pointer"><span style="width:22px;height:22px;border-radius:6px;border:2px solid var(--acc);box-shadow:0 0 8px var(--acc-glow);background:var(--acc);position:relative;overflow:hidden;display:inline-block"><input id="themeSw" type="color" value="#ff3b54" oninput="themeSet(this.value,true)" style="position:absolute;top:-6px;left:-6px;width:42px;height:42px;border:none;opacity:0;cursor:pointer"></span><span style="font-size:.6rem;letter-spacing:1px;color:var(--acc);text-shadow:0 0 6px var(--acc-glow)">&larr; Choose PULSE color</span></label>
 <div class="right"><span id="clock"></span><a href="/cdn-cgi/access/logout">Sign Out</a></div></header>
 <div class="ministrip" id="ministrip"><div class="ms-player"><button id="msPlay" title="Play / Pause">&#9654;</button><button id="msNext" title="Next">&#9197;</button><span class="ms-title" id="msTitle">&mdash;</span></div><div class="ms-quote" id="msQuote"></div></div>
 <div class="hero t-cosmos" id="hero"><div class="hero-bg"></div><div class="hero-content"><div class="hero-greet" id="heroGreet">Good evening, <b>Boss</b>.</div><div class="hero-q" id="heroQ">&hellip;</div><div class="hero-a" id="heroA"></div><div class="hero-sub" id="heroSub"></div><div class="hero-fav" id="heroFav"></div></div><div class="hero-ctrl" id="heroCtrl"><button data-h="fav" title="Favorite this quote">&#9825;</button><button data-h="pause" title="Pause">&#9208;</button><button data-h="slot" title="Slot machine">&#127920;</button><button data-h="cruise" title="Cruise">&#128674;</button><button data-h="cosmos" title="Cosmos">&#127756;</button><button data-h="shuffle" title="Shuffle styles">&#128256;</button></div></div>
@@ -1338,7 +1370,12 @@ var heroQi=Math.floor(Math.random()*HERO_Q.length);
 var heroTi=HERO_T.indexOf(heroState.theme);if(heroTi<0)heroTi=Math.floor(Math.random()*HERO_T.length);
 var heroPaused=!!heroState.paused, heroLocked=heroState.locked||null, heroQT, heroTT;
 function heroSave(){try{localStorage.setItem('pulseHero',JSON.stringify({theme:HERO_T[heroTi],paused:heroPaused,locked:heroLocked}));}catch(e){}}
-function heroGreetUpd(){var g=document.getElementById('heroGreet');if(g)g.innerHTML='Good '+tod(new Date().getHours())+', <b>'+esc(monikerName())+'</b>. What\\'s on the agenda?';}
+function heroGreetUpd(){var g=document.getElementById('heroGreet');if(g)g.innerHTML='Good '+tod(new Date().getHours())+', <b>'+esc(monikerName())+'</b>. What\\'s on the agenda? <button class="note-cta" onclick="noteQuickOpen()" title="Drop a quick note onto PULSE">\\u270e Got a note now? <span class="nc-h">(click here)</span></button>';}
+var __nqTag='note';
+function noteQuickOpen(){var w=document.getElementById('nqWrap');if(!w)return;w.classList.add('on');var t=document.getElementById('nqText');if(t){t.oninput=function(){var s=document.getElementById('nqSend');if(s)s.disabled=!t.value.trim();};t.onkeydown=function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter')noteQuickSend();};setTimeout(function(){t.focus();},60);}}
+function noteQuickClose(){var w=document.getElementById('nqWrap');if(w)w.classList.remove('on');}
+function noteQuickTag(el){__nqTag=el.dataset.t;var p=el.parentNode.querySelectorAll('.nqtag');for(var i=0;i<p.length;i++)p[i].classList.remove('on');el.classList.add('on');}
+function noteQuickSend(){var ta=document.getElementById('nqText');if(!ta)return;var v=ta.value.trim();if(!v)return;if(typeof audit==='function')audit('post',v.slice(0,80),'Note/'+__nqTag);post('/api/message',{body:v,category:__nqTag});ta.value='';var s=document.getElementById('nqSend');if(s)s.disabled=true;noteQuickClose();var t=document.getElementById('nqToast');if(t){t.textContent='Sent to PULSE \\u2713';t.classList.add('on');setTimeout(function(){t.classList.remove('on');},1700);}}
 function heroApplyTheme(){var h=document.getElementById('hero');if(!h)return;HERO_T.forEach(function(t){h.classList.remove('t-'+t);});h.classList.add('t-'+HERO_T[heroTi]);var btns=document.querySelectorAll('#heroCtrl button');for(var i=0;i<btns.length;i++){var d=btns[i].dataset.h;btns[i].classList.toggle('on',(d===HERO_T[heroTi]&&!!heroLocked)||(d==='pause'&&heroPaused));}}
 function heroList(){return (window.HQ&&window.HQ.length)?window.HQ:HERO_Q;}
 function heroShowQuote(){var L=heroList();if(heroQi>=L.length)heroQi=0;var o=L[heroQi],q=document.getElementById('heroQ'),a=document.getElementById('heroA'),s=document.getElementById('heroSub');if(!q)return;window.heroCurId=(o.id!=null?o.id:null);q.classList.add('swap');setTimeout(function(){q.textContent='\\u201c'+o.q+'\\u201d';if(a)a.textContent='\\u2014 '+o.a;if(s)s.textContent=o.s;q.classList.remove('swap');heroFavUpd();if(typeof msSync==='function')msSync();},300);}
@@ -1419,7 +1456,7 @@ function gateEkgRun(cv){
   requestAnimationFrame(fr);
 }
 function bootReveal(){var v=document.getElementById('bootveil');if(v&&!v.__g){v.__g=1;v.classList.add('gone');setTimeout(function(){if(v.parentNode)v.parentNode.removeChild(v);},800);}}
-async function load(){S=await (await fetch('/api/state')).json();if(S&&S.pending){renderLobby();return;}try{window.__songs=await (await fetch('/api/songs')).json();}catch(e){window.__songs=window.__songs||[];}window.HQ=(S.quotes&&S.quotes.quotes&&S.quotes.quotes.length)?S.quotes.quotes:HERO_Q;window.MQ=(S.movieQueue||[]);if(!window.__djLoaded&&S.songQueue&&S.songQueue.q){window.__djLoaded=true;dq=S.songQueue.q;dqi=(typeof S.songQueue.i==='number')?S.songQueue.i:-1;}if(S.rotationState&&typeof S.rotationState==='object')window.ROT=S.rotationState;document.getElementById('role').textContent=S.me.role;var __cb=document.getElementById('crownBadge');if(__cb){if(S.me.isKing){__cb.textContent='👑';__cb.style.opacity='1';__cb.title='You are the King of PULSE — final authority over the site and the line of succession.';}else if(S.me.inLine){__cb.textContent='👑';__cb.style.opacity='.6';__cb.title='You are in the Clemit line of succession. Should it ever be required, the duties of steward would fall to you — keep this family hub running and protect everyone’s materials. Your position in the line is private to the King.';}else{__cb.textContent='';__cb.removeAttribute('title');}}if(!window.__logged){window.__logged=true;audit('login','signed in','Session');}if(!window.heroReady){heroInit();window.heroReady=true;}else{heroFavUpd();}buildNav();render();if(!djReady){djInit();djReady=true;}gateMaybe();idleStart();}
+async function load(){S=await (await fetch('/api/state')).json();if(S&&S.pending){renderLobby();return;}applyTheme();try{window.__songs=await (await fetch('/api/songs')).json();}catch(e){window.__songs=window.__songs||[];}window.HQ=(S.quotes&&S.quotes.quotes&&S.quotes.quotes.length)?S.quotes.quotes:HERO_Q;window.MQ=(S.movieQueue||[]);if(!window.__djLoaded&&S.songQueue&&S.songQueue.q){window.__djLoaded=true;dq=S.songQueue.q;dqi=(typeof S.songQueue.i==='number')?S.songQueue.i:-1;}if(S.rotationState&&typeof S.rotationState==='object')window.ROT=S.rotationState;document.getElementById('role').textContent=S.me.role;var __cb=document.getElementById('crownBadge');if(__cb){if(S.me.isKing){__cb.textContent='👑';__cb.style.opacity='1';__cb.title='You are the King of PULSE — final authority over the site and the line of succession.';}else if(S.me.inLine){__cb.textContent='👑';__cb.style.opacity='.6';__cb.title='You are in the Clemit line of succession. Should it ever be required, the duties of steward would fall to you — keep this family hub running and protect everyone’s materials. Your position in the line is private to the King.';}else{__cb.textContent='';__cb.removeAttribute('title');}}if(!window.__logged){window.__logged=true;audit('login','signed in','Session');}if(!window.heroReady){heroInit();window.heroReady=true;}else{heroFavUpd();}buildNav();render();if(!djReady){djInit();djReady=true;}gateMaybe();idleStart();}
 function arcadeView(){var rows=[{title:'2048',genre:'Puzzle',source:'Free link',u:'https://play2048.co/'},{title:'Hextris',genre:'Arcade',source:'Free link',u:'https://hextris.io/'},{title:'Tetris (clone)',genre:'Classic',source:'Free link',u:'https://chvin.github.io/react-tetris/'},{title:'Snake',genre:'Classic',source:'Free link',u:'https://playsnake.org/'},{title:'Pac-Man (clone)',genre:'Arcade',source:'Free link',u:'https://freepacman.org/'},{title:'Asteroids',genre:'Arcade',source:'Free link',u:'https://freeasteroids.org/'},{title:'Open-Source Game Catalog',genre:'Catalog',source:'Directory',u:'https://osgameclones.com/'},{title:'itch.io Free HTML5 Games',genre:'Catalog',source:'Directory',u:'https://itch.io/games/free/html5'}];window.__games=rows;window.__cflist=rows;if(typeof window.__cfi!=='number'||window.__cfi>=rows.length)window.__cfi=0;var ico=function(g){g=(g||'').toLowerCase();if(g==='puzzle')return '\\uD83E\\uDDE9';if(g==='classic')return '\\uD83D\\uDD79';if(g==='catalog')return '\\uD83D\\uDCDA';if(g==='arcade')return '\\uD83D\\uDC7E';return '\\uD83C\\uDFAE';};var h='<div class="vhead"><h2>\\uD83C\\uDFAE Arcade</h2><span style="color:var(--dim);font-size:.8rem;margin-left:auto">the family game room</span></div>';h+='<p style="color:var(--dim);font-size:.85rem;margin:0 0 12px;">Free, legal games \\u2014 they open in a new tab. Tap a cover to center it, then \\u25B6 Play.</p>';h+='<div class="cflabels" id="cflabels">';rows.forEach(function(g,i){h+='<div class="cflabel" onclick="cfGo('+i+')"><div class="cfl-title">'+esc(g.title)+'</div><div class="cfl-stat cfl-field">'+esc(g.genre||'')+'</div></div>';});h+='</div>';h+='<div class="cf"><button class="cfnav cfprev" onclick="cfPrev()">\\u2039</button><div class="cfstage" id="cfstage">';rows.forEach(function(g,i){var hue=mHue(g.title);h+='<div class="cfc" onclick="cfClick(event,'+i+')"><div class="cfflip"><div class="cffront"><div class="cfposter" style="background:linear-gradient(150deg,hsl('+hue+',46%,30%),hsl('+((hue+40)%360)+',52%,15%))"><span class="cfinit">'+ico(g.genre)+'</span></div><div class="cfinfo"><div class="cfd-title2">'+esc(g.title)+'</div><div class="cfd-meta">'+esc(g.genre||'')+' \\u00b7 '+esc(g.source||'')+'</div><div class="cfd-btns"><span class="mbtn play" onclick="gameInfo('+i+')">\\u25B6 Play</span></div></div></div></div></div>';});h+='</div><button class="cfnav cfnext" onclick="cfNext()">\\u203a</button></div>';setTimeout(cfPaint,30);return h;}
 function tabsBase(){var t=[['home','Home']];if(S.groceryVisible)t.push(['grocery','Grocery']);t.push(['board','Forums'],['reunion','Reunion 2027'],['mytriton','MyTriton'],['cameras','Cameras'],['quotes','Quotes'],['dj','Library'],['arcade','\\uD83C\\uDFAE Arcade'],['updates','Updates']);if(S.me.role!=='guest')t.push(['logs','Logs'],['admin','\\u2699 Settings']);if(S.me.isAdmin)t.push(['rotation','Rotation']);if(S.me.isAdmin||S.me.isRoyal)t.push(['control','🎛 Control Panel']);if(S.me.isKing)t.push(['king','👑 King']);return t;}
 function tabs(){var base=tabsBase();var c=(typeof ucfg==='function')?ucfg():{};var order=c.tabOrder||[];var hide=c.tabHide||{};var lock={home:1,admin:1};var byId={};base.forEach(function(t){byId[t[0]]=t;});var out=[];order.forEach(function(id){var t=byId[id];if(t&&(lock[id]||!hide[id])){out.push(t);delete byId[id];}});base.forEach(function(t){if(byId[t[0]]&&(lock[t[0]]||!hide[t[0]]))out.push(t);});return out;}
@@ -1657,6 +1694,9 @@ function controlView(){if(!(S.me.isAdmin||S.me.isRoyal))return '<div class="card
 function ucfgKey(){return 'ucfg:'+((S.me&&S.me.email)||'anon');}
 function ucfg(){try{return JSON.parse(localStorage.getItem(ucfgKey())||'{}');}catch(e){return {};}}
 function ucfgSet(patch){var c=ucfg();for(var k in patch)c[k]=patch[k];try{localStorage.setItem(ucfgKey(),JSON.stringify(c));}catch(e){}return c;}
+function themeSet(hex,save){if(!/^#[0-9a-fA-F]{6}$/.test(hex))return;var h=hex.replace('#','');var r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);var br=function(x){return Math.round(x+(255-x)*0.5);};var rt=document.documentElement.style;rt.setProperty('--acc',hex);rt.setProperty('--acc-bright','rgb('+br(r)+','+br(g)+','+br(b)+')');rt.setProperty('--acc-glow','rgba('+r+','+g+','+b+',.55)');var sw=document.getElementById('themeSw');if(sw)sw.value=hex;if(save)ucfgSet({themeColor:hex});}
+function applyTheme(){var c=(ucfg().themeColor)||(S&&S.themeColor)||'#2f9bff';themeSet(c,false);}
+
 function ucfgReset(){if(!confirm('Reset ALL your personal settings on this device?'))return;try{localStorage.removeItem(ucfgKey());}catch(e){}render();}
 function _mtCur(){var c=ucfg();return c.movieTime||{mode:'off',from:'08:00',to:'17:00',ratio:{on:15,of:20}};}
 function mtSet(field,val){var mt=_mtCur();mt[field]=val;ucfgSet({movieTime:mt});render();}
@@ -1717,6 +1757,7 @@ h+='<details class="card" style="margin-top:8px"><summary style="cursor:pointer;
 h+='<details class="card" style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">Is there a receipt? Where does the money go?</summary><div class="sub" style="margin-top:8px">Yes — a meter, not an itemized bill. In the Claude app under Settings → Usage you can see how much of the plan has been used this cycle. There is no line-by-line “this feature cost X” receipt for a chat plan; that level of detail only exists on the developer API. The honest summary: it is a flat monthly subscription with a usage ceiling.</div></details>';
 h+='<details class="card" style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">Is this safe? Could the AI break our stuff?</summary><div class="sub" style="margin-top:8px">Guardrails are in place. Before every change, a dated backup is saved, so anything can be undone with one click (rollback). Jesse approves each deploy — nothing publishes on its own. The AI never deletes our photos, music, or lists. If something looks wrong, we roll back to the last good version.</div></details>';
 h+='<details class="card" style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">Why are we being so open about it?</summary><div class="sub" style="margin-top:8px">Because people fear what they cannot see. Jesse would rather show everything than hide it — turn the light on, and the dark room is just a room. If anyone ever says “hey, that looks crazy,” great: look closely, ask questions. Openness is the safeguard.</div></details>';
+h+='<details class="card" style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">Visualize will not load? (the claudemcpcontent.com error)</summary><div class="sub" style="margin-top:8px">Claude draws charts and diagrams with a helper at claudemcpcontent.com. The error means your browser could not reach it for a moment. It is almost always temporary. Try in order: 1) Run the visual again, then fully close and reopen Claude or the browser tab. 2) Ask Claude to render it as a downloadable PNG instead — that path does not use claudemcpcontent.com at all. 3) If it keeps failing, wait a few minutes — it is usually an Anthropic-side blip, not our network. Checked 2026-06-16: this home network reaches the servers fine, so a block on our end is not the cause.</div></details>';
 h+='<div class="sub" style="margin-top:12px">See the real usage meter anytime: <a href="https://claude.ai/settings/usage" target="_blank" rel="noopener" style="color:var(--acc)">claude.ai/settings/usage</a></div>';
 h+='</div>';}
 return h;}
@@ -1823,7 +1864,25 @@ function userBusy(){var e=document.activeElement;return !!(e&&(e.tagName==='TEXT
 function hasDraft(){var f=document.querySelectorAll('#main textarea, #main input');for(var i=0;i<f.length;i++){var el=f[i];if(el.type==='checkbox'||el.type==='radio')continue;if((el.value||'').trim())return true;}return false;}
 function safeRefresh(){if(!['home','board','grocery','quotes'].includes(cur))return;if(userBusy()||hasDraft())return;load();}
 setInterval(safeRefresh,20000);
-<\/script></body></html>`;
+<\/script><div id="nqWrap" onclick="if(event.target===this)noteQuickClose()"><div class="nq">
+  <h3>Quick note</h3>
+  <div class="nqsub">Drop a thought &mdash; it lands on the PULSE board instantly.</div>
+  <div class="nqtags" id="nqTags">
+    <span class="nqtag on" data-t="note" onclick="noteQuickTag(this)">Note</span>
+    <span class="nqtag" data-t="grocery" onclick="noteQuickTag(this)">Grocery</span>
+    <span class="nqtag" data-t="reminder" onclick="noteQuickTag(this)">Reminder</span>
+    <span class="nqtag" data-t="idea" onclick="noteQuickTag(this)">Idea</span>
+    <span class="nqtag" data-t="for-jesse" onclick="noteQuickTag(this)">For Jesse</span>
+  </div>
+  <textarea id="nqText" placeholder="Type or talk... (tap your keyboard mic to dictate)"></textarea>
+  <div class="nqmic">Tip: tap the mic on your phone keyboard to talk instead of type.</div>
+  <div class="nqrow">
+    <button class="nqsend" id="nqSend" disabled onclick="noteQuickSend()">Send to PULSE</button>
+    <button class="nqcancel" onclick="noteQuickClose()">Cancel</button>
+  </div>
+</div></div>
+<div class="nqtoast" id="nqToast">Sent to PULSE</div>
+</body></html>`;
 export {
   index_default as default
 };
