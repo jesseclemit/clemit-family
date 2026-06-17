@@ -121,7 +121,7 @@ var PORTAL_B64 = "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CjxtZXRhIG
 var index_default = {
   async fetch(req, env) {
     const url = new URL(req.url), p = url.pathname;
-    if (url.hostname === "clemit.net" || url.hostname === "www.clemit.net") {
+    if (url.hostname === "clemit.net" || url.hostname === "www.clemit.net" || url.hostname === "clemits.com" || url.hostname === "www.clemits.com") {
       const __portal = new TextDecoder().decode(Uint8Array.from(atob(PORTAL_B64), function(c){ return c.charCodeAt(0); }));
       return new Response(__portal, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     }
