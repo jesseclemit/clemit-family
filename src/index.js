@@ -119,6 +119,7 @@ __name(logAudit, "logAudit");
 async function ensureReminders(env) {
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS reminders (id INTEGER PRIMARY KEY AUTOINCREMENT, owner_email TEXT, owner_name TEXT, title TEXT, body TEXT, due_at INTEGER, channels TEXT DEFAULT 'inapp', to_email TEXT, to_phone TEXT, repeat_kind TEXT DEFAULT '', status TEXT DEFAULT 'pending', created_at INTEGER, fired_at INTEGER)").run();
   try { await env.DB.prepare("ALTER TABLE reminders ADD COLUMN note_id INTEGER DEFAULT 0").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE reminders ADD COLUMN to_carrier TEXT").run(); } catch (e) {}
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS notify_log (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER, reminder_id INTEGER, channel TEXT, target TEXT, ok INTEGER, detail TEXT)").run();
 }
 __name(ensureReminders, "ensureReminders");
@@ -152,6 +153,27 @@ async function sendSMS(env, to, body) {
   } catch (e) { return { ok: false, detail: "sendSMS error " + String(e) }; }
 }
 __name(sendSMS, "sendSMS");
+var CARRIER_GW = { verizon: "vtext.com", att: "txt.att.net", tmobile: "tmomail.net", sprint: "messaging.sprintpcs.com", googlefi: "msg.fi.google.com", uscellular: "email.uscc.net", boost: "sms.myboostmobile.com", cricket: "sms.cricketwireless.net", metropcs: "mymetropcs.com", virgin: "vmobl.com", consumercellular: "mailmymobile.net", xfinity: "vtext.com", straighttalk: "vtext.com" };
+async function sendTextGateway(env, phone, carrier, body) {
+  if (!env.RESEND_API_KEY) return { ok: false, detail: "no RESEND_API_KEY secret set" };
+  const key = String(carrier || "").toLowerCase().replace(/[^a-z]/g, "");
+  const dom = CARRIER_GW[key];
+  if (!dom) return { ok: false, detail: "unknown carrier '" + carrier + "' (have: " + Object.keys(CARRIER_GW).join(", ") + ")" };
+  let digits = String(phone || "").replace(/[^0-9]/g, "");
+  if (digits.length === 11 && digits.charAt(0) === "1") digits = digits.slice(1);
+  if (digits.length !== 10) return { ok: false, detail: "phone must be 10 digits, got '" + digits + "'" };
+  const to = digits + "@" + dom;
+  const from = env.RESEND_FROM || "Clemit PULSE <pulse@clemit.net>";
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "authorization": "Bearer " + env.RESEND_API_KEY, "content-type": "application/json" },
+      body: JSON.stringify({ from: from, to: [to], subject: "", text: String(body || "").slice(0, 300) })
+    });
+    return { ok: r.ok, detail: r.ok ? ("sent -> " + to) : ("resend " + r.status + " " + (await r.text()).slice(0, 200)) };
+  } catch (e) { return { ok: false, detail: "sendTextGateway error " + String(e) }; }
+}
+__name(sendTextGateway, "sendTextGateway");
 async function runDueReminders(env) {
   await ensureReminders(env);
   const now = Date.now();
@@ -167,6 +189,10 @@ async function runDueReminders(env) {
     if (chans.indexOf("sms") >= 0 && r.to_phone) {
       const res = await sendSMS(env, r.to_phone, (r.title ? r.title + ": " : "") + (r.body || ""));
       await notifyLog(env, r.id, "sms", r.to_phone, res.ok, res.detail);
+    }
+    if (chans.indexOf("text") >= 0 && r.to_phone && r.to_carrier) {
+      const res = await sendTextGateway(env, r.to_phone, r.to_carrier, (r.title ? r.title + ": " : "") + (r.body || ""));
+      await notifyLog(env, r.id, "text", r.to_phone + "@" + r.to_carrier, res.ok, res.detail);
     }
     if (chans.indexOf("inapp") >= 0) { await notifyLog(env, r.id, "inapp", r.owner_email, true, "fired for in-app pickup"); }
     if (r.repeat_kind && PER[r.repeat_kind]) {
@@ -1062,7 +1088,7 @@ if (p === "/api/king/veto" && req.method === "POST") {
         const due = +b.due_at || 0;
         if (!due) return json({ error: "due_at required (epoch ms)" }, 400);
         const chans = Array.isArray(b.channels) ? b.channels.join(",") : String(b.channels || "inapp");
-        await env.DB.prepare("INSERT INTO reminders (owner_email,owner_name,title,body,due_at,channels,to_email,to_phone,repeat_kind,status,created_at,note_id) VALUES (?,?,?,?,?,?,?,?,?, 'pending', ?,?)").bind((me.email || "").toLowerCase(), me.name || "", String(b.title || "").slice(0, 200), String(b.body || "").slice(0, 2000), due, chans, b.to_email || me.email || null, b.to_phone || null, String(b.repeat_kind || ""), Date.now(), +b.note_id || 0).run();
+        await env.DB.prepare("INSERT INTO reminders (owner_email,owner_name,title,body,due_at,channels,to_email,to_phone,to_carrier,repeat_kind,status,created_at,note_id) VALUES (?,?,?,?,?,?,?,?,?,?, 'pending', ?,?)").bind((me.email || "").toLowerCase(), me.name || "", String(b.title || "").slice(0, 200), String(b.body || "").slice(0, 2000), due, chans, b.to_email || me.email || null, b.to_phone || null, b.to_carrier || null, String(b.repeat_kind || ""), Date.now(), +b.note_id || 0).run();
         return json({ ok: true });
       }
       if (p === "/api/reminders/delete" && req.method === "POST") {
@@ -1075,7 +1101,8 @@ if (p === "/api/king/veto" && req.method === "POST") {
         const b = await req.json();
         const out = {};
         if (b.email) out.email = await sendEmail(env, b.email, "PULSE test", "<p>This is a PULSE test email. If you got this, email is wired. — ~Jesse</p>");
-        if (b.phone) out.sms = await sendSMS(env, b.phone, "PULSE test SMS — if you got this, Twilio is wired. ~Jesse");
+        if (b.phone && b.carrier) out.text = await sendTextGateway(env, b.phone, b.carrier, "PULSE free-text test via the " + b.carrier + " gateway — it works! ~your PULSE");
+        else if (b.phone) out.sms = await sendSMS(env, b.phone, "PULSE test SMS — if you got this, Twilio is wired. ~Jesse");
         return json({ ok: true, result: out });
       }
       if (p === "/api/digest/toggle" && req.method === "POST") {
