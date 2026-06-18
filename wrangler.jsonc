@@ -31,5 +31,8 @@
     // Future: clemit-books exists but isn't bound yet. Add here when wired.
   ],
 
+  // Cron: wake every 5 min to fire due reminders (scheduled() handler).
+  "triggers": { "crons": ["*/5 * * * *"] },
+
   "observability": { "enabled": true }
 }
