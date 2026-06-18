@@ -126,15 +126,15 @@ async function notifyLog(env, rid, channel, target, ok, detail) {
 }
 __name(notifyLog, "notifyLog");
 async function sendEmail(env, to, subject, html) {
-  if (!env.SENDGRID_API_KEY) return { ok: false, detail: "no SENDGRID_API_KEY secret set" };
-  const from = env.SENDGRID_FROM || "pulse@clemits.com";
+  if (!env.RESEND_API_KEY) return { ok: false, detail: "no RESEND_API_KEY secret set" };
+  const from = env.RESEND_FROM || "Clemit PULSE <pulse@clemits.com>";
   try {
-    const r = await fetch("https://api.sendgrid.com/v3/mail/send", {
+    const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { "authorization": "Bearer " + env.SENDGRID_API_KEY, "content-type": "application/json" },
-      body: JSON.stringify({ personalizations: [{ to: [{ email: to }] }], from: { email: from, name: "Clemit PULSE" }, subject: subject || "Reminder", content: [{ type: "text/html", value: html || "" }] })
+      headers: { "authorization": "Bearer " + env.RESEND_API_KEY, "content-type": "application/json" },
+      body: JSON.stringify({ from: from, to: [to], subject: subject || "Reminder", html: html || "" })
     });
-    return { ok: r.ok, detail: r.ok ? "sent" : ("sendgrid " + r.status + " " + (await r.text()).slice(0, 200)) };
+    return { ok: r.ok, detail: r.ok ? "sent" : ("resend " + r.status + " " + (await r.text()).slice(0, 200)) };
   } catch (e) { return { ok: false, detail: "sendEmail error " + String(e) }; }
 }
 __name(sendEmail, "sendEmail");
