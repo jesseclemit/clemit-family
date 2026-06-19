@@ -207,28 +207,36 @@ async function ensureEmailRoute(env, localpart, dest) {
 }
 __name(ensureEmailRoute, "ensureEmailRoute");
 async function syncEmailRoutes(env) {
-  if (!env.CF_API_TOKEN || !env.CF_ZONE_ID || !env.CF_ACCOUNT_ID) return { ok: false, skipped: "no CF creds", report: [] };
-  let hh = {};
-  try { hh = JSON.parse((await getSetting(env, "households")) || "{}"); } catch (e) { return { ok: false, detail: "households parse error", report: [] }; }
-  let done = {};
-  try { done = JSON.parse((await getSetting(env, "email_routes_done")) || "{}"); } catch (e) { done = {}; }
-  const used = new Set(Object.values(done));
-  const report = [];
-  let changed = false;
-  const houses = (hh && hh.households) || [];
-  for (const house of houses) {
-    for (const m of (house.members || [])) {
-      const email = String(m.email || "").trim().toLowerCase();
-      if (!email || email.indexOf("@") < 0) continue;
-      if (done[email]) continue;
-      const lp = localpartFor(m.name, used);
-      const res = await ensureEmailRoute(env, lp, email);
-      report.push({ email: email, localpart: lp, ok: res.ok, detail: res.detail });
-      if (res.ok) { done[email] = lp; used.add(lp); changed = true; }
+  const creds = { token: !!env.CF_API_TOKEN, zone: !!env.CF_ZONE_ID, account: !!env.CF_ACCOUNT_ID };
+  let out;
+  if (!creds.token || !creds.zone || !creds.account) {
+    out = { ok: false, skipped: "missing CF secret(s)", creds: creds, report: [] };
+  } else {
+    let hh = {};
+    try { hh = JSON.parse((await getSetting(env, "households")) || "{}"); } catch (e) { hh = {}; }
+    let done = {};
+    try { done = JSON.parse((await getSetting(env, "email_routes_done")) || "{}"); } catch (e) { done = {}; }
+    const used = new Set(Object.values(done));
+    const report = [];
+    let changed = false;
+    const houses = (hh && hh.households) || [];
+    for (const house of houses) {
+      for (const m of (house.members || [])) {
+        const email = String(m.email || "").trim().toLowerCase();
+        if (!email || email.indexOf("@") < 0) continue;
+        if (done[email]) continue;
+        const lp = localpartFor(m.name, used);
+        const res = await ensureEmailRoute(env, lp, email);
+        report.push({ email: email, localpart: lp, ok: res.ok, detail: res.detail });
+        if (res.ok) { done[email] = lp; used.add(lp); changed = true; }
+      }
     }
+    if (changed) { try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("email_routes_done", JSON.stringify(done)).run(); } catch (e) {} }
+    out = { ok: true, provisioned: Object.keys(done).length, report: report };
   }
-  if (changed) { try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("email_routes_done", JSON.stringify(done)).run(); } catch (e) {} }
-  return { ok: true, provisioned: Object.keys(done).length, report: report };
+  out.ranAt = Date.now();
+  try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("email_routes_last", JSON.stringify(out)).run(); } catch (e) {}
+  return out;
 }
 __name(syncEmailRoutes, "syncEmailRoutes");
 async function runDueReminders(env) {
