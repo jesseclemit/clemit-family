@@ -520,6 +520,11 @@ var index_default = {
             }
           }
         }
+        let libPlaylists = [];
+        {
+          const lpr = await getSetting(env, "library_playlists");
+          if (lpr) { try { libPlaylists = JSON.parse(lpr); } catch (e) {} }
+        }
         const __kingDefault = OWNER;
 let __king = await getSetting(env, "king");
 if (!__king) { __king = __kingDefault; try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("king", __king).run(); } catch (e) {} }
@@ -532,7 +537,7 @@ if (__isKing) { try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key
 let __kingSeen = 0; try { __kingSeen = +((await getSetting(env, "king_seen")) || 0); } catch (e) {}
 let __claim = null; try { const __cl = await getSetting(env, "succession_claim"); __claim = (__cl && __cl !== "") ? JSON.parse(__cl) : null; } catch (e) {}
 let __letter = ""; try { __letter = (await getSetting(env, "king_letter")) || ""; } catch (e) {}
-        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "", digestOff: me.digest_off ? 1 : 0 }, king: __king, succession: __isKing ? __succ : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", themeColor: (await getSetting(env, "theme_color")) || "#2f9bff", forumGrants: isRoyal ? forumGrants : null, members: forumMembers });
+        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "", digestOff: me.digest_off ? 1 : 0 }, king: __king, succession: __isKing ? __succ : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, libPlaylists, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", themeColor: (await getSetting(env, "theme_color")) || "#2f9bff", forumGrants: isRoyal ? forumGrants : null, members: forumMembers });
       }
       if (p === "/api/king/succession" && req.method === "POST") {
   const __k = (await getSetting(env, "king")) || OWNER;
@@ -1105,6 +1110,13 @@ if (p === "/api/king/veto" && req.method === "POST") {
         const __removed = __cur.filter(function(t){ return q.indexOf(t) < 0; });
         if (__removed.length > 0 && !__royal) return json({ error: "Only Royalty can remove queued movies." }, 403);
         await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("movie_queue", JSON.stringify(q)).run();
+        return json({ ok: true });
+      }
+      if (p === "/api/library/playlists" && req.method === "POST") {
+        if (me.role === "guest") return json({ error: "no" }, 403);
+        const b = await req.json();
+        const pl = Array.isArray(b.pl) ? b.pl.slice(0, 200) : [];
+        await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("library_playlists", JSON.stringify(pl)).run();
         return json({ ok: true });
       }
       if (p === "/api/dj/queue" && req.method === "POST") {
@@ -2066,7 +2078,7 @@ function gateEkgRun(cv){
   requestAnimationFrame(fr);
 }
 function bootReveal(){var v=document.getElementById('bootveil');if(v&&!v.__g){v.__g=1;v.classList.add('gone');setTimeout(function(){if(v.parentNode)v.parentNode.removeChild(v);},800);}}
-async function load(){S=await (await fetch('/api/state')).json();if(S&&S.pending){renderLobby();return;}applyTheme();var __ac=null;try{__ac=new URLSearchParams(location.search).get('accent');}catch(e){}if(__ac&&/^#[0-9a-fA-F]{6}$/.test(__ac))themeSet(__ac,true);try{if(!window.__splashShown&&!ucfg().skipSplash&&!__ac&&!JPV_IN()&&typeof showLoginSplash==='function'){window.__splashShown=1;showLoginSplash();}}catch(e){}try{window.__songs=await (await fetch('/api/songs')).json();}catch(e){window.__songs=window.__songs||[];}window.HQ=(S.quotes&&S.quotes.quotes&&S.quotes.quotes.length)?S.quotes.quotes:HERO_Q;window.MQ=(S.movieQueue||[]);if(!window.__djLoaded&&S.songQueue&&S.songQueue.q){window.__djLoaded=true;dq=S.songQueue.q;dqi=(typeof S.songQueue.i==='number')?S.songQueue.i:-1;}if(S.rotationState&&typeof S.rotationState==='object')window.ROT=S.rotationState;document.getElementById('role').textContent=S.me.role;var __cb=document.getElementById('crownBadge');if(__cb){if(S.me.isKing){__cb.textContent='👑';__cb.style.opacity='1';__cb.title='You are the King of PULSE — final authority over the site and the line of succession.';}else if(S.me.inLine){__cb.textContent='👑';__cb.style.opacity='.6';__cb.title='You are in the Clemit line of succession. Should it ever be required, the duties of steward would fall to you — keep this family hub running and protect everyone’s materials. Your position in the line is private to the King.';}else{__cb.textContent='';__cb.removeAttribute('title');}}if(!window.__logged&&!JPV_IN()){window.__logged=true;audit('login','signed in','Session');}if(!window.heroReady){heroInit();window.heroReady=true;}else{heroFavUpd();}buildNav();render();if(!djReady){djInit();djReady=true;}gateMaybe();if(!JPV_IN())idleStart();try{window.__refSig=refSig(S);}catch(e){}phonePreviewMaybe();}
+async function load(){S=await (await fetch('/api/state')).json();if(S&&S.pending){renderLobby();return;}applyTheme();var __ac=null;try{__ac=new URLSearchParams(location.search).get('accent');}catch(e){}if(__ac&&/^#[0-9a-fA-F]{6}$/.test(__ac))themeSet(__ac,true);try{if(!window.__splashShown&&!ucfg().skipSplash&&!__ac&&!JPV_IN()&&typeof showLoginSplash==='function'){window.__splashShown=1;showLoginSplash();}}catch(e){}try{window.__songs=await (await fetch('/api/songs')).json();}catch(e){window.__songs=window.__songs||[];}window.HQ=(S.quotes&&S.quotes.quotes&&S.quotes.quotes.length)?S.quotes.quotes:HERO_Q;window.MQ=(S.movieQueue||[]);window.__libPL=(S.libPlaylists&&S.libPlaylists.length)?S.libPlaylists:window.__libPL;if(!window.__djLoaded&&S.songQueue&&S.songQueue.q){window.__djLoaded=true;dq=S.songQueue.q;dqi=(typeof S.songQueue.i==='number')?S.songQueue.i:-1;}if(S.rotationState&&typeof S.rotationState==='object')window.ROT=S.rotationState;document.getElementById('role').textContent=S.me.role;var __cb=document.getElementById('crownBadge');if(__cb){if(S.me.isKing){__cb.textContent='👑';__cb.style.opacity='1';__cb.title='You are the King of PULSE — final authority over the site and the line of succession.';}else if(S.me.inLine){__cb.textContent='👑';__cb.style.opacity='.6';__cb.title='You are in the Clemit line of succession. Should it ever be required, the duties of steward would fall to you — keep this family hub running and protect everyone’s materials. Your position in the line is private to the King.';}else{__cb.textContent='';__cb.removeAttribute('title');}}if(!window.__logged&&!JPV_IN()){window.__logged=true;audit('login','signed in','Session');}if(!window.heroReady){heroInit();window.heroReady=true;}else{heroFavUpd();}buildNav();render();if(!djReady){djInit();djReady=true;}gateMaybe();if(!JPV_IN())idleStart();try{window.__refSig=refSig(S);}catch(e){}phonePreviewMaybe();}
 function arcadeView(){var rows=[{title:'2048',genre:'Puzzle',source:'Free link',u:'https://play2048.co/'},{title:'Hextris',genre:'Arcade',source:'Free link',u:'https://hextris.io/'},{title:'Tetris (clone)',genre:'Classic',source:'Free link',u:'https://chvin.github.io/react-tetris/'},{title:'Snake',genre:'Classic',source:'Free link',u:'https://playsnake.org/'},{title:'Pac-Man (clone)',genre:'Arcade',source:'Free link',u:'https://freepacman.org/'},{title:'Asteroids',genre:'Arcade',source:'Free link',u:'https://freeasteroids.org/'},{title:'Open-Source Game Catalog',genre:'Catalog',source:'Directory',u:'https://osgameclones.com/'},{title:'itch.io Free HTML5 Games',genre:'Catalog',source:'Directory',u:'https://itch.io/games/free/html5'}];window.__games=rows;window.__cflist=rows;if(typeof window.__cfi!=='number'||window.__cfi>=rows.length)window.__cfi=0;var ico=function(g){g=(g||'').toLowerCase();if(g==='puzzle')return '\\uD83E\\uDDE9';if(g==='classic')return '\\uD83D\\uDD79';if(g==='catalog')return '\\uD83D\\uDCDA';if(g==='arcade')return '\\uD83D\\uDC7E';return '\\uD83C\\uDFAE';};var h='<div class="vhead"><h2>\\uD83C\\uDFAE Arcade</h2><span style="color:var(--dim);font-size:.8rem;margin-left:auto">the family game room</span></div>';h+='<p style="color:var(--dim);font-size:.85rem;margin:0 0 12px;">Free, legal games \\u2014 they open in a new tab. Tap a cover to center it, then \\u25B6 Play.</p>';h+='<div class="cflabels" id="cflabels">';rows.forEach(function(g,i){h+='<div class="cflabel" onclick="cfGo('+i+')"><div class="cfl-title">'+esc(g.title)+'</div><div class="cfl-stat cfl-field">'+esc(g.genre||'')+'</div></div>';});h+='</div>';h+='<div class="cf"><button class="cfnav cfprev" onclick="cfPrev()">\\u2039</button><div class="cfstage" id="cfstage">';rows.forEach(function(g,i){var hue=mHue(g.title);h+='<div class="cfc" onclick="cfClick(event,'+i+')"><div class="cfflip"><div class="cffront"><div class="cfposter" style="background:linear-gradient(150deg,hsl('+hue+',46%,30%),hsl('+((hue+40)%360)+',52%,15%))"><span class="cfinit">'+ico(g.genre)+'</span></div><div class="cfinfo"><div class="cfd-title2">'+esc(g.title)+'</div><div class="cfd-meta">'+esc(g.genre||'')+' \\u00b7 '+esc(g.source||'')+'</div><div class="cfd-btns"><span class="mbtn play" onclick="gameInfo('+i+')">\\u25B6 Play</span></div></div></div></div></div>';});h+='</div><button class="cfnav cfnext" onclick="cfNext()">\\u203a</button></div>';setTimeout(cfPaint,30);return h;}
 function tabsBase(){var t=[['dj','📚 Library'],['home','🏠 Home']];if(S.groceryVisible)t.push(['grocery','🛒 Grocery']);t.push(['board','🔊 Forums'],['reunion','🎉 Reunion 2027'],['mytriton','🔱 MyTriton'],['cameras','📷 Cameras'],['quotes','💬 Quotes'],['arcade','🎮 Arcade']);if(S.me.isAdmin||S.me.isRoyal)t.push(['control','🎛 Control Panel']);if(S.me.role!=='guest')t.push(['logs','📜 Logs']);t.push(['updates','✨ Updates']);if(S.me.isAdmin)t.push(['rotation','🔄 Rotation']);if(S.me.role!=='guest')t.push(['admin','⚙ Settings']);if(S.me.isKing)t.push(['king','👑 King']);return t;}
 function tabs(){var base=tabsBase();var c=(typeof ucfg==='function')?ucfg():{};var order=c.tabOrder||[];var hide=c.tabHide||{};if(c.tabOrderV!==3){order=[];try{ucfgSet({tabOrder:[],tabOrderV:3});}catch(e){}}var lock={home:1,admin:1};var byId={};base.forEach(function(t){byId[t[0]]=t;});var out=[];order.forEach(function(id){var t=byId[id];if(t&&(lock[id]||!hide[id])){out.push(t);delete byId[id];}});base.forEach(function(t){if(byId[t[0]]&&(lock[t[0]]||!hide[t[0]]))out.push(t);});return out;}
@@ -2159,7 +2171,83 @@ function pRumbleLoop(){if(!pOn)return;if(Math.random()<0.6)pRumble();pRumT=setTi
 function paradeInit(){if(pOn||pBlocked())return;var m=pMainEl();if(!m)return;m.style.position='relative';pLayer=document.createElement('div');pLayer.className='pslayer';m.appendChild(pLayer);pOn=true;pIdx=0;pLoop();pRumbleLoop();}
 function paradeStop(){pOn=false;if(pStartT){clearTimeout(pStartT);pStartT=null;}if(pSpawnT){clearTimeout(pSpawnT);pSpawnT=null;}if(pRumT){clearTimeout(pRumT);pRumT=null;}if(pLayer&&pLayer.parentNode){pLayer.parentNode.removeChild(pLayer);}pLayer=null;}
 
-function render(){const m=document.getElementById('main');const fn={home:homeView,grocery:groceryView,board:boardView,dj:libraryView,arcade:arcadeView,control:controlView,reunion:reunionView,admin:adminView,mytriton:mytritonView,cameras:camerasView,quotes:quotesView,log:logView,audit:auditView,logs:logsView,king:kingView,rotation:rotationView,updates:updatesView}[cur]||homeView;var __h;try{__h=fn();}catch(__e){try{if(window.console&&console.error)console.error('[PULSE] view '+cur+' failed:',__e);}catch(_){}__h=viewError(cur,__e);}m.innerHTML='<div class="view">'+__h+'</div>';setTimeout(moveSlider,0);if(cur==='arcade'){try{localStorage.setItem('clemitArcadeDay',pDay());}catch(e){}try{paradeStop();}catch(e){}var av=m.querySelector('.view');if(av&&!av.querySelector('.arcadeNudge')){var nd=document.createElement('div');nd.className='arcadeNudge';nd.innerHTML='&#127918; Pick a game and play &mdash; you came all this way!';av.insertBefore(nd,av.firstChild);}}if(cur==='dj'){if(pStartT){clearTimeout(pStartT);pStartT=null;}var __pdms=pDelayMs();if(__pdms>=0){pStartT=setTimeout(function(){try{paradeInit();}catch(e){}},__pdms);}}else{if(pStartT){clearTimeout(pStartT);pStartT=null;}try{paradeStop();}catch(e){}}}
+/* ===== Library Slice 1: Playlists (default) <-> Album Jog + shared movie queue =====
+   Self-contained DOM widget. No regex, no backslashes. T2: persists library_playlists.
+   T3: + Queue routes into the live window.MQ / mSave (shared movie_queue). built & owned by ~Jesse */
+var LIB_CSS = ""
++".lv{--acc:#00e5ff;--vio:#b14bff;--dim:#8fb0cf;--line:rgba(60,170,255,.2);font-family:Consolas,monospace;color:#dff3ff}"
++".lv .seg{font-size:11px;font-weight:bold;color:#9fc6e0;border:1.5px solid var(--line);border-radius:10px;padding:6px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}"
++".lv .seg.on{color:#fff;border-color:var(--acc);background:rgba(0,229,255,.2);box-shadow:0 0 14px rgba(0,229,255,.4)}"
++".lv .mwrap{display:flex;gap:9px;min-height:200px}.lv .plcol{flex:0 0 178px;background:rgba(8,14,32,.65);border:1px solid var(--line);border-radius:12px;padding:8px}"
++".lv .plrow{border:1.5px solid var(--line);border-radius:9px;padding:6px 7px;margin-bottom:5px;cursor:pointer;background:rgba(10,16,32,.5)}.lv .plrow.on{border-color:var(--vio);background:rgba(177,75,255,.14)}"
++".lv .pn{font-size:11px;font-weight:bold;color:#eaf6ff}.lv .pmeta{font-size:8px;color:var(--dim)}"
++".lv .tagchip{font-size:7px;font-weight:bold;color:#d6b0ff;background:rgba(177,75,255,.16);border:1px solid rgba(177,75,255,.5);border-radius:9px;padding:1px 5px;margin-right:3px}.lv .tagchip.auto{color:#5fffe0;background:rgba(95,255,224,.12);border-color:rgba(95,255,224,.45)}"
++".lv .qcol{flex:1;min-width:0;background:rgba(8,14,32,.65);border:1px solid var(--line);border-radius:12px;padding:8px}"
++".lv .trow{display:flex;align-items:center;gap:7px;padding:5px 7px;border:1px solid var(--line);border-radius:8px;margin-bottom:4px;background:rgba(10,16,32,.5)}.lv .trow.cur{border-color:var(--acc)}"
++".lv .jogbtn{float:right;font-size:9px;font-weight:bold;color:#9fd6ff;border:1.5px solid var(--line);border-radius:8px;padding:4px 9px;cursor:pointer}.lv .jogbtn.on{color:#fff;border-color:var(--acc);background:rgba(0,229,255,.2)}"
++".lv .lcf{position:relative;height:180px;perspective:1000px;overflow:hidden;cursor:grab}.lv .lcfc{position:absolute;left:50%;top:50%;width:112px;height:164px;margin:-82px 0 0 -56px;border-radius:11px;overflow:hidden;border:1.5px solid rgba(255,255,255,.1);transition:transform .42s,opacity .42s}.lv .lcfc.cc{border-color:var(--acc);box-shadow:0 0 24px rgba(0,229,255,.45)}"
++".lv .lpost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;color:#fff}.lv .lmbtn{font-size:8px;font-weight:bold;border:1px solid var(--acc);background:rgba(0,229,255,.14);color:var(--acc);border-radius:6px;padding:3px 7px;cursor:pointer}.lv .lmbtn.q{border-color:var(--vio);color:#d6b0ff;background:rgba(177,75,255,.16)}";
+
+function mountLibraryV7(root){
+  if(!document.getElementById('libV7css')){var st=document.createElement('style');st.id='libV7css';st.textContent=LIB_CSS;document.head.appendChild(st);}
+  root.className='lv';
+  var GENRE={'Alanis Morissette':'alt','The Offspring':'punk','Metallica':'metal','ELO':'classic','John Denver':'country','Johnny Cash':'country'};
+  function genreOf(a){return GENRE[a]||'misc';}
+  var PL=(window.__libPL)||[
+    {name:'Her Mix',manual:['favorites'],tracks:[{t:'You Oughta Know',a:'Alanis Morissette',d:'4:09'},{t:'Self Esteem',a:'The Offspring',d:'4:17'}]},
+    {name:'Wake Up',manual:['chill'],tracks:[]},
+    {name:'Roadtrip Mix',manual:[],tracks:[{t:'Mr. Blue Sky',a:'ELO',d:'5:03'},{t:'Country Roads',a:'John Denver',d:'3:10'}]}
+  ];
+  window.__libPL=PL;
+  function plSave(){try{fetch('/api/library/playlists',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pl:PL})});}catch(e){}}
+  window.__libPLSave=plSave;
+  /* T3: source the live catalog + share the real movie queue (window.MQ / mSave) */
+  var SRC=(typeof MOVIES!=='undefined'&&MOVIES&&MOVIES.length)?MOVIES:[{t:'300'},{t:'WALL-E'},{t:'V for Vendetta'},{t:'Chamber of Secrets'},{t:'Deathly Hallows Pt 1'}];
+  var MOV=SRC.slice(0,20).map(function(m){return {t:m.t};});
+  function isQ(t){return (window.MQ||[]).indexOf(t)>=0;}
+  function toggleQ(t){window.MQ=window.MQ||[];var p=window.MQ.indexOf(t);if(p>=0)window.MQ.splice(p,1);else window.MQ.push(t);if(typeof mSave==='function')mSave();}
+  var mode='playlist',curPL=0,curTrack=0,jogOn=false,idx=0;
+
+  function autoTags(p){var s={},k;for(k=0;k<p.tracks.length;k++)s[genreOf(p.tracks[k].a)]=1;return Object.keys(s);}
+  function render(){
+    var h='<div style="display:flex;gap:7px;margin-bottom:8px">'
+      +'<div class="seg'+(mode==='playlist'?' on':'')+'" data-m="playlist">&#9835; Playlists</div>'
+      +'<div class="seg'+(mode==='jog'?' on':'')+'" data-m="jog">&#8644; Album Jog</div></div>';
+    if(mode==='playlist'){
+      h+='<div class="mwrap"><div class="plcol"><div style="font-size:9px;font-weight:bold;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Playlists</div>';
+      PL.forEach(function(p,i){var at=autoTags(p),tags=at.map(function(t){return '<span class="tagchip auto">'+t+'</span>';}).join('')+p.manual.map(function(m){return at.indexOf(m)<0?'<span class="tagchip">'+m+'</span>':'';}).join('');
+        h+='<div class="plrow'+(i===curPL?' on':'')+'" data-pl="'+i+'"><div class="pn">'+p.name+'</div><div class="pmeta">'+p.tracks.length+' tracks</div><div style="margin-top:4px">'+tags+'</div></div>';});
+      h+='</div><div class="qcol"><div style="font-size:13px;font-weight:bold;color:#fff">'+(PL[curPL]?PL[curPL].name:'-')+'<span class="jogbtn'+(jogOn?' on':'')+'" data-jog="1">Album Jog</span></div><div style="margin-top:6px">';
+      if(PL[curPL])PL[curPL].tracks.forEach(function(tk,j){h+='<div class="trow'+(j===curTrack?' cur':'')+'" data-tr="'+j+'"><span style="font-size:9px;color:var(--dim);width:14px">'+(j+1)+'</span><div style="flex:1;font-size:10px">'+tk.t+'<div style="font-size:8px;color:var(--dim)">'+tk.a+' &#183; <span style="color:#5fffe0">'+genreOf(tk.a)+'</span></div></div><span style="font-size:8px;color:var(--dim)">'+tk.d+'</span></div>';});
+      h+='</div></div></div>';
+    } else {
+      h+='<div class="lcf" id="lvcf"><div class="lcfstage" style="position:absolute;inset:0"></div></div><div style="text-align:center;font-size:9px;color:var(--dim);margin-top:4px">drag to spin &#183; + Queue a movie</div>';
+    }
+    root.innerHTML=h;
+    var segs=root.querySelectorAll('.seg');for(var i=0;i<segs.length;i++)segs[i].onclick=function(){mode=this.getAttribute('data-m');render();};
+    if(mode==='playlist'){
+      root.querySelectorAll('.plrow').forEach(function(r){r.onclick=function(){curPL=+this.getAttribute('data-pl');curTrack=0;render();};});
+      root.querySelectorAll('.trow').forEach(function(r){r.onclick=function(){curTrack=+this.getAttribute('data-tr');render();};});
+      var jb=root.querySelector('[data-jog]');if(jb)jb.onclick=function(){jogOn=!jogOn;render();};
+    } else { paintCF(); }
+  }
+  function paintCF(){
+    var stage=root.querySelector('.lcfstage');stage.innerHTML='';
+    var nodes=MOV.map(function(m,i){var d=document.createElement('div');d.className='lcfc';d.innerHTML='<div class="lpost" style="background:linear-gradient(150deg,hsl('+(i*53%360)+',55%,34%),#0a0f1a)">'+m.t.slice(0,2).toUpperCase()+'</div><div style="position:absolute;left:0;right:0;bottom:0;padding:6px;background:linear-gradient(transparent,#000)"><div style="font-size:10px;font-weight:bold">'+m.t+'</div><span class="lmbtn q" data-q="'+i+'">'+(isQ(m.t)?'&#10003; Q':'+ Queue')+'</span></div>';stage.appendChild(d);return d;});
+    function rel(i){var r=i-idx,n=MOV.length;r=((r%n)+n)%n;if(r>n/2)r-=n;return r;}
+    function paint(){nodes.forEach(function(d,i){var r=rel(i),a=Math.abs(r),s=r<0?-1:1,x=r===0?0:s*(a===1?88:150),rot=r===0?0:-s*42,sc=r===0?1.06:.78,op=a>2?0:(r===0?1:.6);d.style.transform='translateX('+x+'px) rotateY('+rot+'deg) scale('+sc+')';d.style.opacity=op;d.style.zIndex=10-a;d.className='lcfc'+(r===0?' cc':'');});}
+    paint();
+    nodes.forEach(function(d){d.querySelector('[data-q]').onclick=function(e){e.stopPropagation();var i=+this.getAttribute('data-q');toggleQ(MOV[i].t);this.innerHTML=isQ(MOV[i].t)?'&#10003; Q':'+ Queue';};});
+    var cf=root.querySelector('#lvcf'),dr=false,sx=0;
+    cf.addEventListener('pointerdown',function(e){if(e.target.closest('.lmbtn'))return;dr=true;sx=e.clientX;});
+    cf.addEventListener('pointermove',function(e){if(!dr)return;if(e.clientX-sx>40){idx=(idx-1+MOV.length)%MOV.length;sx=e.clientX;paint();}else if(e.clientX-sx<-40){idx=(idx+1)%MOV.length;sx=e.clientX;paint();}});
+    cf.addEventListener('pointerup',function(){dr=false;});
+  }
+  render();
+}
+/* ===== end Library Slice 1 ===== */
+
+function render(){const m=document.getElementById('main');const fn={home:homeView,grocery:groceryView,board:boardView,dj:libraryView,arcade:arcadeView,control:controlView,reunion:reunionView,admin:adminView,mytriton:mytritonView,cameras:camerasView,quotes:quotesView,log:logView,audit:auditView,logs:logsView,king:kingView,rotation:rotationView,updates:updatesView}[cur]||homeView;var __h;try{__h=fn();}catch(__e){try{if(window.console&&console.error)console.error('[PULSE] view '+cur+' failed:',__e);}catch(_){}__h=viewError(cur,__e);}m.innerHTML='<div class="view">'+__h+'</div>';setTimeout(moveSlider,0);if(cur==='dj'){var __lv=document.getElementById('libV7');if(__lv&&typeof mountLibraryV7==='function'){try{mountLibraryV7(__lv);}catch(e){}}}if(cur==='arcade'){try{localStorage.setItem('clemitArcadeDay',pDay());}catch(e){}try{paradeStop();}catch(e){}var av=m.querySelector('.view');if(av&&!av.querySelector('.arcadeNudge')){var nd=document.createElement('div');nd.className='arcadeNudge';nd.innerHTML='&#127918; Pick a game and play &mdash; you came all this way!';av.insertBefore(nd,av.firstChild);}}if(cur==='dj'){if(pStartT){clearTimeout(pStartT);pStartT=null;}var __pdms=pDelayMs();if(__pdms>=0){pStartT=setTimeout(function(){try{paradeInit();}catch(e){}},__pdms);}}else{if(pStartT){clearTimeout(pStartT);pStartT=null;}try{paradeStop();}catch(e){}}}
 function homeView(){let h='<div class="card"><h2>Welcome, '+esc(S.me.name)+'</h2><div class="sub">Your stuff, in one place.</div>';const feat=S.media.find(x=>x.kind==='photo');if(feat)h+='<div class="feature"><img src="'+esc(feat.url)+'"><div class="cap">'+esc(feat.caption||'')+(feat.place?' - '+esc(feat.place):'')+(feat.people?' - '+esc(feat.people):'')+'</div></div>';if(S.groceryVisible){const due=S.grocery.filter(gDue);h+='<p>'+due.length+' grocery item(s) need attention.</p>';}if(S.messages[0])h+='<p style="margin-top:8px">Latest from <b>'+esc(S.messages[0].author)+'</b>: '+esc(S.messages[0].body.slice(0,80))+'</p>';h+='<p style="margin-top:8px">Reunion 2027: <b>'+S.rsvp.length+'</b> RSVP(s).</p></div>';return h;}
 function gDue(it){if(!it.last_bought)return true;if(it.freq==='once')return false;return (Date.now()-it.last_bought)>=PERIOD[it.freq];}
 function gState(it){if(!it.last_bought)return'due';if(it.freq==='once')return'done';return (Date.now()-it.last_bought)>=PERIOD[it.freq]?'due':'waiting';}
@@ -2241,7 +2329,7 @@ altTiles.forEach(function(c){var on=(mode===c[0]);h+='<div class="libtile alt'+(
 h+='</div>';
 if(mode==='stack'){var names=sel.map(function(k){return libKindLabel(k);}).join(' + ');h+='<div class="libsub">Shelf &#183; '+(names?esc(names):'nothing selected')+(sel.length?' <span class="libclear" onclick="libClearSel()">clear</span>':'')+'</div>';h+=inFlightRail();h+=stackReel();h+=libSig();return h;}
 if(mode==='movies'){h+=moviesBody();return h;}
-if(mode==='song'){h+=musicReel();return h;}
+if(mode==='song'&&window.__libSub==='playlists'){return h+'<div id="libV7"></div>';}if(mode==='song'){h+=musicReel();return h;}
 if(mode==='radio'){h+=radioReel();return h;}
 if(mode==='add'){h+='<div class="card"><h2 style="font-size:1rem;margin-bottom:4px">Add to the library</h2><div class="sub">Tag people and places so it stays sortable. Songs feed the DJ Box.</div><div class="row"><input id="mu" placeholder="URL of song / image / video..." style="flex:2 1 200px"><select id="mk"><option value="photo">Picture</option><option value="video">Video</option><option value="song">Song</option><option value="book">Book</option><option value="audiobook">Audiobook</option></select></div><div class="row"><input id="mp" placeholder="People (comma separated)"><input id="ml" placeholder="Place"><input id="mc" placeholder="Caption / meaning"><button class="go" onclick="addMedia()">Add by URL</button></div><div class="row" style="margin-top:6px;align-items:center;gap:10px;flex-wrap:wrap"><label class="go" style="cursor:pointer">&#128247; Upload photos from device<input type="file" accept="image/*" multiple onchange="uploadPhotos(this)" style="display:none"></label><span id="upStat" class="sub" style="margin:0"></span></div><div class="sub" style="margin-top:4px;font-size:.82rem">Pictures upload straight to the family library. The tags above apply to what you upload.</div></div>';return h;}
 h+='<div class="row" style="margin:0 0 10px"><input id="mfilter" placeholder="filter by person or place..." oninput="window.__mf=this.value;render()" value="'+esc(window.__mf||'')+'"></div>';
