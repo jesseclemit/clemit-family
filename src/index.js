@@ -1197,7 +1197,7 @@ if (p === "/api/king/veto" && req.method === "POST") {
 var HTML = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex, nofollow"><title>Clemit Pulse</title>
 <style>#bootveil{position:fixed;inset:0;background:#0a0608;z-index:99999;opacity:1;transition:opacity .7s ease;pointer-events:none}#bootveil.gone{opacity:0}
-:root{--bg:#0c0408;--panel:#190a12;--panel2:#23101a;--line:#3d1622;--txt:#f1e9ec;--dim:#a98793;--acc:#ff3b54;--acc-bright:#ff8a9b;--acc-glow:rgba(255,59,84,.55);--acc2:#34e6ff;--warn:#ffb74d;--due:#ef5350;--bad:#ff5d6c;}
+:root{--bg:#0c0408;--panel:#190a12;--panel2:#23101a;--line:#3d1622;--txt:#f1e9ec;--dim:#a98793;--acc:#ff3b54;--acc-bright:#ff8a9b;--acc-glow:rgba(255,59,84,.55);--acc2:#34e6ff;--warn:#ffb74d;--due:#ef5350;--bad:#ff5d6c;--cw:1280px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--txt);font:16px/1.55 'Segoe UI',system-ui,sans-serif;min-height:100vh;}
 header{padding:22px 28px 4px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
@@ -1253,6 +1253,7 @@ header .right a{color:var(--dim);text-decoration:none;border:1px solid var(--lin
 .hero.hsk-F .hero-bg{background:repeating-linear-gradient(90deg,transparent 0 36px,rgba(255,61,240,.20) 36px 37px),repeating-linear-gradient(0deg,transparent 0 9px,rgba(255,61,240,.14) 9px 10px);opacity:.6;-webkit-mask:linear-gradient(180deg,transparent 40%,#000);mask:linear-gradient(180deg,transparent 40%,#000);}
 .hero.hsk-F .hero-greet b{color:var(--magenta);text-shadow:0 0 14px var(--magenta);}
 .hero.hsk-G{background:linear-gradient(180deg,#0a0610,#06040a);border-color:rgba(255,59,84,.35);}
+  .hero.hsk-H{background:radial-gradient(120% 140% at 80% -20%,rgba(177,75,255,.18),transparent),linear-gradient(180deg,#060512,#0a0610);border-color:rgba(177,75,255,.35);}
 .hero.hsk-G .skinfx{display:block;}
 .hero-greet.hsGlitch::before,.hero-greet.hsGlitch::after{content:attr(data-text);position:absolute;left:0;top:0;width:100%;}
 .hero-greet.hsGlitch::before{color:var(--acc2);transform:translate(-2px,1px);animation:hsGx .4s steps(2);}
@@ -1283,7 +1284,9 @@ header .right a{color:var(--dim);text-decoration:none;border:1px solid var(--lin
 .pvE{background:radial-gradient(34px 22px at 30% 50%,rgba(255,59,84,.7),#08040a);}
 .pvF{background:#140628;background-image:repeating-linear-gradient(90deg,transparent 0 8px,rgba(255,61,240,.5) 8px 9px);}
 .pvG{background:radial-gradient(circle at 52% 70%,rgba(255,59,84,.8),transparent 45%),radial-gradient(circle at 28% 32%,rgba(52,230,255,.6),transparent 40%),#0a0610;}
-.shell{display:grid;grid-template-columns:2fr 1fr;gap:18px;max-width:1340px;margin:0;padding:10px 28px 48px;align-items:start;}
+#wrap{max-width:var(--cw);margin:0 auto;}
+.fullbleed{width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);}
+.shell{display:grid;grid-template-columns:2fr 1fr;gap:18px;max-width:none;margin:0;padding:10px 28px 48px;align-items:start;}
 .workspace{min-width:0;}
 .segwrap{padding:4px 0 14px;}
 .seg{position:relative;display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:24px;padding:4px;gap:2px;max-width:100%;overflow:auto;}
@@ -1699,7 +1702,41 @@ footer{text-align:center;color:#5a5f6b;font-size:.76rem;padding:10px 22px 22px;}
 .qgrip{cursor:grab;color:var(--dim);font-size:.95rem;touch-action:none;-webkit-user-select:none;user-select:none;padding:0 2px;}
 .qgrip:active{cursor:grabbing;}
 .qrow.qdrag{opacity:.45;}
-.qrow .qtype{font-size:.8rem;width:14px;text-align:center;color:var(--acc);flex:0 0 auto;}</style></head><body><div id="bootveil"></div>
+.qrow .qtype{font-size:.8rem;width:14px;text-align:center;color:var(--acc);flex:0 0 auto;}#jpvWrap{position:fixed;z-index:6000;top:70px;right:24px;font-family:inherit;filter:drop-shadow(0 18px 40px rgba(0,0,0,.6))}
+#jpvWrap.jpvHidden{display:none}
+#jpvBar{display:flex;align-items:center;gap:7px;background:linear-gradient(180deg,rgba(10,16,26,.97),rgba(8,10,18,.97));border:1px solid rgba(0,229,255,.45);border-bottom:none;border-radius:12px 12px 0 0;padding:7px 10px;cursor:grab;user-select:none;box-shadow:inset 0 0 18px rgba(0,229,255,.16)}
+#jpvBar.jpvGrab{cursor:grabbing}
+#jpvBar .jpvTitle{color:#bfeaff;font-size:12px;letter-spacing:.4px;white-space:nowrap;text-shadow:0 0 8px rgba(0,200,255,.5)}
+#jpvBar .jpvTag{color:#ff8aa0;font-size:9px;letter-spacing:1px;border:1px solid rgba(255,60,90,.5);border-radius:6px;padding:1px 5px;text-transform:uppercase;cursor:help}
+#jpvBar select{background:#0a1320;color:#9fe9ff;border:1px solid rgba(0,229,255,.4);border-radius:6px;font-size:11px;padding:2px 4px;outline:none;cursor:pointer}
+#jpvBar .jpvSpacer{flex:1 1 auto}
+#jpvBar .jpvDims{color:#6fb8d8;font-size:10px;font-family:monospace}
+#jpvBar .jpvBtn{background:#0a1320;color:#9fe9ff;border:1px solid rgba(0,229,255,.35);border-radius:7px;width:26px;height:24px;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+#jpvBar .jpvBtn:hover{background:#10243a;box-shadow:0 0 10px rgba(0,229,255,.4)}
+#jpvBar .jpvBtn.jpvX{color:#ff8aa0;border-color:rgba(255,60,90,.5)}
+#jpvBox{overflow:hidden;border-radius:0 0 14px 14px;background:transparent}
+#jpvPhone{transform-origin:top left;position:relative}
+.jpvFrame{position:relative;background:#05070d;border:11px solid #0b0e16;border-radius:42px;overflow:hidden;box-shadow:0 0 0 2px rgba(0,229,255,.45),0 0 26px rgba(0,229,255,.22),0 0 60px rgba(177,75,255,.16)}
+.jpvFrame.ios{border-radius:54px}
+.jpvFrame .jpvScreen{position:absolute;inset:0;border-radius:31px;overflow:hidden;background:#000}
+.jpvFrame.ios .jpvScreen{border-radius:43px}
+#jpvDoc{border:0;display:block;background:#0a0608}
+.jpvPunch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;background:#000;box-shadow:0 0 0 2px rgba(20,24,34,.9),inset 0 0 4px rgba(40,90,120,.8);z-index:5;pointer-events:none}
+.jpvFrame.ios .jpvPunch{width:78px;height:22px;border-radius:14px;top:8px}
+.jpvNav{position:absolute;left:0;right:0;bottom:0;height:22px;display:flex;align-items:center;justify-content:center;gap:42px;z-index:5;pointer-events:none}
+.jpvNav b{width:13px;height:13px;border:1.5px solid rgba(150,180,200,.5);border-radius:3px;display:block}
+.jpvNav b.tri{border:none;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:11px solid rgba(150,180,200,.5);transform:rotate(-90deg)}
+.jpvNav b.cir{border-radius:50%}
+.jpvNav.ios{gap:0}
+.jpvNav.ios b{width:120px;height:4px;border:none;background:rgba(220,230,240,.6);border-radius:3px}
+.jpvNav.ios b.tri,.jpvNav.ios b.cir{display:none}
+.jpvSide{position:absolute;width:3px;background:#11151f;border-radius:2px;right:-13px}
+.jpvSide.p{top:120px;height:54px}
+.jpvSide.v{top:70px;height:34px;left:-13px;right:auto}
+#jpvLauncher{position:fixed;right:18px;bottom:18px;z-index:6000;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#13283e,#070b14);border:1px solid rgba(0,229,255,.5);color:#9fe9ff;font-size:20px;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 16px rgba(0,229,255,.35),0 6px 18px rgba(0,0,0,.5)}
+#jpvLauncher:hover{box-shadow:0 0 24px rgba(0,229,255,.6)}
+#jpvLauncher.show{display:flex}
+</style></head><body><div id="bootveil"></div><div id="wrap">
 <header><h1>Clemit <span>Pulse</span></h1><span style="color:var(--dim);font-size:.8rem">&mdash; the pulse of our lives</span><span class="role" id="role">...</span><span id="crownBadge" style="cursor:help;margin-left:6px;font-size:1.05rem"></span><label title="Choose your PULSE color" style="display:inline-flex;align-items:center;gap:6px;margin-left:14px;cursor:pointer"><span style="width:22px;height:22px;border-radius:6px;border:2px solid var(--acc);box-shadow:0 0 8px var(--acc-glow);background:var(--acc);position:relative;overflow:hidden;display:inline-block"><input id="themeSw" type="color" value="#ff3b54" oninput="themeSet(this.value,true)" style="position:absolute;top:-6px;left:-6px;width:42px;height:42px;border:none;opacity:0;cursor:pointer"></span><span style="font-size:.6rem;letter-spacing:1px;color:var(--acc);text-shadow:0 0 6px var(--acc-glow)">&larr; Choose PULSE color</span></label>
 <div class="right"><span id="clock"></span><a href="/cdn-cgi/access/logout">Sign Out</a></div></header>
 <div class="ministrip" id="ministrip"><div class="ms-player"><button id="msPlay" title="Play / Pause">&#9654;</button><button id="msNext" title="Next">&#9197;</button><span class="ms-title" id="msTitle">&mdash;</span></div><div class="ms-quote" id="msQuote"></div></div>
@@ -1751,7 +1788,7 @@ footer{text-align:center;color:#5a5f6b;font-size:.76rem;padding:10px 22px 22px;}
     </div>
   </aside>
 </div>
-<footer>family.clemits.com - your space</footer>
+<footer>family.clemits.com - your space</footer></div>
 <div id="spacePod" style="left:0;right:0;bottom:0;width:auto;border-radius:0;border-left:none;border-right:none;border-bottom:none;padding:5px 12px;align-items:center;gap:10px;flex-wrap:wrap"><span class="sp-t" style="margin:0;white-space:nowrap">&#9881; DEBUG</span><div class="sp-bar" style="display:none"><div id="spaceFill"></div></div><span class="sp-n" id="spaceN" style="display:none">checking...</span><div id="dbgBox" style="flex:1;min-width:200px;font-size:11px;line-height:1.4;font-family:monospace;display:flex;flex-wrap:wrap;gap:2px 12px;align-items:center">starting&#8230;</div><button id="spaceX" title="hide" style="position:static">&#10005;</button></div><div id="dbgTab" style="position:fixed;left:0;bottom:0;display:none;z-index:60;background:rgba(8,6,20,.9);border:1px solid rgba(55,224,255,.35);border-top-right-radius:8px;padding:3px 10px;font-size:11px;font-family:monospace;color:var(--acc);cursor:pointer">(Debug)</div>
 <script>
 const DAY=86400000,PERIOD={weekly:7*DAY,monthly:30*DAY};
@@ -1812,7 +1849,7 @@ function heroFavUpd(){var btn=document.querySelector('#heroCtrl button[data-h="f
 function heroNextTheme(){heroTi=(heroTi+1)%HERO_T.length;heroApplyTheme();heroSave();}
 function heroTimers(){clearInterval(heroQT);clearInterval(heroTT);heroQT=setInterval(function(){if(!heroPaused)heroNextQuote();},12000);}
 window.HS=(function(){
-var SKINS=[{id:'A',nm:'Crimson HUD',ds:'brackets + scan'},{id:'B',nm:'Starfield',ds:'drifting stars'},{id:'C',nm:'Holo Panel',ds:'holo quote card'},{id:'D',nm:'TRON Grid',ds:'perspective grid'},{id:'E',nm:'Reactor',ds:'boss ball + ripples'},{id:'F',nm:'Synthwave',ds:'magenta grid'},{id:'G',nm:'TRON Lava Lamp',ds:'your color + hue blobs'}];
+var SKINS=[{id:'A',nm:'Crimson HUD',ds:'brackets + scan'},{id:'B',nm:'Starfield',ds:'drifting stars'},{id:'C',nm:'Holo Panel',ds:'holo quote card'},{id:'D',nm:'TRON Grid',ds:'perspective grid'},{id:'E',nm:'Reactor',ds:'boss ball + ripples'},{id:'F',nm:'Synthwave',ds:'magenta grid'},{id:'G',nm:'TRON Lava Lamp',ds:'your color + hue blobs'},{id:'H',nm:'Deep Space',ds:'3D Earth + ships (heavy)'}];
 var hero,star,sk,fxl,cx,sx,cur='B',MODE='surprise',enabled={},timers={},raf=null,inited=false;
 var stars=[],orbs=[],lava=[],ripples=[],shake=0;
 function cfg(){try{return ucfg();}catch(e){return {};}}
@@ -1848,8 +1885,8 @@ function initLava(){if(!sk)return;sk.width=W();sk.height=H();lava=[];var ac=getA
 function lavaStep(){if(!sx)return;var t=performance.now()/1000;sx.clearRect(0,0,sk.width,sk.height);sx.globalCompositeOperation='lighter';for(var i=0;i<lava.length;i++){var b=lava[i];var yy=H()*0.5-Math.cos(t*b.spd+b.ph)*b.amp;var xx=b.cx+Math.sin(t*b.spd*0.7+b.ph)*W()*0.06*b.wob;var rr=b.r*(1+0.12*Math.sin(t*b.spd*1.3+b.ph));var g=sx.createRadialGradient(xx,yy,1,xx,yy,rr);g.addColorStop(0,hexA(b.col,.9));g.addColorStop(.5,hexA(b.col,.4));g.addColorStop(1,hexA(b.col,0));sx.fillStyle=g;sx.beginPath();sx.arc(xx,yy,rr,0,6.2832);sx.fill();}sx.globalCompositeOperation='source-over';}
 function ids(){return SKINS.map(function(s){return s.id;});}
 function nextId(id){var a=ids();return a[(a.indexOf(id)+1)%a.length];}
-function freshPick(){var c=cfg();var pin=c.heroSkin||'B';var last=c.heroLast||pin;if(MODE==='pin')return pin;if(MODE==='cycle')return nextId(last);var a=ids(),r;do{r=a[Math.floor(Math.random()*a.length)];}while(r===last&&a.length>1);return r;}
-function applySkin(id){if(!hero)return;if(id!=='E'){hero.style.transform='';shake=0;}hero.classList.remove('t-cosmos','t-slot','t-switch','t-cruise');for(var i=0;i<SKINS.length;i++)hero.classList.remove('hsk-'+SKINS[i].id);hero.classList.add('hsk-'+id);cur=id;if(id==='B')initStars();else if(id==='E')initOrbs();else if(id==='G')initLava();if(!raf)raf=requestAnimationFrame(master);}
+function freshPick(){var c=cfg();var pin=c.heroSkin||'B';var last=c.heroLast||pin;if(MODE==='pin')return pin;if(MODE==='cycle')return nextId(last);var a=ids().filter(function(z){return z!=='H';}),r;do{r=a[Math.floor(Math.random()*a.length)];}while(r===last&&a.length>1);return r;}
+function applySkin(id){if(!hero)return;if(id!=='H')stop3D();if(id!=='E'){hero.style.transform='';shake=0;}hero.classList.remove('t-cosmos','t-slot','t-switch','t-cruise');for(var i=0;i<SKINS.length;i++)hero.classList.remove('hsk-'+SKINS[i].id);hero.classList.add('hsk-'+id);cur=id;if(id==='B')initStars();else if(id==='E')initOrbs();else if(id==='G')initLava();else if(id==='H')start3D();if(!raf)raf=requestAnimationFrame(master);}
 function pickSkin(id){cur=id;save({heroSkin:id,heroLast:id});applySkin(id);}
 function setMode(m){MODE=m;save({heroMode:m});}
 function toggleFx(id,on){enabled[id]=on;save({heroFx:FX.filter(function(f){return enabled[f.id];}).map(function(f){return f.id;})});var f=byId(id);if(!f)return;if(on)schedule(f);else clearTimeout(timers[id]);}
@@ -1857,6 +1894,90 @@ function schedule(f){clearTimeout(timers[f.id]);if(!enabled[f.id])return;var w=f
 function master(){try{if(cur==='B')starDraw();else if(cur==='E')orbStep();else if(cur==='G')lavaStep();}catch(e){}raf=requestAnimationFrame(master);}
 function settingsHtml(){try{var c=cfg();var skin=(MODE==='pin')?(c.heroSkin||'B'):cur;var modes=[['surprise','Surprise me','A different banner each visit'],['cycle','Cycle in order','Advance each visit'],['pin','Keep one I pick','Always the style I choose']];var mh='';for(var i=0;i<modes.length;i++){var m=modes[i];mh+='<button class="qbtn'+(MODE===m[0]?' on':'')+'" data-hs-mode="'+m[0]+'">'+m[1]+'</button>';}var gh='';for(var j=0;j<SKINS.length;j++){var s=SKINS[j];gh+='<div class="hs-opt'+(s.id===skin?' on':'')+'" data-hs-skin="'+s.id+'"><div class="pv pv'+s.id+'"></div><div class="mt">'+s.id+' '+s.nm+'<small>'+s.ds+'</small></div></div>';}var fh='';for(var k=0;k<FX.length;k++){var f=FX[k];fh+='<div class="hs-fxrow"><input type="checkbox" data-hs-fx="'+f.id+'"'+(enabled[f.id]?' checked':'')+'><div><div class="nm">'+f.nm+'</div><div class="ds">'+f.ds+'</div></div><button class="hs-fire" data-hs-fire="'+f.id+'" title="Try it">&#9654;</button><span class="gp '+f.g+'">'+(f.g==='cos'?'SPACE':'VAMP')+'</span></div>';}return '<h2 style="font-size:.95rem;margin:14px 0 6px">Hero banner</h2><div class="sub">Pick the look of your greeting banner. A fresh one greets you each visit &mdash; or pin a favorite.</div><div class="hs-mode">'+mh+'</div><div class="hs-grid">'+gh+'</div><h2 style="font-size:.95rem;margin:14px 0 6px">Banner events</h2><div class="sub">Little flourishes on the banner. Space events show only on Starfield; the Reactor has its own.</div>'+fh;}catch(e){return '';}}
 function bind(){document.addEventListener('click',function(e){try{var el;if(el=e.target.closest('[data-hs-skin]')){pickSkin(el.getAttribute('data-hs-skin'));if(typeof render==='function')render();}else if(el=e.target.closest('[data-hs-mode]')){setMode(el.getAttribute('data-hs-mode'));if(typeof render==='function')render();}else if(el=e.target.closest('[data-hs-fire]')){var f=byId(el.getAttribute('data-hs-fire'));if(f){try{f.fn();}catch(e2){}}}else if(e.target.closest('#hsCyc')){pickSkin(nextId(cur));}}catch(err){}},true);document.addEventListener('change',function(e){try{var el=e.target.closest('[data-hs-fx]');if(el){toggleFx(el.getAttribute('data-hs-fx'),el.checked);if(typeof render==='function')render();}}catch(err){}},true);window.addEventListener('resize',function(){try{if(cur==='B')initStars();else if(cur==='E')initOrbs();else if(cur==='G')initLava();}catch(e){}});}
+// ===== HS 3D Deep Space skin (opt-in, lazy Three.js, fully guarded) =====
+var hs3dRAF=null,hs3dCv=null,hs3dInit=false;
+function load3D(cb){if(window.THREE)return cb();if(window.__hs3dLoading){window.__hs3dCbs.push(cb);return;}window.__hs3dLoading=1;window.__hs3dCbs=[cb];var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';s.onload=function(){window.__hs3dCbs.forEach(function(f){try{f();}catch(e){}});};s.onerror=function(){};document.head.appendChild(s);}
+function stop3D(){if(hs3dRAF){cancelAnimationFrame(hs3dRAF);hs3dRAF=null;}if(hs3dCv&&hs3dCv.parentNode)hs3dCv.parentNode.removeChild(hs3dCv);hs3dCv=null;}
+function start3D(){try{stop3D();if(!hero)return;if(!window.WebGLRenderingContext)return;load3D(function(){try{if(cur!=='H')return;build3D();}catch(e){}});}catch(e){}}
+function build3D(){
+  var T=window.THREE;hs3dCv=document.createElement('canvas');hs3dCv.style.cssText='position:absolute;inset:0;width:100%;height:100%;z-index:1;display:block;pointer-events:none';hero.insertBefore(hs3dCv,hero.firstChild);
+  var W=hero.clientWidth||900,H2=hero.clientHeight||160;
+  var rnd;try{rnd=new T.WebGLRenderer({canvas:hs3dCv,antialias:true,alpha:true});}catch(e){stop3D();return;}
+  rnd.setSize(W,H2,false);rnd.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  var sc=new T.Scene();var cam=new T.PerspectiveCamera(46,W/H2,0.1,3000);cam.position.set(0,0.7,16);cam.lookAt(0,0,0);
+  sc.add(new T.AmbientLight(0x1c2a48,0.55));var sun=new T.DirectionalLight(0xeaf1ff,0.7);sun.position.set(-4,5,8);sc.add(sun);
+  function v2(a){return new T.Vector2(a[0],a[1]);}
+  function starTex(){var c=document.createElement('canvas');c.width=c.height=32;var x=c.getContext('2d');var g=x.createRadialGradient(16,16,0,16,16,16);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.22,'rgba(255,255,255,.95)');g.addColorStop(.5,'rgba(190,215,255,.35)');g.addColorStop(1,'rgba(160,190,255,0)');x.fillStyle=g;x.fillRect(0,0,32,32);return new T.CanvasTexture(c);}
+  var stx=starTex();var starGrp=new T.Group();sc.add(starGrp);
+  function starL(n,r0,r1,sz,col){var g=new T.BufferGeometry(),p=[];for(var i=0;i<n;i++){var u=Math.random(),v=Math.random();var th=u*6.2832,ph=Math.acos(2*v-1);var r=r0+Math.random()*(r1-r0);p.push(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}g.setAttribute('position',new T.Float32BufferAttribute(p,3));var m=new T.Points(g,new T.PointsMaterial({map:stx,color:col,size:sz,sizeAttenuation:true,transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:0.95}));starGrp.add(m);return m;}
+  starL(1100,60,150,1.0,0xbfd4ff);starL(420,25,60,1.7,0xeaf2ff);starL(70,18,52,3.8,0xffffff);
+  var NW=120,wpos=new Float32Array(NW*6),wb=[];for(var i=0;i<NW;i++){var a=Math.random()*6.2832,r=3+Math.random()*22;wb.push({x:(Math.random()*2-1)*16,y:Math.cos(a)*r,z:Math.sin(a)*r-5});}
+  var wg=new T.BufferGeometry();wg.setAttribute('position',new T.BufferAttribute(wpos,3));var warp=new T.LineSegments(wg,new T.LineBasicMaterial({color:0xaddfff,transparent:true,opacity:0,blending:T.AdditiveBlending,depthWrite:false}));sc.add(warp);
+  // Earth FAR in the background, drifting by
+  function paintNice(){var c=document.createElement('canvas');c.width=1024;c.height=512;var x=c.getContext('2d');var og=x.createLinearGradient(0,0,0,512);og.addColorStop(0,'#08234c');og.addColorStop(.5,'#103f72');og.addColorStop(1,'#08234c');x.fillStyle=og;x.fillRect(0,0,1024,512);function land(cx,cy,rw,rh){var lg=x.createRadialGradient(cx,cy-rh*0.3,2,cx,cy,Math.max(rw,rh));lg.addColorStop(0,'#3a7d46');lg.addColorStop(.7,'#2c6b3a');lg.addColorStop(1,'#7a6a3e');x.fillStyle=lg;x.beginPath();x.ellipse(cx,cy,rw,rh,0,0,6.2832);x.fill();}[[240,200,80,100],[300,330,60,95],[540,180,130,75],[580,310,95,85],[740,210,85,60],[790,330,75,72]].forEach(function(b){land(b[0],b[1],b[2],b[3]);});x.fillStyle='#eef4ff';x.fillRect(0,0,1024,14);x.fillRect(0,498,1024,14);return new T.CanvasTexture(c);}
+  var emat=new T.MeshPhongMaterial({map:paintNice(),shininess:16,specular:0x2a5070});
+  var earth=new T.Mesh(new T.SphereGeometry(3.2,64,48),emat);earth.position.set(16,5,-44);sc.add(earth);
+  try{var ld=new T.TextureLoader();ld.setCrossOrigin('anonymous');ld.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg',function(t){emat.map=t;emat.needsUpdate=true;});ld.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png',function(t){emat.bumpMap=t;emat.bumpScale=0.05;emat.needsUpdate=true;});ld.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-water.png',function(t){emat.specularMap=t;emat.specular=new T.Color(0x4a78a8);emat.shininess=24;emat.needsUpdate=true;});}catch(e){}
+  function glowS(r,g,b,s){var c=document.createElement('canvas');c.width=c.height=48;var x=c.getContext('2d');var gr=x.createRadialGradient(24,24,0,24,24,24);gr.addColorStop(0,'rgba('+r+','+g+','+b+',1)');gr.addColorStop(.3,'rgba('+r+','+g+','+b+',.5)');gr.addColorStop(1,'rgba('+r+','+g+','+b+',0)');x.fillStyle=gr;x.fillRect(0,0,48,48);var sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),blending:T.AdditiveBlending,depthWrite:false,transparent:true}));sp.scale.set(s,s,1);return sp;}
+  function faceV(grp,v){if(v.lengthSq()<1e-7)return;grp.rotation.set(0,-Math.atan2(v.z,v.x),Math.asin(Math.max(-1,Math.min(1,v.y/v.length()))));}
+  var metalC=new T.MeshStandardMaterial({color:0xaebbd6,metalness:0.62,roughness:0.34});
+  var metalF=new T.MeshStandardMaterial({color:0x8a93a8,metalness:0.6,roughness:0.42});
+  // ---- real detailed ship models ----
+  function mAurora(){var g=new T.Group();var pr=[[0,-0.1],[1.2,-0.1],[1.6,0],[1.6,0.05],[1.1,0.18],[0.5,0.28],[0,0.32]].map(v2);g.add(new T.Mesh(new T.LatheGeometry(pr,40),metalC));var dome=new T.Mesh(new T.SphereGeometry(0.18,14,10),new T.MeshBasicMaterial({color:0x9fe8ff}));dome.position.y=0.32;g.add(dome);var hull=new T.Mesh(new T.CylinderGeometry(0.2,0.2,1.3,16),metalC);hull.rotation.z=Math.PI/2;hull.position.y=-0.3;g.add(hull);[-0.85,0.85].forEach(function(z){var n=new T.Mesh(new T.CylinderGeometry(0.1,0.1,1.2,14),metalC);n.rotation.z=Math.PI/2;n.position.set(0,-0.05,z);g.add(n);var bk=glowS(120,200,255,0.7);bk.position.set(-0.65,-0.05,z);g.add(bk);var st=new T.Mesh(new T.BoxGeometry(0.5,0.06,0.34),metalF);st.position.set(-0.15,-0.18,z*0.55);st.rotation.x=(z>0?1:-1)*0.5;g.add(st);});return g;}
+  function mRaptor(){var g=new T.Group();var body=new T.Mesh(new T.CylinderGeometry(0.12,0.34,1.5,14),metalF);body.rotation.z=Math.PI/2;g.add(body);var head=new T.Mesh(new T.ConeGeometry(0.14,0.45,12),metalF);head.rotation.z=-Math.PI/2;head.position.x=0.9;g.add(head);var eye=new T.Mesh(new T.SphereGeometry(0.07,10,8),new T.MeshBasicMaterial({color:0x39ffa8}));eye.position.x=1.0;g.add(eye);[1,-1].forEach(function(s){var w=new T.Mesh(new T.BoxGeometry(1.0,0.05,0.55),metalF);w.position.set(-0.3,0,s*0.6);w.rotation.y=s*0.5;g.add(w);var e=glowS(57,255,168,0.7);e.position.set(-0.75,0,s*0.9);g.add(e);});return g;}
+  function mWedge(){var g=new T.Group();var sh=new T.Shape();sh.moveTo(0,1.2);sh.lineTo(1.0,-1.0);sh.lineTo(-1.0,-1.0);sh.lineTo(0,1.2);var geo=new T.ExtrudeGeometry(sh,{depth:0.35,bevelEnabled:true,bevelThickness:0.06,bevelSize:0.06,bevelSegments:1});geo.center();var hull=new T.Mesh(geo,metalF);hull.rotation.x=-Math.PI/2;g.add(hull);var tower=new T.Mesh(new T.BoxGeometry(0.28,0.2,0.28),metalC);tower.position.set(0,0.3,-0.1);g.add(tower);[-0.55,0,0.55].forEach(function(x){var e=glowS(120,200,255,0.7);e.position.set(x,0.05,1.0);g.add(e);});return g;}
+  function mTalon(){var g=new T.Group();var body=new T.Mesh(new T.ConeGeometry(0.26,1.3,4),metalF);body.rotation.z=-Math.PI/2;body.rotation.x=Math.PI/4;g.add(body);var core=new T.Mesh(new T.SphereGeometry(0.11,10,8),new T.MeshBasicMaterial({color:0xff5070}));core.position.x=-0.35;g.add(core);[1,-1].forEach(function(s){var w=new T.Mesh(new T.BoxGeometry(0.9,0.04,0.5),metalF);w.position.set(-0.15,0,s*0.4);w.rotation.y=-s*0.4;g.add(w);});return g;}
+
+  function cap(team,big){var col=team==='c'?[120,210,255]:[255,90,110];var g=team==='c'?mAurora():(big?mWedge():mRaptor());g.scale.setScalar(big?1.5:1.15);sc.add(g);
+    var lt=new T.PointLight(team==='c'?0x44b6ff:0xff5070,1.3,9);lt.position.copy(g.position);g.add(lt);
+    return {grp:g,team:team,big:big,lt:lt,pos:g.position,hp:big?14:10,fire:Math.random()*60,flash:0};}
+  function fig(team){var g=team==='c'?mAurora():mTalon();g.scale.setScalar(team==='c'?0.42:0.5);sc.add(g);var col=team==='c'?[120,210,255]:[255,90,110];var eg=glowS(col[0],col[1],col[2],0.5);eg.position.x=team==='c'?-0.5:0.4;g.add(eg);
+    return {grp:g,team:team,eg:eg,pos:g.position,vel:new T.Vector3(),slot:new T.Vector3(),fire:Math.random()*30,flash:0,hp:1};}
+
+  function makeFleet(team){var sgn=team==='c'?1:-1;var fx=sgn*-2.6;
+    var mar=cap(team,false);mar.pos.set(fx,0.2,0);
+    var dre=cap(team,true);dre.pos.set(fx-sgn*1.4,0.2,-0.8);
+    var guard=[mar,dre];var squads=[[],[]];
+    for(var sI=0;sI<2;sI++)for(var k=0;k<2;k++){var fi=fig(team);fi.guard=guard[sI];fi.slotIdx=k;fi.pos.copy(guard[sI].pos).add(new T.Vector3(sgn*0.9,(k?0.5:-0.5),0.4));squads[sI].push(fi);}
+    return {team:team,sgn:sgn,mar:mar,dre:dre,fighters:squads[0].concat(squads[1]),rout:0};}
+  var fleetC=makeFleet('c'),fleetF=makeFleet('f'),fleets=[fleetC,fleetF];
+  function enemyOf(fl){return fl===fleetC?fleetF:fleetC;}
+  function allShips(fl){return fl.fighters.concat([fl.mar,fl.dre]).filter(function(s){return s.hp>0;});}
+
+  var flashes=[new T.PointLight(0xffd9a0,0,9),new T.PointLight(0xffd9a0,0,9),new T.PointLight(0xffd9a0,0,9)];flashes.forEach(function(f){sc.add(f);f.userData={life:0};});
+  function popFlash(pos,col,inten){for(var i=0;i<flashes.length;i++){if(flashes[i].userData.life<=0){flashes[i].position.copy(pos);flashes[i].color.setHex(col);flashes[i].intensity=inten;flashes[i].userData.life=14;return;}}}
+  var bolts=[],missiles=[],parts=[];var scrollV=0.0006,scrollT=0.0006;
+  function fireLaser(s,t){var dir=t.pos.clone().sub(s.pos).normalize();var bp=s.pos.clone().addScaledVector(dir,0.5);var bsp=glowS(s.team==='c'?150:255,s.team==='c'?232:138,255,0.5);bsp.position.copy(bp);sc.add(bsp);bolts.push({pos:bp,v:dir.multiplyScalar(0.5),life:42,team:s.team,sp:bsp});s.flash=8;}
+  function fireMissile(s,t){var m=new T.Group();var body=new T.Mesh(new T.CylinderGeometry(0.06,0.06,0.4,8),new T.MeshStandardMaterial({color:0xdddddd,metalness:0.6,roughness:0.4}));body.rotation.z=Math.PI/2;m.add(body);var eg=glowS(255,180,90,1.2);eg.position.x=-0.3;m.add(eg);m.position.copy(s.pos);sc.add(m);var dir=t.pos.clone().sub(s.pos).normalize();missiles.push({grp:m,eg:eg,v:dir.multiplyScalar(0.09),target:t,life:200,team:s.team});s.flash=18;popFlash(s.pos.clone(),0xffb060,7);}
+  function boom(pos,col){popFlash(pos,col,8);for(var i=0;i<8;i++){var sp=glowS(255,210,150,0.5);sp.position.copy(pos);sc.add(sp);parts.push({sp:sp,v:new T.Vector3((Math.random()-.5),(Math.random()-.5),(Math.random()-.5)).multiplyScalar(0.15),life:18});}}
+  function nearestEnemyShip(s,fl){var en=enemyOf(fl),best=null,bd=1e9,list=allShips(en);for(var i=0;i<list.length;i++){var d=s.pos.distanceTo(list[i].pos);if(d<bd){bd=d;best=list[i];}}return best;}
+  function resetFleet(fl){var sgn=fl.sgn,fx=sgn*-2.6;fl.mar.hp=10;fl.mar.grp.visible=true;fl.mar.pos.set(fx,0.2,0);fl.dre.hp=14;fl.dre.grp.visible=true;fl.dre.pos.set(fx-sgn*1.4,0.2,-0.8);fl.rout=0;for(var i=0;i<fl.fighters.length;i++){var f=fl.fighters[i];f.hp=1;f.grp.visible=true;f.pos.copy(f.guard.pos).add(new T.Vector3(sgn*0.9,(f.slotIdx?0.5:-0.5),0.4));}}
+
+  function resize(){if(!hs3dCv)return;var w=hero.clientWidth||900,h=hero.clientHeight||160;rnd.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+  function frame(){if(cur!=='H'||!hs3dCv){stop3D();return;}hs3dRAF=requestAnimationFrame(frame);
+    earth.rotation.y+=0.0009;earth.position.x-=0.01;if(earth.position.x<-22)earth.position.x=22;
+    scrollV+=(scrollT-scrollV)*0.04;scrollT*=0.97;if(scrollT<0.0006)scrollT=0.0006;starGrp.rotation.y+=scrollV;
+    var wlen=Math.min(26,Math.abs(scrollV)*1600);for(var i=0;i<NW;i++){var b=wb[i];b.x-=scrollV*120;if(b.x>16)b.x-=32;else if(b.x<-16)b.x+=32;var o=i*6;wpos[o]=b.x;wpos[o+1]=b.y;wpos[o+2]=b.z;wpos[o+3]=b.x-wlen;wpos[o+4]=b.y;wpos[o+5]=b.z;}wg.attributes.position.needsUpdate=true;warp.material.opacity=Math.min(0.5,Math.abs(scrollV)*60);
+    for(var fi=0;fi<fleets.length;fi++){var fl=fleets[fi];var mar=fl.mar,dre=fl.dre;
+      if(fl.rout>0){fl.rout--;allShips(fl).forEach(function(s){s.pos.x+=fl.sgn*-0.04;});if(fl.rout<=0)resetFleet(fl);}
+      if(mar.hp>0){mar.pos.y+=Math.sin(Date.now()/1600+fi)*0.001;mar.grp.rotation.y=fl.sgn>0?0:Math.PI;if(mar.fire>0)mar.fire--;else{var tt=nearestEnemyShip(mar,fl);if(tt){fireMissile(mar,tt);mar.fire=170+Math.random()*120;}}mar.lt.intensity=1.3+(mar.flash>0?(mar.flash--,mar.flash*0.5):0);}
+      if(dre.hp>0){var behind=mar.pos.clone().add(new T.Vector3(fl.sgn*-1.3,0,-0.6));dre.pos.lerp(behind,0.04);dre.grp.rotation.y=fl.sgn>0?0:Math.PI;if(dre.fire>0)dre.fire--;else{var t2=nearestEnemyShip(dre,fl);if(t2){fireMissile(dre,t2);dre.fire=150+Math.random()*120;}}dre.lt.intensity=1.3+(dre.flash>0?(dre.flash--,dre.flash*0.5):0);}
+      mar.grp.visible=mar.hp>0;dre.grp.visible=dre.hp>0;
+      for(var k=0;k<fl.fighters.length;k++){var f=fl.fighters[k];if(f.hp<=0)continue;var jit=Math.sin(Date.now()/600+k*1.7)*0.12;var out=(f.slotIdx?1:-1);
+        f.slot.copy(f.guard.pos).add(new T.Vector3(fl.sgn*(0.9+0.2),(out)*(0.55+jit),(out)*0.4+jit));
+        var tgt=nearestEnemyShip(f,fl);var des;
+        if(tgt&&f.pos.distanceTo(tgt.pos)<3.4){des=tgt.pos.clone().sub(f.pos);if(f.pos.distanceTo(tgt.pos)<2.2&&f.fire<=0){fireLaser(f,tgt);f.fire=26+Math.random()*30;}}else des=f.slot.clone().sub(f.pos);
+        f.vel.lerp(des.normalize().multiplyScalar(0.07),0.08);f.pos.add(f.vel);faceV(f.grp,f.vel);if(f.fire>0)f.fire--;if(f.flash>0){f.flash--;f.eg.scale.setScalar(0.5+f.flash*0.08);}}
+      if(mar.hp<=0&&dre.hp<=0&&!fl.rout)fl.rout=140;
+    }
+    for(var b=bolts.length-1;b>=0;b--){var bo=bolts[b];bo.pos.add(bo.v);bo.sp.position.copy(bo.pos);bo.life--;var hit=false;var en2=bo.team==='c'?fleetF:fleetC;var list=allShips(en2);for(var j=0;j<list.length;j++){if(bo.pos.distanceTo(list[j].pos)<0.55){list[j].hp--;list[j].flash=10;boom(bo.pos.clone(),list[j].team==='c'?0x44b6ff:0xff5070);if(list[j].hp<=0){list[j].grp.visible=false;scrollT=0.0006+0.012*Math.random();}hit=true;break;}}if(hit){sc.remove(bo.sp);bolts.splice(b,1);continue;}if(bo.life<=0){sc.remove(bo.sp);bolts.splice(b,1);}}
+    for(var m=missiles.length-1;m>=0;m--){var mi=missiles[m];mi.life--;if(mi.target&&mi.target.hp<=0)mi.target=null;if(mi.target){var d2=mi.target.pos.clone().sub(mi.grp.position).normalize().multiplyScalar(0.12);mi.v.lerp(d2,0.04);}mi.grp.position.add(mi.v);faceV(mi.grp,mi.v);mi.eg.scale.setScalar(1.0+Math.sin(Date.now()/60)*0.2);if(mi.target&&mi.grp.position.distanceTo(mi.target.pos)<0.7){mi.target.hp-=2;mi.target.flash=16;boom(mi.grp.position.clone(),mi.target.team==='c'?0x44b6ff:0xff5070);if(mi.target.hp<=0){mi.target.grp.visible=false;scrollT=0.0006+0.014*Math.random();}sc.remove(mi.grp);missiles.splice(m,1);continue;}if(mi.life<=0){sc.remove(mi.grp);missiles.splice(m,1);}}
+    for(var ff=0;ff<flashes.length;ff++){if(flashes[ff].userData.life>0){flashes[ff].userData.life--;flashes[ff].intensity*=0.84;}else flashes[ff].intensity=0;}
+    for(var p=parts.length-1;p>=0;p--){var pa=parts[p];pa.sp.position.add(pa.v);pa.life--;pa.sp.scale.multiplyScalar(0.9);if(pa.life<=0){sc.remove(pa.sp);parts.splice(p,1);}}
+    resize();rnd.render(sc,cam);
+  }
+  frame();
+}
 function init(){try{if(inited)return;hero=document.getElementById('hero');if(!hero)return;star=document.getElementById('hsStar');sk=document.getElementById('hsSkin');fxl=document.getElementById('hsFx');if(star&&star.getContext)cx=star.getContext('2d');if(sk&&sk.getContext)sx=sk.getContext('2d');var c=cfg();MODE=c.heroMode||'surprise';var sv=c.heroFx;for(var i=0;i<FX.length;i++)enabled[FX[i].id]=sv?sv.indexOf(FX[i].id)>=0:true;bind();var pick=freshPick();save({heroLast:pick});applySkin(pick);for(var j=0;j<FX.length;j++)schedule(FX[j]);inited=true;}catch(e){}}
 return {init:init,settingsHtml:settingsHtml};
 })();
@@ -1934,7 +2055,7 @@ function gateEkgRun(cv){
   requestAnimationFrame(fr);
 }
 function bootReveal(){var v=document.getElementById('bootveil');if(v&&!v.__g){v.__g=1;v.classList.add('gone');setTimeout(function(){if(v.parentNode)v.parentNode.removeChild(v);},800);}}
-async function load(){S=await (await fetch('/api/state')).json();if(S&&S.pending){renderLobby();return;}applyTheme();var __ac=null;try{__ac=new URLSearchParams(location.search).get('accent');}catch(e){}if(__ac&&/^#[0-9a-fA-F]{6}$/.test(__ac))themeSet(__ac,true);try{if(!window.__splashShown&&!ucfg().skipSplash&&!__ac&&typeof showLoginSplash==='function'){window.__splashShown=1;showLoginSplash();}}catch(e){}try{window.__songs=await (await fetch('/api/songs')).json();}catch(e){window.__songs=window.__songs||[];}window.HQ=(S.quotes&&S.quotes.quotes&&S.quotes.quotes.length)?S.quotes.quotes:HERO_Q;window.MQ=(S.movieQueue||[]);if(!window.__djLoaded&&S.songQueue&&S.songQueue.q){window.__djLoaded=true;dq=S.songQueue.q;dqi=(typeof S.songQueue.i==='number')?S.songQueue.i:-1;}if(S.rotationState&&typeof S.rotationState==='object')window.ROT=S.rotationState;document.getElementById('role').textContent=S.me.role;var __cb=document.getElementById('crownBadge');if(__cb){if(S.me.isKing){__cb.textContent='👑';__cb.style.opacity='1';__cb.title='You are the King of PULSE — final authority over the site and the line of succession.';}else if(S.me.inLine){__cb.textContent='👑';__cb.style.opacity='.6';__cb.title='You are in the Clemit line of succession. Should it ever be required, the duties of steward would fall to you — keep this family hub running and protect everyone’s materials. Your position in the line is private to the King.';}else{__cb.textContent='';__cb.removeAttribute('title');}}if(!window.__logged){window.__logged=true;audit('login','signed in','Session');}if(!window.heroReady){heroInit();window.heroReady=true;}else{heroFavUpd();}buildNav();render();if(!djReady){djInit();djReady=true;}gateMaybe();idleStart();try{window.__refSig=refSig(S);}catch(e){}}
+async function load(){S=await (await fetch('/api/state')).json();if(S&&S.pending){renderLobby();return;}applyTheme();var __ac=null;try{__ac=new URLSearchParams(location.search).get('accent');}catch(e){}if(__ac&&/^#[0-9a-fA-F]{6}$/.test(__ac))themeSet(__ac,true);try{if(!window.__splashShown&&!ucfg().skipSplash&&!__ac&&!JPV_IN()&&typeof showLoginSplash==='function'){window.__splashShown=1;showLoginSplash();}}catch(e){}try{window.__songs=await (await fetch('/api/songs')).json();}catch(e){window.__songs=window.__songs||[];}window.HQ=(S.quotes&&S.quotes.quotes&&S.quotes.quotes.length)?S.quotes.quotes:HERO_Q;window.MQ=(S.movieQueue||[]);if(!window.__djLoaded&&S.songQueue&&S.songQueue.q){window.__djLoaded=true;dq=S.songQueue.q;dqi=(typeof S.songQueue.i==='number')?S.songQueue.i:-1;}if(S.rotationState&&typeof S.rotationState==='object')window.ROT=S.rotationState;document.getElementById('role').textContent=S.me.role;var __cb=document.getElementById('crownBadge');if(__cb){if(S.me.isKing){__cb.textContent='👑';__cb.style.opacity='1';__cb.title='You are the King of PULSE — final authority over the site and the line of succession.';}else if(S.me.inLine){__cb.textContent='👑';__cb.style.opacity='.6';__cb.title='You are in the Clemit line of succession. Should it ever be required, the duties of steward would fall to you — keep this family hub running and protect everyone’s materials. Your position in the line is private to the King.';}else{__cb.textContent='';__cb.removeAttribute('title');}}if(!window.__logged&&!JPV_IN()){window.__logged=true;audit('login','signed in','Session');}if(!window.heroReady){heroInit();window.heroReady=true;}else{heroFavUpd();}buildNav();render();if(!djReady){djInit();djReady=true;}gateMaybe();if(!JPV_IN())idleStart();try{window.__refSig=refSig(S);}catch(e){}phonePreviewMaybe();}
 function arcadeView(){var rows=[{title:'2048',genre:'Puzzle',source:'Free link',u:'https://play2048.co/'},{title:'Hextris',genre:'Arcade',source:'Free link',u:'https://hextris.io/'},{title:'Tetris (clone)',genre:'Classic',source:'Free link',u:'https://chvin.github.io/react-tetris/'},{title:'Snake',genre:'Classic',source:'Free link',u:'https://playsnake.org/'},{title:'Pac-Man (clone)',genre:'Arcade',source:'Free link',u:'https://freepacman.org/'},{title:'Asteroids',genre:'Arcade',source:'Free link',u:'https://freeasteroids.org/'},{title:'Open-Source Game Catalog',genre:'Catalog',source:'Directory',u:'https://osgameclones.com/'},{title:'itch.io Free HTML5 Games',genre:'Catalog',source:'Directory',u:'https://itch.io/games/free/html5'}];window.__games=rows;window.__cflist=rows;if(typeof window.__cfi!=='number'||window.__cfi>=rows.length)window.__cfi=0;var ico=function(g){g=(g||'').toLowerCase();if(g==='puzzle')return '\\uD83E\\uDDE9';if(g==='classic')return '\\uD83D\\uDD79';if(g==='catalog')return '\\uD83D\\uDCDA';if(g==='arcade')return '\\uD83D\\uDC7E';return '\\uD83C\\uDFAE';};var h='<div class="vhead"><h2>\\uD83C\\uDFAE Arcade</h2><span style="color:var(--dim);font-size:.8rem;margin-left:auto">the family game room</span></div>';h+='<p style="color:var(--dim);font-size:.85rem;margin:0 0 12px;">Free, legal games \\u2014 they open in a new tab. Tap a cover to center it, then \\u25B6 Play.</p>';h+='<div class="cflabels" id="cflabels">';rows.forEach(function(g,i){h+='<div class="cflabel" onclick="cfGo('+i+')"><div class="cfl-title">'+esc(g.title)+'</div><div class="cfl-stat cfl-field">'+esc(g.genre||'')+'</div></div>';});h+='</div>';h+='<div class="cf"><button class="cfnav cfprev" onclick="cfPrev()">\\u2039</button><div class="cfstage" id="cfstage">';rows.forEach(function(g,i){var hue=mHue(g.title);h+='<div class="cfc" onclick="cfClick(event,'+i+')"><div class="cfflip"><div class="cffront"><div class="cfposter" style="background:linear-gradient(150deg,hsl('+hue+',46%,30%),hsl('+((hue+40)%360)+',52%,15%))"><span class="cfinit">'+ico(g.genre)+'</span></div><div class="cfinfo"><div class="cfd-title2">'+esc(g.title)+'</div><div class="cfd-meta">'+esc(g.genre||'')+' \\u00b7 '+esc(g.source||'')+'</div><div class="cfd-btns"><span class="mbtn play" onclick="gameInfo('+i+')">\\u25B6 Play</span></div></div></div></div></div>';});h+='</div><button class="cfnav cfnext" onclick="cfNext()">\\u203a</button></div>';setTimeout(cfPaint,30);return h;}
 function tabsBase(){var t=[['dj','📚 Library'],['home','🏠 Home']];if(S.groceryVisible)t.push(['grocery','🛒 Grocery']);t.push(['board','🔊 Forums'],['reunion','🎉 Reunion 2027'],['mytriton','🔱 MyTriton'],['cameras','📷 Cameras'],['quotes','💬 Quotes'],['arcade','🎮 Arcade']);if(S.me.isAdmin||S.me.isRoyal)t.push(['control','🎛 Control Panel']);if(S.me.role!=='guest')t.push(['logs','📜 Logs']);t.push(['updates','✨ Updates']);if(S.me.isAdmin)t.push(['rotation','🔄 Rotation']);if(S.me.role!=='guest')t.push(['admin','⚙ Settings']);if(S.me.isKing)t.push(['king','👑 King']);return t;}
 function tabs(){var base=tabsBase();var c=(typeof ucfg==='function')?ucfg():{};var order=c.tabOrder||[];var hide=c.tabHide||{};if(c.tabOrderV!==3){order=[];try{ucfgSet({tabOrder:[],tabOrderV:3});}catch(e){}}var lock={home:1,admin:1};var byId={};base.forEach(function(t){byId[t[0]]=t;});var out=[];order.forEach(function(id){var t=byId[id];if(t&&(lock[id]||!hide[id])){out.push(t);delete byId[id];}});base.forEach(function(t){if(byId[t[0]]&&(lock[t[0]]||!hide[t[0]]))out.push(t);});return out;}
@@ -2482,12 +2603,76 @@ h+=dbgRow('errors',d.err||0)+dbgRow('last err',esc(d.lastErr||'—'));
 h+='<div style="color:#37e0ff;font-weight:700;margin-top:5px">PERFORMANCE</div>';
 h+=dbgRow('fps',d.fps||0)+dbgRow('DOM nodes',nodes)+dbgRow('JS heap',heap)+dbgRow('uptime',up+'s');h+='<span style="color:#37e0ff;font-weight:700">R2</span>'+dbgRow('storage',esc(spaceN||'—'));
 box.innerHTML=h;}
-function dbgStart(){var p=document.getElementById('spacePod');if(p&&typeof S!=='undefined'&&S&&S.me&&S.me.isAdmin)p.style.display='flex';dbgTick();setInterval(dbgTick,1000);}
+function dbgStart(){var p=document.getElementById('spacePod');if(p)p.style.display='none';var __dt=document.getElementById('dbgTab');if(__dt&&typeof S!=='undefined'&&S&&S.me&&S.me.isAdmin)__dt.style.display='block';dbgTick();setInterval(dbgTick,1000);}
 try{dbgStart();}catch(e){}
 
 var spX=document.getElementById('spaceX');if(spX)spX.onclick=function(){document.getElementById('spacePod').style.display='none';var __dt=document.getElementById('dbgTab');if(__dt)__dt.style.display='block';};var __dbgTab=document.getElementById('dbgTab');if(__dbgTab)__dbgTab.onclick=function(){this.style.display='none';var __p=document.getElementById('spacePod');if(__p)__p.style.display='flex';};
 window.onerror=function(m){window.__dbg=window.__dbg||{err:0,lastErr:''};window.__dbg.err++;window.__dbg.lastErr=String(m).slice(0,80);audit('error',String(m).slice(0,160),'Errors');return false;};
 loadSpace();setInterval(loadSpace,60000);
+
+/* ===== Jaemie phone preview (owner-only mobile view) ===== */
+function JPV_IN(){return /[?&]inphone=1/.test(location.search);}
+var JPV_DEV={pixel:{n:'Pixel 7 · Android',w:412,h:915,os:'android'},galaxy:{n:'Galaxy S22 · Android',w:360,h:780,os:'android'},iphone:{n:'iPhone 15',w:393,h:852,os:'ios'}};
+var jpvDev='pixel',jpvScale='fit',jpvDrag=null;
+function jpvCfg(){var c=ucfg();if(c.phoneDev&&JPV_DEV[c.phoneDev])jpvDev=c.phoneDev;if(c.phoneScale!=null)jpvScale=c.phoneScale;return c;}
+function phonePreviewMaybe(){if(JPV_IN())return;if(!(S&&S.me&&S.me.isOwner))return;if(document.getElementById('jpvWrap')){jpvOpen();return;}jpvCfg();jpvBuild();jpvOpen();}
+function jpvBuild(){
+  var c=ucfg();var w=document.createElement('div');w.id='jpvWrap';
+  var opts='';for(var k in JPV_DEV){opts+='<option value="'+k+'"'+(k===jpvDev?' selected':'')+'>'+JPV_DEV[k].n+'</option>';}
+  w.innerHTML='<div id="jpvBar">'+
+    '<span class="jpvTitle">📱 Mobile preview</span>'+
+    '<span class="jpvTag" title="The preview is signed in as you. It shows the real mobile layout and the tabs your account sees.">as you</span>'+
+    '<select id="jpvSel" onpointerdown="event.stopPropagation()" onchange="jpvSetDevice(this.value)">'+opts+'</select>'+
+    '<span class="jpvSpacer"></span>'+
+    '<span class="jpvDims" id="jpvDims"></span>'+
+    '<button class="jpvBtn" title="Zoom out" onpointerdown="event.stopPropagation()" onclick="jpvZoom(-1)">−</button>'+
+    '<button class="jpvBtn" title="Zoom in" onpointerdown="event.stopPropagation()" onclick="jpvZoom(1)">+</button>'+
+    '<button class="jpvBtn" title="Reload the phone" onpointerdown="event.stopPropagation()" onclick="jpvReload()">↻</button>'+
+    '<button class="jpvBtn jpvX" title="Close. A phone button stays in the corner to reopen." onpointerdown="event.stopPropagation()" onclick="jpvClose()">✕</button>'+
+    '</div>'+
+    '<div id="jpvBox"><div id="jpvPhone">'+
+      '<div class="jpvFrame" id="jpvFrame">'+
+        '<div class="jpvSide p"></div><div class="jpvSide v"></div>'+
+        '<div class="jpvPunch" id="jpvPunch"></div>'+
+        '<div class="jpvScreen"><iframe id="jpvDoc" src="/?inphone=1" title="Mobile preview"></iframe></div>'+
+        '<div class="jpvNav" id="jpvNav"><b class="tri"></b><b class="cir"></b><b></b></div>'+
+      '</div>'+
+    '</div></div>';
+  document.body.appendChild(w);
+  var lc=document.createElement('div');lc.id='jpvLauncher';lc.title='Show the mobile preview';lc.innerHTML='📱';lc.onclick=jpvOpen;document.body.appendChild(lc);
+  if(c.phonePos&&typeof c.phonePos.x==='number'){w.style.left=c.phonePos.x+'px';w.style.top=c.phonePos.y+'px';w.style.right='auto';}
+  jpvDragWire();jpvFit();
+}
+function jpvFit(){
+  var d=JPV_DEV[jpvDev];var ph=document.getElementById('jpvPhone'),box=document.getElementById('jpvBox'),fr=document.getElementById('jpvFrame'),doc=document.getElementById('jpvDoc'),nav=document.getElementById('jpvNav');
+  if(!ph||!d)return;
+  doc.style.width=d.w+'px';doc.style.height=d.h+'px';
+  fr.style.width=d.w+'px';fr.style.height=d.h+'px';
+  ph.style.width=(d.w+22)+'px';ph.style.height=(d.h+22)+'px';
+  fr.className='jpvFrame'+(d.os==='ios'?' ios':'');
+  nav.className='jpvNav'+(d.os==='ios'?' ios':'');
+  var k=jpvScale;
+  if(k==='fit'||k==null){var avail=window.innerHeight-150;k=Math.min(.92,Math.max(.42,avail/(d.h+34)));}
+  k=Math.max(.35,Math.min(1.15,k));
+  ph.style.transform='scale('+k+')';
+  box.style.width=((d.w+22)*k)+'px';box.style.height=((d.h+22)*k)+'px';
+  var dims=document.getElementById('jpvDims');if(dims)dims.textContent=d.w+' × '+d.h;
+}
+function jpvSetDevice(id){if(!JPV_DEV[id])return;jpvDev=id;ucfgSet({phoneDev:id});jpvFit();}
+function jpvZoom(dir){var d=JPV_DEV[jpvDev];var cur=jpvScale;if(cur==='fit'||cur==null){var avail=window.innerHeight-150;cur=Math.min(.92,Math.max(.42,avail/(d.h+34)));}cur=Math.max(.35,Math.min(1.15,cur+dir*0.08));jpvScale=cur;ucfgSet({phoneScale:cur});jpvFit();}
+function jpvReload(){var f=document.getElementById('jpvDoc');if(f){try{f.contentWindow.location.reload();}catch(e){f.src='/?inphone=1&r='+Date.now();}}}
+function jpvClose(){var w=document.getElementById('jpvWrap');if(w)w.classList.add('jpvHidden');var l=document.getElementById('jpvLauncher');if(l)l.classList.add('show');}
+function jpvOpen(){var w=document.getElementById('jpvWrap');if(w)w.classList.remove('jpvHidden');var l=document.getElementById('jpvLauncher');if(l)l.classList.remove('show');jpvFit();}
+function jpvDragWire(){
+  var bar=document.getElementById('jpvBar'),w=document.getElementById('jpvWrap');if(!bar||!w)return;
+  bar.addEventListener('pointerdown',function(e){if(e.target.closest('button,select'))return;var r=w.getBoundingClientRect();jpvDrag={dx:e.clientX-r.left,dy:e.clientY-r.top};bar.classList.add('jpvGrab');try{bar.setPointerCapture(e.pointerId);}catch(x){}});
+  bar.addEventListener('pointermove',function(e){if(!jpvDrag)return;var x=e.clientX-jpvDrag.dx,y=e.clientY-jpvDrag.dy;x=Math.max(2,Math.min(window.innerWidth-90,x));y=Math.max(2,Math.min(window.innerHeight-50,y));w.style.left=x+'px';w.style.top=y+'px';w.style.right='auto';});
+  function up(){if(!jpvDrag)return;jpvDrag=null;bar.classList.remove('jpvGrab');var r=w.getBoundingClientRect();ucfgSet({phonePos:{x:Math.round(r.left),y:Math.round(r.top)}});}
+  bar.addEventListener('pointerup',up);bar.addEventListener('pointercancel',up);
+}
+window.addEventListener('resize',function(){if(jpvScale==='fit'||jpvScale==null){var w=document.getElementById('jpvWrap');if(w&&!w.classList.contains('jpvHidden'))jpvFit();}});
+/* ===== end phone preview ===== */
+
 load().then(bootReveal).catch(bootReveal);setTimeout(bootReveal,7000);
 function userBusy(){var e=document.activeElement;return !!(e&&(e.tagName==='TEXTAREA'||e.tagName==='INPUT'||e.tagName==='SELECT'||e.isContentEditable));}
 function hasDraft(){var f=document.querySelectorAll('#main textarea, #main input');for(var i=0;i<f.length;i++){var el=f[i];if(el.type==='checkbox'||el.type==='radio')continue;if((el.value||'').trim())return true;}return false;}
