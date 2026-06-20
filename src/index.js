@@ -539,7 +539,16 @@ if (__isKing) { try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key
 let __kingSeen = 0; try { __kingSeen = +((await getSetting(env, "king_seen")) || 0); } catch (e) {}
 let __claim = null; try { const __cl = await getSetting(env, "succession_claim"); __claim = (__cl && __cl !== "") ? JSON.parse(__cl) : null; } catch (e) {}
 let __letter = ""; try { __letter = (await getSetting(env, "king_letter")) || ""; } catch (e) {}
-        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "", digestOff: me.digest_off ? 1 : 0 }, king: __king, succession: __isKing ? __succ : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, libPlaylists, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", themeColor: (await getSetting(env, "theme_color")) || "#2f9bff", forumGrants: isRoyal ? forumGrants : null, members: forumMembers });
+        let __crMeta={};try{const __r=await getSetting(env,"forum_meta");if(__r)__crMeta=JSON.parse(__r);}catch(e){}
+        let __crPres={};try{const __r=await getSetting(env,"forum_presence");if(__r)__crPres=JSON.parse(__r);}catch(e){}
+        __crPres[me.name]=Date.now();
+        try{const __cut=Date.now()-86400000;for(const __k in __crPres){if(__crPres[__k]<__cut)delete __crPres[__k];}}catch(e){}
+        try{await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES ('forum_presence',?)").bind(JSON.stringify(__crPres)).run();}catch(e){}
+        let __crRows=[];try{__crRows=(await env.DB.prepare("SELECT name,email FROM users ORDER BY name").all()).results||[];}catch(e){}
+        const __crRoster=__crRows.map(function(u){const m=__crMeta[String(u.email||"").toLowerCase()]||{};return {name:u.name,email:isRoyal?u.email:undefined,title:m.title||"",color:m.color||"",king:(u.name===__king)?1:0,wiz:m.wiz||0,mod:m.mod||0,elder:m.elder||0,guest:m.guest||0,locked:m.locked||0,you:(u.name===me.name)?1:0};});
+        const __crReact={};try{await env.DB.prepare("CREATE TABLE IF NOT EXISTS message_reactions (message_id INTEGER, name TEXT, emoji TEXT, created_at INTEGER, PRIMARY KEY (message_id,name,emoji))").run();var __ids=(messages||[]).map(function(m){return m.id;}).filter(function(x){return x!=null;});if(__ids.length){var __ph=__ids.map(function(){return "?";}).join(",");var __rr=(await env.DB.prepare("SELECT message_id,name,emoji FROM message_reactions WHERE message_id IN ("+__ph+")").bind(...__ids).all()).results||[];__rr.forEach(function(row){if(!__crReact[row.message_id])__crReact[row.message_id]={};if(!__crReact[row.message_id][row.emoji])__crReact[row.message_id][row.emoji]=[];__crReact[row.message_id][row.emoji].push(row.name);});}}catch(e){}
+        const __cr={forumRoster:__crRoster,presence:__crPres,reactions:__crReact};
+        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "", digestOff: me.digest_off ? 1 : 0 }, king: __king, succession: __isKing ? __succ : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, libPlaylists, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", themeColor: (await getSetting(env, "theme_color")) || "#2f9bff", forumGrants: isRoyal ? forumGrants : null, members: forumMembers, forumRoster: __cr.forumRoster, presence: __cr.presence, reactions: __cr.reactions });
       }
       if (p === "/api/king/succession" && req.method === "POST") {
   const __k = (await getSetting(env, "king")) || OWNER;
@@ -667,7 +676,7 @@ if (p === "/api/king/veto" && req.method === "POST") {
         const body = (b.body || "").trim();
         if (!body) return json({ error: "empty" }, 400);
         const cat = String(b.category || "general").slice(0, 40);
-        if ((cat === "household" || cat === "housekeeping") && !householdOk) return json({ error: "no access" }, 403);
+        { var __ch = cat.indexOf("|")>0 ? cat.substring(0,cat.indexOf("|")) : cat; if ((__ch === "household" || __ch === "housekeeping") && !householdOk) return json({ error: "no access" }, 403); }
         try {
           await env.DB.prepare("ALTER TABLE messages ADD COLUMN category TEXT DEFAULT 'general'").run();
         } catch (e) {
@@ -726,6 +735,24 @@ if (p === "/api/king/veto" && req.method === "POST") {
         } catch (e) {
         }
         return json({ ok: true, recycle: rl });
+      }
+      if (p === "/api/forum/react" && req.method === "POST") {
+        const b = await req.json();const id=parseInt(b.id,10);const emoji=String(b.emoji||"").slice(0,16);
+        if(!id||!emoji)return json({error:"bad request"},400);
+        await env.DB.prepare("CREATE TABLE IF NOT EXISTS message_reactions (message_id INTEGER, name TEXT, emoji TEXT, created_at INTEGER, PRIMARY KEY (message_id,name,emoji))").run();
+        const __ex=await env.DB.prepare("SELECT 1 FROM message_reactions WHERE message_id=? AND name=? AND emoji=?").bind(id,me.name,emoji).first();
+        if(__ex){await env.DB.prepare("DELETE FROM message_reactions WHERE message_id=? AND name=? AND emoji=?").bind(id,me.name,emoji).run();}
+        else{await env.DB.prepare("INSERT OR IGNORE INTO message_reactions (message_id,name,emoji,created_at) VALUES (?,?,?,?)").bind(id,me.name,emoji,Date.now()).run();}
+        return json({ok:1});
+      }
+      if (p === "/api/forum/meta" && req.method === "POST") {
+        if(!isRoyal)return json({error:"forbidden"},403);
+        const b=await req.json();const email=String(b.email||"").toLowerCase();
+        if(!email)return json({error:"bad request"},400);
+        let meta={};try{const __r=await getSetting(env,"forum_meta");if(__r)meta=JSON.parse(__r);}catch(e){}
+        meta[email]={title:String(b.title||"").slice(0,60),color:String(b.color||"").slice(0,24),wiz:parseInt(b.wiz,10)||0,mod:b.mod?1:0,elder:parseInt(b.elder,10)||0,guest:b.guest?1:0,locked:b.locked?1:0};
+        await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES ('forum_meta',?)").bind(JSON.stringify(meta)).run();
+        return json({ok:1});
       }
       if (p === "/api/forum/grant" && req.method === "POST") {
         if (!isRoyal) return json({ error: "royals only" }, 403);
@@ -2290,35 +2317,196 @@ function mountLibraryV7(root){
 /* ===== end Library Slice 1 ===== */
 
 /* === Forums Chat Slice (mountForumsV1) — TCV comms display, wired to real S.messages === */
-var FORV1_CSS=".fv{font-family:Consolas,Menlo,monospace;color:#dff3ff}.fv .fvchips{margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px}.fv .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:bold;color:#bfe7ff;background:rgba(10,16,32,.6);border:1.5px solid rgba(60,170,255,.25);border-radius:9px;padding:6px 10px;cursor:pointer;transition:.15s}.fv .chip:hover{border-color:rgba(0,229,255,.6)}.fv .chip.on{border-color:#00e5ff;background:rgba(0,229,255,.16);color:#fff;box-shadow:0 0 12px rgba(0,229,255,.35)}.fv .fvrow{display:flex;flex-wrap:wrap;gap:14px}.fv .sen{flex:0 0 150px;min-width:130px}.fv .senh{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#cf9bff;margin-bottom:7px}.fv .sb{display:flex;gap:7px;align-items:center;padding:6px 8px;border-radius:10px;margin-bottom:6px;background:rgba(10,16,32,.5);border:1px solid rgba(60,170,255,.2)}.fv .sb .av{width:22px;height:22px;font-size:10px}.fv .snm{font-size:11px;font-weight:bold}.fv .fvmain{flex:1;min-width:240px}.fv .composer{display:flex;align-items:flex-end;gap:9px;margin-bottom:14px;padding:9px 11px;border-radius:12px;background:rgba(0,229,255,.07);border:1.5px solid rgba(0,229,255,.4)}.fv .composer textarea{flex:1;background:rgba(2,8,20,.7);border:1px solid rgba(60,170,255,.3);color:#eaf6ff;border-radius:8px;padding:8px;font-family:inherit;font-size:13px;min-height:42px;resize:vertical}.fv .fvsend{background:linear-gradient(135deg,#00e5ff,#b14bff);color:#04121f;font-weight:bold;border:0;border-radius:9px;padding:10px 15px;cursor:pointer;white-space:nowrap}.fv .fvsend:hover{filter:brightness(1.12)}.fv .thread{display:flex;flex-direction:column}.fv .bwrap{display:flex;margin-bottom:8px}.fv .bwrap.me{justify-content:flex-end}.fv .bub{max-width:78%;padding:8px 12px;border-radius:13px}.fv .bwrap.me .bub{border-bottom-right-radius:3px}.fv .bwrap.them .bub{border-bottom-left-radius:3px}.fv .bub.flagged{outline:1px dashed rgba(255,45,85,.7)}.fv .bnm{font-size:9px;font-weight:bold;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}.fv .btx{font-size:13px;color:#eaf6ff;line-height:1.45;word-break:break-word}.fv .btx a{color:#5ff3ff}.fv .bts{font-size:9px;color:#6f8ba8;margin-top:3px}.fv .bwrap.me .bnm,.fv .bwrap.me .bts{text-align:right}.fv .fvflag{font-size:9px;color:#7f9ab8;cursor:pointer;margin-left:8px;text-decoration:underline}.fv .fvempty{font-size:12px;color:#8fb0cf;font-style:italic;padding:18px 4px}";
-function fvHue(name){var hue=0;for(var i=0;i<(name||'').length;i++)hue=(hue*31+name.charCodeAt(i))%360;return hue;}
-function fvDraft(t){try{localStorage.setItem('mbdraft_'+(window.__fcat||'general'),t.value);}catch(e){}}
-function fvChannels(){var cs=forumCats().slice();if(window.S&&S.householdOk){cs.push({id:'housekeeping',name:'Housekeeping',ic:'&#129529;'});cs.push({id:'household',name:'Household',ic:'&#128274;'});}return cs;}
-function fvFly(){var r=document.querySelector('.fvmain');if(!r){return;}r.innerHTML='<iframe src="/flywheel" title="Flywheel" style="width:100%;height:760px;border:0;border-radius:12px;background:#05070f"></iframe>';}
+function fvChannels(){var cs=forumCats().slice();if(window.S&&S.householdOk){cs.push({id:"housekeeping",name:"Housekeeping",ic:"&#129529;"});cs.push({id:"household",name:"Household",ic:"&#128274;"});}return cs;}
+/* === COMMS RELAY (mountForumsV1 v2) — full dynamic TCV chat ===
+   Wired to: S.forumRoster, S.presence, S.messages (category = "channel" or "channel|topic"),
+   S.reactions (map id -> { emoji: [names] }). Helpers reused: esc, linkify, avatarFor, post, render.
+   No regex / no backslashes in this module (template-literal safe). */
+var FORV2_CSS=""
++".cr{font-family:Consolas,Menlo,monospace;color:#dff3ff;position:relative}"
++".cr .crhead{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7fd4ff;margin:0 0 12px;text-shadow:0 0 10px rgba(0,229,255,.4)}"
++".cr .crhead b{color:#fff;letter-spacing:.28em}"
++".cr .crhead .sub{margin-left:auto;font-size:9px;letter-spacing:.1em;color:#6f8ba8}"
++".cr .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}"
++".cr .chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:bold;color:#bfe7ff;background:rgba(10,16,32,.6);border:1.5px solid rgba(60,170,255,.25);border-radius:10px;padding:7px 11px;cursor:pointer;transition:.15s;position:relative}"
++".cr .chip:hover{border-color:rgba(0,229,255,.6)}"
++".cr .chip.on{border-color:#00e5ff;background:rgba(0,229,255,.16);color:#fff;box-shadow:0 0 14px rgba(0,229,255,.35)}"
++".cr .chip .dot{width:7px;height:7px;border-radius:50%;background:#3dff9e;box-shadow:0 0 8px #3dff9e}"
++".cr .chip .lk{font-size:10px;color:#9fc6e0}"
++".cr .tops{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}"
++".cr .top{font-size:10px;font-weight:bold;color:#c9b3ff;background:rgba(7,5,22,.7);border:1px solid rgba(122,75,255,.5);border-radius:8px;padding:5px 10px;cursor:pointer}"
++".cr .top.on{background:#b14bff;color:#fff;border-color:#fff;box-shadow:0 0 12px rgba(177,75,255,.5)}"
++".cr .row{display:flex;flex-wrap:wrap;gap:14px}"
++".cr .sen{flex:0 0 168px;min-width:150px}"
++".cr .senh{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:#cf9bff;margin-bottom:8px}"
++".cr .sb{display:flex;gap:8px;align-items:flex-start;padding:7px 9px;border-radius:11px;margin-bottom:7px;background:rgba(10,16,32,.5);border:1.5px solid rgba(60,170,255,.18);transition:.15s}"
++".cr .sb.lit{border-color:rgba(0,229,255,.55);box-shadow:0 0 12px rgba(0,229,255,.22)}"
++".cr .sb.away{opacity:.5}"
++".cr .sb .cbar{flex:0 0 4px;align-self:stretch;border-radius:2px}"
++".cr .sb .av{width:24px;height:24px;font-size:10px;flex:0 0 24px}"
++".cr .sbody{line-height:1.18;min-width:0;flex:1}"
++".cr .snm{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:bold}"
++".cr .son{margin-left:auto;font-size:9px;font-weight:bold;color:#9fd6ff}"
++".cr .stitle{font-size:9px;font-style:italic;color:#9fc6e0;margin:1px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
++".cr .ranks{display:flex;gap:3px;flex-wrap:wrap}"
++".cr .bdg{display:inline-flex;align-items:center;gap:2px;font-size:8px;font-weight:bold;border-radius:5px;padding:1px 4px;line-height:1.4}"
++".cr .medit{margin-top:5px;font-size:9px;color:#7fb0d8;cursor:pointer;text-decoration:underline}"
++".cr . med{margin-top:6px;padding:7px;border-radius:8px;background:rgba(2,8,20,.7);border:1px solid rgba(122,75,255,.4)}"
++".cr .med input,.cr .med label{font-size:10px}"
++".cr .med input[type=text]{width:100%;background:rgba(2,8,20,.8);border:1px solid rgba(60,170,255,.3);color:#eaf6ff;border-radius:6px;padding:4px;margin-bottom:4px;font-family:inherit}"
++".cr .med .rk{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;color:#bfe7ff}"
++".cr .med button{font-size:10px;border:0;border-radius:6px;padding:5px 9px;cursor:pointer;background:linear-gradient(135deg,#00e5ff,#b14bff);color:#04121f;font-weight:bold}"
++".cr .main{flex:1;min-width:250px}"
++".cr .composer{display:flex;align-items:flex-end;gap:9px;margin-bottom:14px;padding:9px 11px;border-radius:12px;background:rgba(0,229,255,.07);border:1.5px solid rgba(0,229,255,.4)}"
++".cr .composer textarea{flex:1;background:rgba(2,8,20,.7);border:1px solid rgba(60,170,255,.3);color:#eaf6ff;border-radius:8px;padding:8px;font-family:inherit;font-size:13px;min-height:42px;resize:vertical}"
++".cr .send{background:linear-gradient(135deg,#00e5ff,#b14bff);color:#04121f;font-weight:bold;border:0;border-radius:9px;padding:10px 15px;cursor:pointer;white-space:nowrap}"
++".cr .send:hover{filter:brightness(1.12)}"
++".cr .thread{display:flex;flex-direction:column}"
++".cr .bw{display:flex;margin-bottom:9px;flex-direction:column;max-width:80%}"
++".cr .bw.me{align-self:flex-end;align-items:flex-end}"
++".cr .bw.them{align-self:flex-start;align-items:flex-start}"
++".cr .bub{padding:8px 12px;border-radius:13px}"
++".cr .bw.me .bub{border-bottom-right-radius:3px}"
++".cr .bw.them .bub{border-bottom-left-radius:3px}"
++".cr .bub.flagged{outline:1px dashed rgba(255,45,85,.7)}"
++".cr .bnm{font-size:9px;font-weight:bold;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}"
++".cr .btx{font-size:13px;color:#eaf6ff;line-height:1.45;word-break:break-word}"
++".cr .btx a{color:#5ff3ff}"
++".cr .bts{font-size:9px;color:#6f8ba8;margin-top:3px}"
++".cr .rx{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}"
++".cr .rxc{font-size:11px;border:1px solid rgba(60,170,255,.3);background:rgba(10,16,32,.6);border-radius:10px;padding:1px 7px;cursor:pointer;color:#cfe7ff}"
++".cr .rxc.mine{border-color:#ff2d55;background:rgba(255,45,85,.16);color:#fff}"
++".cr .rxadd{font-size:11px;opacity:.6;cursor:pointer;padding:1px 5px;border-radius:10px}"
++".cr .rxadd:hover{opacity:1}"
++".cr .empty{font-size:12px;color:#8fb0cf;font-style:italic;padding:18px 4px}";
+
+function fvRoster(){var r=(window.S&&S.forumRoster)||[];if(r.length)return r.slice();
+  /* fallback: derive from message authors + me */
+  var seen={},out=[];var me=(window.S&&S.me&&S.me.name)||'';
+  ((window.S&&S.messages)||[]).forEach(function(m){var a=m.author||'?';if(a&&!seen[a]){seen[a]=1;out.push({name:a});}});
+  if(me&&!seen[me]){out.push({name:me,you:1});}
+  return out;}
+function fvColor(m){if(m&&m.color)return m.color;var n=(m&&m.name)||'';var hue=0;for(var i=0;i<n.length;i++)hue=(hue*31+n.charCodeAt(i))%360;return 'hsl('+hue+',70%,62%)';}
+function fvRoman(n){n=+n||0;if(n<=0)return '';var map=[[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];var s='';for(var i=0;i<map.length;i++){while(n>=map[i][0]){s+=map[i][1];n-=map[i][0];}}return s;}
+function fvBadge(txt,col){return '<span class="bdg" style="color:rgb('+col+');border:1px solid rgba('+col+',.6);background:rgba('+col+',.12)">'+txt+'</span>';}
+function fvRanks(m){var o='';if(m.king)o+=fvBadge('&#128081;','255,210,70');if(m.wiz)o+=fvBadge('&#10022;'+fvRoman(m.wiz),'200,120,255');if(m.mod)o+=fvBadge('&#128737;','95,255,224');if(m.elder)o+=fvBadge(fvRoman(m.elder),'0,229,255');if(m.guest)o+=fvBadge('&#127801;','255,93,180');return o;}
+function fvTopics(chId){
+  var def={start:['Rules','Guides','Map'],diary:['Ideas','Reminders','Drafts'],general:['Daily Banter','Big Decisions','Off-topic'],gen:['Daily Banter','Big Decisions','Off-topic'],happenings:['Events','Photos','Trips'],fam:['Events','Photos','Trips'],family:['Events','Photos','Trips'],healthstyle:['Food','Fitness','Wellness'],tech:['Projects','Gadgets','Fixes'],ai:['Tools','News','Experiments'],dnd:['Campaigns','Characters','Schedule'],gaming:['Campaigns','Characters','Schedule'],home:['Just Us','Plans'],household:['Just Us','Plans'],housekeeping:['Archive']};
+  var t=(def[chId]||[]).slice();
+  /* union with topics that already exist in stored messages for this channel */
+  ((window.S&&S.messages)||[]).forEach(function(m){var c=m.category||'general';var bar=c.indexOf('|');if(bar>0&&c.substring(0,bar)===chId){var tp=c.substring(bar+1);if(tp&&t.indexOf(tp)<0)t.push(tp);}});
+  return t;}
+function fvMins(name){var p=(window.S&&S.presence)||{};var ts=p[name];if(!ts)return null;return Math.floor((Date.now()-ts)/60000);}
+
+function fvReactToggle(id,emoji){post('/api/forum/react',{id:id,emoji:emoji});}
+function fvSend(){var t=document.getElementById('crmb');if(!t||!t.value.trim())return;var ch=window.__fcat||'general';var tp=window.__ftopic||'';var cat=tp?(ch+'|'+tp):ch;try{if(typeof audit==='function')audit('post',t.value.slice(0,80),'Forum/'+cat);}catch(e){}try{localStorage.removeItem('crdraft_'+cat);}catch(e){}post('/api/message',{body:t.value,category:cat});}
+function fvDraft(t){try{localStorage.setItem('crdraft_'+((window.__fcat||'general')+'|'+(window.__ftopic||'')),t.value);}catch(e){}}
+function fvMetaEdit(email){window.__crEdit=(window.__crEdit===email)?null:email;render();}
+function fvMetaSave(email){
+  function g(id){var el=document.getElementById(id);return el?el.value:'';}
+  function ck(id){var el=document.getElementById(id);return el&&el.checked?1:0;}
+  post('/api/forum/meta',{email:email,title:g('me_t_'+email),color:g('me_c_'+email),wiz:ck('me_w_'+email)?20:0,mod:ck('me_m_'+email),elder:ck('me_e_'+email)?2:0,guest:ck('me_g_'+email),locked:ck('me_l_'+email)});
+  window.__crEdit=null;}
+
 function mountForumsV1(root){
-  if(!document.getElementById('forV1css')){var s=document.createElement('style');s.id='forV1css';s.textContent=FORV1_CSS;document.head.appendChild(s);}
-  root.className='fv';
-  var fc=(window.__fcat)||'general';
-  var chans=fvChannels();var lbl=fc;chans.forEach(function(c){if(c.id===fc)lbl=c.name;});
+  if(!document.getElementById('forV2css')){var s=document.createElement('style');s.id='forV2css';s.textContent=FORV2_CSS;document.head.appendChild(s);}
+  root.className='cr';
+  var chans=(typeof fvChannels==='function')?fvChannels():[{id:'general',name:'General',ic:''}];
+  var fc=window.__fcat||(chans[0]&&chans[0].id)||'general';
+  var curCh=null;chans.forEach(function(c){if(c.id===fc)curCh=c;});if(!curCh){curCh=chans[0];fc=curCh.id;}
+  var topics=fvTopics(fc);
+  var tp=window.__ftopic||'';
+  var roster=fvRoster();
   var meName=(window.S&&S.me&&S.me.name)||'';
+  var isRoyal=!!(window.S&&S.me&&S.me.isRoyal);
   var all=(window.S&&S.messages)||[];
-  var msgs=all.filter(function(m){return (m.category||'general')===fc;});
-  var canFlag=(window.S&&S.me&&S.me.role!=='guest');
-  var seen={},order=[];msgs.forEach(function(m){var a=m.author||'?';if(!seen[a]){seen[a]=1;order.push(a);}});
-  if(meName&&!seen[meName]){seen[meName]=1;order.push(meName);}
+  var msgs=all.filter(function(m){var c=m.category||'general';var bar=c.indexOf('|');var ch=bar>0?c.substring(0,bar):c;if(ch!==fc)return false;if(tp){var mt=bar>0?c.substring(bar+1):'';return mt===tp;}return true;});
+  msgs=msgs.slice().reverse(); /* messages come newest-first; show oldest->newest */
+  var rx=(window.S&&S.reactions)||{};
+
   var h='';
-  h+='<div class="fvchips">'+chans.map(function(c){return '<span class="chip'+(c.id===fc?' on':'')+'" data-c="'+esc(c.id)+'">'+(c.ic?c.ic+' ':'')+esc(c.name)+'</span>';}).join('')+'<span class="chip fvfly" onclick="fvFly()">&#9678; Flywheel</span></div>';
-  h+='<div class="fvrow"><div class="sen"><div class="senh">In this chat</div>';
-  order.forEach(function(a){var hue=fvHue(a);var me=(a===meName);h+='<div class="sb" style="border-left:3px solid '+(me?'#ff2d55':'hsl('+hue+',70%,60%)')+'">'+avatarFor(a)+'<span class="snm" style="color:'+(me?'#ff6b86':'hsl('+hue+',72%,74%)')+'">'+esc(a)+(me?' (you)':'')+'</span></div>';});
-  h+='</div><div class="fvmain">';
-  var draft=(window.localStorage&&localStorage.getItem('mbdraft_'+fc))||'';
-  h+='<div class="composer"><textarea id="mb" oninput="fvDraft(this)" placeholder="Transmit to '+esc(lbl)+'...">'+esc(draft)+'</textarea><button class="fvsend" onclick="addM()">Send &#10148;</button></div>';
+  h+='<div class="crhead"><span style="color:#ff2d55">&#9679;</span> <b>COMMS RELAY</b> <span class="sub">blended channels &middot; all members shown &middot; lit = active &lt;3 min</span></div>';
+
+  /* channel chips */
+  h+='<div class="chips">'+chans.map(function(c){
+    var unread='';var lk=(c.id==='home'||c.id==='household'||c.id==='housekeeping'||c.lock)?'<span class="lk">&#128274;</span>':'';
+    return '<span class="chip'+(c.id===fc?' on':'')+'" data-c="'+esc(c.id)+'">'+(c.ic?c.ic+' ':'')+esc(c.name)+lk+unread+'</span>';
+  }).join('')+'</div>';
+
+  /* topic pills */
+  h+='<div class="tops"><span class="top'+(tp===''?' on':'')+'" data-t="">All</span>'+topics.map(function(t){return '<span class="top'+(t===tp?' on':'')+'" data-t="'+esc(t)+'">'+esc(t)+'</span>';}).join('')+'</div>';
+
+  h+='<div class="row">';
+
+  /* member panel */
+  h+='<div class="sen"><div class="senh">Members &middot; lit = here now</div>';
+  roster.sort(function(a,b){var am=fvMins(a.name),bm=fvMins(b.name);var ay=(a.name===meName)?-1:0,by=(b.name===meName)?-1:0;if(ay!==by)return ay-by;if(am===null&&bm===null)return 0;if(am===null)return 1;if(bm===null)return -1;return am-bm;});
+  roster.forEach(function(m){
+    var col=fvColor(m);var rgbBar=(col.indexOf('hsl')===0)?col:('rgb('+col+')');
+    var mins=fvMins(m.name);var lit=(mins!==null&&mins<3);var away=(mins===null||mins>=30);
+    var isMe=(m.name===meName);
+    var onTxt=(mins===null)?'away':(mins+'m');
+    h+='<div class="sb'+(lit?' lit':'')+(away&&!lit?' away':'')+'">';
+    h+='<div class="cbar" style="background:'+rgbBar+';box-shadow:0 0 8px '+rgbBar+'"></div>';
+    h+=(typeof avatarFor==='function'?avatarFor(m.name):'');
+    h+='<div class="sbody"><div class="snm" style="color:'+rgbBar+'">'+esc(m.name)+(isMe?' <span style="font-size:8px;color:#9fd6ff">(you)</span>':'')+'<span class="son">'+onTxt+'</span></div>';
+    if(m.title)h+='<div class="stitle">'+esc(m.title)+'</div>';
+    h+='<div class="ranks">'+fvRanks(m)+'</div>';
+    if(isRoyal&&m.email){h+='<div class="medit" data-edit="'+esc(m.email)+'">edit</div>';
+      if(window.__crEdit===m.email){
+        h+='<div class="med"><input id="me_t_'+esc(m.email)+'" type="text" placeholder="title" value="'+esc(m.title||'')+'">';
+        h+='<input id="me_c_'+esc(m.email)+'" type="text" placeholder="color e.g. 255,45,85" value="'+esc(m.color||'')+'">';
+        h+='<div class="rk"><label><input type="checkbox" id="me_w_'+esc(m.email)+'" '+(m.wiz?'checked':'')+'> wizard</label>';
+        h+='<label><input type="checkbox" id="me_m_'+esc(m.email)+'" '+(m.mod?'checked':'')+'> mod</label>';
+        h+='<label><input type="checkbox" id="me_e_'+esc(m.email)+'" '+(m.elder?'checked':'')+'> elder</label>';
+        h+='<label><input type="checkbox" id="me_g_'+esc(m.email)+'" '+(m.guest?'checked':'')+'> guest</label>';
+        h+='<label><input type="checkbox" id="me_l_'+esc(m.email)+'" '+(m.locked?'checked':'')+'> lock</label></div>';
+        h+='<button data-save="'+esc(m.email)+'">Save</button></div>';
+      }
+    }
+    h+='</div></div>';
+  });
+  h+='</div>';
+
+  /* main: composer + thread */
+  h+='<div class="main">';
+  var lbl=curCh.name+(tp?(' / '+tp):' / All');
+  var dkey='crdraft_'+(fc+'|'+tp);var draft='';try{draft=(window.localStorage&&localStorage.getItem(dkey))||'';}catch(e){}
+  h+='<div class="composer"><textarea id="crmb" oninput="fvDraft(this)" placeholder="message &middot; '+esc(lbl)+'">'+esc(draft)+'</textarea><button class="send" data-send="1">Transmit &#10148;</button></div>';
   h+='<div class="thread">';
-  if(!msgs.length){h+='<div class="fvempty">No messages yet. Be the first to transmit.</div>';}
-  msgs.forEach(function(m){var a=m.author||'?';var me=(a===meName);var hue=fvHue(a);var bodyH=(fc==='happenings'?linkify(m.body):esc(m.body));var when=m.created_at?new Date(m.created_at).toLocaleString():'';var bg=me?'rgba(255,45,85,.16)':'hsla('+hue+',70%,45%,.16)';var bd=me?'rgba(255,45,85,.6)':'hsla('+hue+',70%,60%,.55)';var nmc=me?'#ff6b86':'hsl('+hue+',72%,76%)';var flag=(canFlag&&m.id!=null)?'<span class="fvflag" onclick="flagPost('+m.id+')">'+(m.flagged?'unflag':'flag')+'</span>':'';h+='<div class="bwrap '+(me?'me':'them')+'"><div class="bub'+(m.flagged?' flagged':'')+'" style="background:'+bg+';border:1.5px solid '+bd+'"><div class="bnm" style="color:'+nmc+'">'+esc(a)+flag+'</div><div class="btx">'+bodyH+'</div><div class="bts">'+esc(when)+'</div></div></div>';});
+  if(!msgs.length){h+='<div class="empty">No transmissions in '+esc(lbl)+' yet. Be the first.</div>';}
+  var canFlag=(window.S&&S.me&&S.me.role!=='guest');
+  msgs.forEach(function(m){
+    var a=m.author||'?';var isMe=(a===meName);
+    var rm=null;roster.forEach(function(x){if(x.name===a)rm=x;});var col=fvColor(rm||{name:a});var rgb=(col.indexOf('hsl')===0)?col:('rgb('+col+')');
+    var bg=isMe?'rgba(255,45,85,.16)':'rgba(0,0,0,.28)';
+    var bd=isMe?'rgba(255,45,85,.6)':'rgba(60,170,255,.4)';
+    var body=(fc==='happenings'&&typeof linkify==='function')?linkify(m.body):esc(m.body);
+    var when=m.created_at?new Date(m.created_at).toLocaleString():'';
+    h+='<div class="bw '+(isMe?'me':'them')+'">';
+    h+='<div class="bub'+(m.flagged?' flagged':'')+'" style="background:'+bg+';border:1.5px solid '+bd+'">';
+    h+='<div class="bnm" style="color:'+rgb+'">'+esc(a)+'</div>';
+    h+='<div class="btx">'+body+'</div>';
+    h+='<div class="bts">'+esc(when)+'</div></div>';
+    /* reactions */
+    var rset=(m.id!=null&&rx[m.id])?rx[m.id]:null;
+    h+='<div class="rx">';
+    if(rset){for(var em in rset){if(!rset.hasOwnProperty(em))continue;var names=rset[em]||[];var mine=names.indexOf(meName)>=0;h+='<span class="rxc'+(mine?' mine':'')+'" data-rx="'+esc(em)+'" data-id="'+m.id+'">'+em+' '+names.length+'</span>';}}
+    if(m.id!=null){h+='<span class="rxadd" data-rx="&#128293;" data-id="'+m.id+'">&#128293;</span><span class="rxadd" data-rx="&#128081;" data-id="'+m.id+'">&#128081;</span>';}
+    h+='</div>';
+    h+='</div>';
+  });
   h+='</div></div></div>';
+
   root.innerHTML=h;
-  root.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){window.__fcat=this.getAttribute('data-c');render();};});
+
+  /* wiring (no inline handlers needing escapes) */
+  root.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){window.__fcat=this.getAttribute('data-c');window.__ftopic='';window.__crEdit=null;render();};});
+  root.querySelectorAll('[data-t]').forEach(function(b){b.onclick=function(){window.__ftopic=this.getAttribute('data-t');render();};});
+  root.querySelectorAll('[data-edit]').forEach(function(b){b.onclick=function(){fvMetaEdit(this.getAttribute('data-edit'));};});
+  root.querySelectorAll('[data-save]').forEach(function(b){b.onclick=function(){fvMetaSave(this.getAttribute('data-save'));};});
+  root.querySelectorAll('[data-send]').forEach(function(b){b.onclick=function(){fvSend();};});
+  root.querySelectorAll('[data-rx]').forEach(function(b){b.onclick=function(){fvReactToggle(+this.getAttribute('data-id'),this.getAttribute('data-rx'));};});
 }
 
 function render(){const m=document.getElementById('main');const fn={home:homeView,grocery:groceryView,board:boardView,dj:libraryView,arcade:arcadeView,control:controlView,reunion:reunionView,admin:adminView,mytriton:mytritonView,cameras:camerasView,quotes:quotesView,log:logView,audit:auditView,logs:logsView,king:kingView,rotation:rotationView,updates:updatesView}[cur]||homeView;var __h;try{__h=fn();}catch(__e){try{if(window.console&&console.error)console.error('[PULSE] view '+cur+' failed:',__e);}catch(_){}__h=viewError(cur,__e);}m.innerHTML='<div class="view">'+__h+'</div>';setTimeout(moveSlider,0);if(cur==='dj'){var __lv=document.getElementById('libV7');if(__lv&&typeof mountLibraryV7==='function'){try{mountLibraryV7(__lv);}catch(e){}}}if(cur==='board'){var __fv=document.getElementById('forumsV1');if(__fv&&typeof mountForumsV1==='function'){try{mountForumsV1(__fv);}catch(e){}}}if(cur==='arcade'){try{localStorage.setItem('clemitArcadeDay',pDay());}catch(e){}try{paradeStop();}catch(e){}var av=m.querySelector('.view');if(av&&!av.querySelector('.arcadeNudge')){var nd=document.createElement('div');nd.className='arcadeNudge';nd.innerHTML='&#127918; Pick a game and play &mdash; you came all this way!';av.insertBefore(nd,av.firstChild);}}if(cur==='dj'){if(pStartT){clearTimeout(pStartT);pStartT=null;}var __pdms=pDelayMs();if(__pdms>=0){pStartT=setTimeout(function(){try{paradeInit();}catch(e){}},__pdms);}}else{if(pStartT){clearTimeout(pStartT);pStartT=null;}try{paradeStop();}catch(e){}}}
