@@ -3419,6 +3419,134 @@ function refSig(s){try{var m=(s.messages||[]).map(function(x){return x.id+':'+(x
 function safeRefresh(){if(!['home','board','grocery','quotes'].includes(cur))return;if(userBusy()||hasDraft())return;fetch('/api/state').then(function(r){return r.json();}).then(function(ns){if(!ns||ns.pending)return;var sig=refSig(ns);if(sig===window.__refSig)return;window.__refSig=sig;load();}).catch(function(){});}
 setInterval(safeRefresh,20000);
 (function(){try{if(/[?&]digest=off/.test(location.search)){fetch('/api/digest/toggle',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({off:1})}).then(function(){alert('Daily digest turned OFF. You can turn it back on in Settings.');});}else if(/[?&]digest=on/.test(location.search)){fetch('/api/digest/toggle',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({off:0})}).then(function(){alert('Daily digest turned ON.');});}}catch(e){}})();
+
+/*MLB_MONIKER_V1_START*/
+(function(){
+  if(window.__mlbInit)return; window.__mlbInit=true;
+  function inject(){
+    var css=['.mlbBox{padding:6px 2px}',
+    '.mlbLine{text-align:center;font-size:1.55rem;font-weight:800;line-height:1.2;min-height:32px;letter-spacing:.3px}',
+    '.mlbSlots{display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap}',
+    '.mlbCell{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:62px}',
+    '.mlbCell input{width:100%;text-align:center;font-size:.85rem}',
+    '.mlbCell label{font-size:.58rem;letter-spacing:1px;text-transform:uppercase;color:var(--sub,#7a93b5)}',
+    '.mlbCrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px;justify-content:center}',
+    '.mlbCrow label{font-size:.78rem;display:flex;align-items:center;gap:5px;color:var(--sub,#7a93b5)}',
+    '.mlbCrow input[type=color]{width:30px;height:24px;padding:1px;border:1px solid var(--line);border-radius:5px;background:transparent}',
+    '.mlbChips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}',
+    '.mlbChip{cursor:pointer;border:1px solid var(--line);border-radius:18px;padding:5px 12px;font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:8px;background:rgba(177,75,255,.07)}',
+    '.mlbChip .x{color:var(--sub,#7a93b5);font-weight:700}',
+    '.mlbHonor{position:relative;border-color:transparent!important}',
+    '.mlbHonor::after{content:"";position:absolute;inset:-1px;border-radius:18px;padding:1px;background:linear-gradient(120deg,#ffcf4a,#ff3df0,#00e5ff,#ffcf4a);background-size:300% 300%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:mlbShim 3s linear infinite;pointer-events:none}',
+    '@keyframes mlbShim{0%{background-position:0 50%}100%{background-position:300% 50%}}',
+    '.mlbTag{font-size:.56rem;letter-spacing:1px;color:#ffcf4a;border:1px solid #ffcf4a;border-radius:9px;padding:0 6px}'].join('');
+    try{if(!document.getElementById('mlbCss')){var st=document.createElement('style');st.id='mlbCss';st.textContent=css;document.head.appendChild(st);}}catch(e){}
+  }
+  inject();
+
+  var BAD=['fuck','shit','bitch','cunt','asshole','bastard','dick','piss','slut','whore','nigger','faggot','retard','cock','pussy'];
+  function clean(v){v=(''+(v||'')).toLowerCase();for(var i=0;i<BAD.length;i++){if(v.indexOf(BAD[i])>=0)return false;}return true;}
+  function acc(){var n=(window.S&&S.me&&S.me.name)?S.me.name:'';var p=n.split(' ').filter(Boolean);return {first:p[0]||'',last:(p.length>1?p[p.length-1]:'')};}
+  function C(){try{return ucfg();}catch(e){return {};}}
+  function meta(){return C().monMeta||{};}
+  function setMeta(label,obj){var c=C();var m=c.monMeta||{};m[label]=obj;ucfgSet({monMeta:m});}
+  var SLOTDEF=[['pre','Prefix'],['first','First'],['nick','Nickname'],['last','Last'],['suf','Epithet']];
+  function baseLists(){var a=acc();return {pre:['','Dr.','King','Captain','Sir','Lord','Chief','Professor','Commander','Sensei','Maestro','Boss'],first:['',a.first],nick:['','The Killer','The Wise','Ironhand','Quickdraw','Silent Thunder','The Untamed'],last:['',a.last],suf:['','the Great','the Bold','the Eternal','the 3rd','Destroyer of Worlds','Breaker of Chains','Rider of Storms']};}
+  function lists(){var base=baseLists();var saved=C().monLists||{};['pre','first','nick','last','suf'].forEach(function(k){(saved[k]||[]).forEach(function(v){if(v&&base[k].indexOf(v)<0)base[k].push(v);});});return base;}
+  function addToList(k,v){var c=C();var L=c.monLists||{};L[k]=L[k]||[];if(L[k].indexOf(v)<0){L[k].push(v);ucfgSet({monLists:L});}}
+  function sufJoin(v){return /^(the\b|[0-9]|[ivxlcdm]+$|jr\b|sr\b)/i.test(v)?' ':', ';}
+  function assemble(cfg){var parts=[],suf='';SLOTDEF.forEach(function(d){var k=d[0];var v=((cfg[k]||'')+'').trim();if(!v)return;if(k==='nick')parts.push('"'+v+'"');else if(k==='suf')suf=v;else parts.push(v);});var b=parts.join(' ');if(suf)b+=sufJoin(suf)+suf;return b.trim();}
+  function assembleHTML(cfg){var parts=[],suf='';SLOTDEF.forEach(function(d){var k=d[0];var v=((cfg[k]||'')+'').trim();if(!v)return;if(k==='nick')parts.push('&ldquo;'+esc(v)+'&rdquo;');else if(k==='suf')suf=v;else parts.push(esc(v));});var b=parts.join(' ');if(suf)b+=sufJoin(suf)+esc(suf);return b.trim();}
+  function colorStyle(col){if(!col||!col.c1)return '';if(col.grad)return 'background:linear-gradient('+(col.ang||90)+'deg,'+col.c1+','+(col.c2||col.c1)+');-webkit-background-clip:text;background-clip:text;color:transparent';return 'color:'+col.c1;}
+  function freshCfg(){var a=acc();return {pre:'',first:'',nick:'',last:a.last||'',suf:''};}
+  window.__mlb=window.__mlb||{cfg:freshCfg(),col:{c1:'#00e5ff',c2:'#b14bff',grad:false,ang:90}};
+
+  function builderHTML(){
+    var L=lists(),cfg=window.__mlb.cfg,col=window.__mlb.col;
+    var cells=SLOTDEF.map(function(d){var k=d[0];
+      var opts=L[k].map(function(o){return '<option value="'+esc(o)+'">'+(o?esc(o):'(none)')+'</option>';}).join('');
+      return '<div class="mlbCell"><input list="mlbdl_'+k+'" value="'+esc(cfg[k]||'')+'" placeholder="—" oninput="mlbIn(\''+k+'\',this.value)" onchange="mlbCh(\''+k+'\',this.value)"><datalist id="mlbdl_'+k+'">'+opts+'</datalist><label>'+d[1]+'</label></div>';
+    }).join('');
+    var line='<div class="mlbLine" id="mlbOut" style="'+colorStyle(col)+'">'+(assembleHTML(cfg)||'<span class="sub">(your name)</span>')+'</div>';
+    var color='<div class="mlbCrow"><label>Color <input type="color" value="'+col.c1+'" oninput="mlbCol(1,this.value)"></label>'+
+      '<label><input type="checkbox" '+(col.grad?'checked':'')+' onchange="mlbColG(this.checked)"> Gradient</label>'+
+      '<label style="opacity:'+(col.grad?1:.4)+'">to <input type="color" value="'+(col.c2||'#b14bff')+'" oninput="mlbCol(2,this.value)"></label>'+
+      '<label style="opacity:'+(col.grad?1:.4)+'">angle <input type="range" min="0" max="360" value="'+(col.ang||90)+'" oninput="mlbCol(3,this.value)"></label></div>';
+    return '<div class="mlbBox" id="mlbHost"><div style="height:6px"></div>'+line+'<div class="mlbSlots">'+cells+'</div>'+color+'<div style="height:6px"></div></div>';
+  }
+  function repaint(){var o=document.getElementById('mlbOut');if(o){o.innerHTML=assembleHTML(window.__mlb.cfg)||'<span class="sub">(your name)</span>';o.setAttribute('style',colorStyle(window.__mlb.col));}}
+  function rebuild(){var h=document.getElementById('mlbHost');if(h)h.outerHTML=builderHTML();}
+  window.mlbIn=function(k,v){window.__mlb.cfg[k]=v;repaint();};
+  window.mlbCh=function(k,v){v=(v||'').trim();if(v&&!clean(v)){alert('Let us keep monikers family-friendly.');window.__mlb.cfg[k]='';rebuild();return;}if(v)addToList(k,v);window.__mlb.cfg[k]=v;repaint();};
+  window.mlbCol=function(n,v){var col=window.__mlb.col;if(n===1)col.c1=v;else if(n===2)col.c2=v;else col.ang=+v;repaint();};
+  window.mlbColG=function(b){window.__mlb.col.grad=b;rebuild();};
+
+  function setVisit(label){window.__visitTitle=label;try{localStorage.setItem('monDayTitle',JSON.stringify({d:new Date().toISOString().slice(0,10),t:label}));}catch(e){}if(typeof heroGreetUpd==='function')heroGreetUpd();}
+  window.mlbSaveCurrent=function(){var label=assemble(window.__mlb.cfg);if(!label){return;}setMeta(label,{cfg:JSON.parse(JSON.stringify(window.__mlb.cfg)),color:JSON.parse(JSON.stringify(window.__mlb.col))});monAddName(label);setVisit(label);};
+  window.mlbLoad=function(label){var m=meta()[label];if(m&&m.cfg){window.__mlb.cfg=JSON.parse(JSON.stringify(m.cfg));if(m.color)window.__mlb.col=JSON.parse(JSON.stringify(m.color));}setVisit(label);rebuild();};
+  window.mlbDelete=function(label){try{var c=C();var arr=(c.monikers||[]).filter(function(x){return x!==label;});var m=c.monMeta||{};delete m[label];ucfgSet({monikers:arr,monMeta:m});window.__monBag=null;if(typeof render==='function')render();}catch(e){}};
+  window.mlbRandomPrev=function(){var arr=C().monikers||[];if(!arr.length){window.__monClose&&__monClose();return;}var p=arr[Math.floor(Math.random()*arr.length)];setVisit(p);mlbStamp();window.__monClose&&__monClose();};
+
+  function cadence(){var c=C();return c.monCadence||((window.S&&S.me&&S.me.isOwner)?'everytime':'daily');}
+  window.mlbSetCadence=function(v){ucfgSet({monCadence:v});if(typeof render==='function')render();};
+  function mlbStamp(){ucfgSet({monikerAsked:true,monAskedAt:Date.now()});}
+
+  window.mlbGrantHonorDemo=function(){var label=assemble(window.__mlb.cfg)||('Honored '+acc().last);var c=C();var hs=(c.monHonors||[]).slice();if(hs.indexOf(label)<0)hs.push(label);var arr=(c.monikers||[]).slice();if(arr.indexOf(label)<0)arr.push(label);setMeta(label,{cfg:JSON.parse(JSON.stringify(window.__mlb.cfg)),color:JSON.parse(JSON.stringify(window.__mlb.col)),honor:true});ucfgSet({monHonors:hs,monikers:arr});if(typeof render==='function')render();};
+
+  function savedChips(){var c=C();var arr=c.monikers||[];var honors=c.monHonors||[];var m=c.monMeta||{};
+    if(!arr.length)return '<div class="sub" style="margin-top:8px">None yet — craft one above, then Crown it.</div>';
+    return '<div class="mlbChips">'+arr.map(function(n){var isH=honors.indexOf(n)>=0||(m[n]&&m[n].honor);var col=(m[n]&&m[n].color)||null;
+      return '<span class="mlbChip'+(isH?' mlbHonor':'')+'" onclick="mlbLoad(\''+esc(n).replace(/'/g,"\\'")+'\')"><span style="'+colorStyle(col)+'">'+esc(n)+'</span>'+(isH?'<span class="mlbTag">HONOR</span>':'<span class="x" onclick="event.stopPropagation();mlbDelete(\''+esc(n).replace(/'/g,"\\'")+'\')">×</span>')+'</span>';
+    }).join('')+'</div>';
+  }
+
+  // ---- OVERRIDES ----
+  __monikerSection=function(){
+    var cad=cadence();
+    var h='<h2 style="font-size:.95rem;margin:14px 0 6px">Your moniker</h2><div class="sub">Build how PULSE shows your name. Pick or type into each blank — leave one empty to drop it. Save the ones you love.</div>';
+    h+=builderHTML();
+    h+='<div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap"><button class="go" onclick="mlbSaveCurrent()">+ Add this moniker</button><button class="qbtn" onclick="mlbRandomPrev()">🎲 Random previous</button>';
+    if(window.S&&S.me&&S.me.isOwner)h+='<button class="qbtn" title="Owner demo of an Admin honor" onclick="mlbGrantHonorDemo()">★ Grant honor (demo)</button>';
+    h+='</div>';
+    h+='<div class="row" style="margin-top:10px;gap:8px;align-items:center"><span class="sub">Ask me to re-pick:</span><select onchange="mlbSetCadence(this.value)">'+
+      ['everytime|Every time','daily|Daily','weekly|Weekly','monthly|Monthly'].map(function(o){var p=o.split('|');return '<option value="'+p[0]+'"'+(cad===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select></div>';
+    h+='<div style="margin-top:6px">'+savedChips()+'</div>';
+    h+='<div class="sub" style="margin-top:8px;font-size:.78rem">Gold shimmer = an honor granted by an Admin: unique, and it can’t be deleted.</div>';
+    return h;
+  };
+
+  monAsk=function(){
+    if(!window.S||!S.me)return; if(typeof __monClose==='function')__monClose();
+    window.__mlb.cfg=freshCfg(); var q='';try{q=monPickQ();}catch(e){}
+    var m=document.createElement('div');m.id='monikerModal';m.setAttribute('style','position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:300;padding:16px');
+    var box=document.createElement('div');box.id='monikerBox';box.setAttribute('style','background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;max-width:520px;width:100%;text-align:center');
+    box.innerHTML='<div style="font-weight:800;font-size:1.25rem;margin-bottom:6px">Welcome to <span style="color:var(--acc)">PULSE</span></div><div class="sub" style="margin-bottom:10px;font-size:.95rem;line-height:1.4">'+esc(q||'Who are you today?')+'</div>'+builderHTML()+
+      '<div class="row" style="margin-top:12px;gap:8px;justify-content:center;flex-wrap:wrap"><button class="go" onclick="mlbCrown()">Crown me</button><button class="qbtn" onclick="mlbRandomPrev()">🎲 Random previous</button><button class="qbtn" onclick="mlbSkip()">Just my name</button></div>';
+    m.appendChild(box);m.addEventListener('click',function(e){if(e.target===m){mlbSkip();}});document.body.appendChild(m);
+  };
+  window.mlbCrown=function(){mlbSaveCurrent();mlbStamp();if(typeof __monClose==='function')__monClose();if(typeof render==='function')render();};
+  window.mlbSkip=function(){mlbStamp();ucfgSet({monikerAsked:true});if(typeof __monClose==='function')__monClose();if(typeof heroGreetUpd==='function')heroGreetUpd();};
+
+  askMoniker=function(){
+    if(!window.S||!S.me)return; var c=C(); var cad=cadence();
+    var has=(c.monikers&&c.monikers.length)||c.moniker||c.monRotateDaily;
+    if(!has){monAsk();return;}
+    if(cad==='everytime'){monAsk();return;}
+    var per={daily:1,weekly:7,monthly:30}[cad]||1;
+    var last=c.monAskedAt||0; if(((Date.now()-last)/86400000)>=per)monAsk();
+  };
+
+  heroGreetUpd=function(){
+    try{
+      var g=document.getElementById('heroGreet'); if(!g)return;
+      var label=(typeof monStableName==='function')?monStableName():'';
+      var m=meta()[label]; var stl=(m&&m.color)?colorStyle(m.color):'';
+      g.innerHTML='Hi, <b class="monClick" onclick="monReroll()" title="Click for a new title" style="cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px;'+stl+'">'+esc(label)+'</b>! What&#39;s on the agenda? <button class="note-cta" onclick="noteQuickOpen()" title="Got a note now?" aria-label="Got a note now?">&#128172;</button>';
+      if(typeof monFitHeader==='function')monFitHeader();
+    }catch(e){}
+  };
+})();
+/*MLB_MONIKER_V1_END*/
 <\/script><div id="nqWrap" onclick="if(event.target===this)noteQuickClose()"><div class="nq">
   <h3>Quick note</h3>
   <div class="nqsub">Pick a type and any actions, then send it to your Personal Notes.</div>
