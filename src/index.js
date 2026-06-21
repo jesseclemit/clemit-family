@@ -2856,7 +2856,7 @@ function __pulseEntryEl(o){
  +'<div style="display:flex;align-items:center;gap:13px;">'+(isAdm?'<a id="lpEdit" href="#" style="color:#5af0ff;font-size:9px;letter-spacing:1px;text-decoration:none;">EDIT BANNER</a>':'')+'<span id="lpClock" style="color:#8a6068;font-size:11px;font-family:ui-monospace,Consolas,monospace;"></span>'
  +'<input type="range" min="0" max="360" id="lpHue" class="lpsld" style="width:150px;background:linear-gradient(to right,hsl(0,90%,45%),hsl(330,90%,50%),hsl(280,80%,50%),hsl(190,90%,50%),hsl(120,70%,45%),hsl(40,90%,50%),hsl(0,90%,45%));" aria-label="Pick your PULSE color"></div></div>'
  +'<div id="lpExcite" style="position:absolute;right:24px;top:52px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">'
- +'<input type="range" min="0" max="100" id="lpEx" class="lpsld" style="width:150px;" value="35" aria-label="EKG speed and intensity"><span class="lpctl">Are you excitable?</span></div>'
+ +'<input type="range" min="0" max="100" id="lpEx" class="lpsld" style="width:150px;flex:0 0 auto;height:3px;padding:0;" value="35" aria-label="EKG speed and intensity"><span class="lpctl">Are you excitable?</span></div>'
  +'<div id="lpFeat" style="position:absolute;left:18px;bottom:18px;width:240px;z-index:6;background:rgba(12,3,6,.82);border:1px solid rgba(255,45,85,.42);border-radius:9px;padding:11px 12px;backdrop-filter:blur(5px);box-shadow:0 10px 28px rgba(0,0,0,.6);opacity:0;transform-origin:bottom left;overflow:hidden;">'
  +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;"><span style="color:#ffd27a;font-size:14px;">&#10022;</span>'
  +'<span class="lpttl" style="color:#ffe0b4;font-size:12px;letter-spacing:1px;font-weight:600;flex:1;">New Pulse Features Inside!</span>'
