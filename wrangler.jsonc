@@ -31,6 +31,11 @@
     // Future: clemit-books exists but isn't bound yet. Add here when wired.
   ],
 
+  // Workers AI — used by the Grocery "Add meal" feature to auto-fill ingredients
+  // for meals not yet saved in the family recipe library. Degrades gracefully:
+  // if env.AI is unavailable the meal feature still works from saved recipes.
+  "ai": { "binding": "AI" },
+
   // Cron: wake every 5 min to fire due reminders (scheduled() handler).
   "triggers": { "crons": ["*/5 * * * *"] },
 
