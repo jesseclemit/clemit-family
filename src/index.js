@@ -128,23 +128,48 @@ async function notifyLog(env, rid, channel, target, ok, detail) {
 }
 __name(notifyLog, "notifyLog");
 var SEED_RECIPES = {
-  "meatloaf": { name: "Meatloaf", ingredients: ["Ground beef", "Eggs", "Breadcrumbs", "Onion", "Ketchup", "Worcestershire sauce", "Milk", "Salt", "Pepper"] },
-  "chicken parm": { name: "Chicken Parm", ingredients: ["Chicken breasts", "Marinara sauce", "Mozzarella cheese", "Parmesan cheese", "Breadcrumbs", "Eggs", "Flour", "Spaghetti", "Olive oil"] },
-  "chicken parmesan": { name: "Chicken Parmesan", ingredients: ["Chicken breasts", "Marinara sauce", "Mozzarella cheese", "Parmesan cheese", "Breadcrumbs", "Eggs", "Flour", "Spaghetti", "Olive oil"] },
-  "spaghetti": { name: "Spaghetti", ingredients: ["Spaghetti noodles", "Ground beef", "Marinara sauce", "Onion", "Garlic", "Parmesan cheese"] },
-  "tacos": { name: "Tacos", ingredients: ["Ground beef", "Taco shells", "Shredded cheese", "Lettuce", "Tomato", "Sour cream", "Salsa", "Taco seasoning"] },
-  "banana split": { name: "Banana Split", ingredients: ["Bananas", "Vanilla ice cream", "Chocolate ice cream", "Strawberry ice cream", "Chocolate syrup", "Whipped cream", "Maraschino cherries", "Chopped nuts"] },
-  "grilled cheese": { name: "Grilled Cheese", ingredients: ["Bread", "Cheese slices", "Butter"] },
-  "pancakes": { name: "Pancakes", ingredients: ["Flour", "Eggs", "Milk", "Baking powder", "Sugar", "Butter", "Maple syrup"] },
-  "burgers": { name: "Burgers", ingredients: ["Ground beef", "Hamburger buns", "Cheese slices", "Lettuce", "Tomato", "Onion", "Ketchup", "Mustard", "Pickles"] },
-  "chili": { name: "Chili", ingredients: ["Ground beef", "Kidney beans", "Diced tomatoes", "Tomato paste", "Onion", "Chili powder", "Cumin", "Garlic"] },
-  "lasagna": { name: "Lasagna", ingredients: ["Lasagna noodles", "Ground beef", "Marinara sauce", "Ricotta cheese", "Mozzarella cheese", "Parmesan cheese", "Eggs"] },
-  "pot roast": { name: "Pot Roast", ingredients: ["Beef chuck roast", "Potatoes", "Carrots", "Onion", "Beef broth", "Celery", "Garlic"] }
+  "meatloaf": { name: "Meatloaf", serves: 6, ingredients: [ {item:"Ground beef", qty:"2 lbs"}, {item:"Eggs", qty:"2"}, {item:"Breadcrumbs", qty:"1 cup"}, {item:"Onion", qty:"1 medium"}, {item:"Ketchup", qty:"1/2 cup"}, {item:"Worcestershire sauce", qty:"1 tbsp"}, {item:"Milk", qty:"1/2 cup"}, {item:"Salt", qty:"1 tsp"}, {item:"Pepper", qty:"1/2 tsp"} ] },
+  "chicken parm": { name: "Chicken Parm", serves: 4, ingredients: [ {item:"Chicken breasts", qty:"4"}, {item:"Marinara sauce", qty:"24 oz jar"}, {item:"Mozzarella cheese", qty:"8 oz"}, {item:"Parmesan cheese", qty:"1/2 cup"}, {item:"Breadcrumbs", qty:"1 cup"}, {item:"Eggs", qty:"2"}, {item:"Flour", qty:"1/2 cup"}, {item:"Spaghetti", qty:"1 lb"}, {item:"Olive oil", qty:"1/4 cup"} ] },
+  "chicken parmesan": { name: "Chicken Parmesan", serves: 4, ingredients: [ {item:"Chicken breasts", qty:"4"}, {item:"Marinara sauce", qty:"24 oz jar"}, {item:"Mozzarella cheese", qty:"8 oz"}, {item:"Parmesan cheese", qty:"1/2 cup"}, {item:"Breadcrumbs", qty:"1 cup"}, {item:"Eggs", qty:"2"}, {item:"Flour", qty:"1/2 cup"}, {item:"Spaghetti", qty:"1 lb"}, {item:"Olive oil", qty:"1/4 cup"} ] },
+  "spaghetti": { name: "Spaghetti", serves: 6, ingredients: [ {item:"Spaghetti noodles", qty:"1 lb"}, {item:"Ground beef", qty:"1 lb"}, {item:"Marinara sauce", qty:"24 oz jar"}, {item:"Onion", qty:"1"}, {item:"Garlic", qty:"3 cloves"}, {item:"Parmesan cheese", qty:"1/2 cup"} ] },
+  "tacos": { name: "Tacos", serves: 5, ingredients: [ {item:"Ground beef", qty:"1.5 lbs"}, {item:"Taco shells", qty:"12"}, {item:"Shredded cheese", qty:"8 oz"}, {item:"Lettuce", qty:"1 head"}, {item:"Tomato", qty:"2"}, {item:"Sour cream", qty:"8 oz"}, {item:"Salsa", qty:"16 oz jar"}, {item:"Taco seasoning", qty:"2 packets"} ] },
+  "banana split": { name: "Banana Split", serves: 4, ingredients: [ {item:"Bananas", qty:"4"}, {item:"Vanilla ice cream", qty:"1 pint"}, {item:"Chocolate ice cream", qty:"1 pint"}, {item:"Strawberry ice cream", qty:"1 pint"}, {item:"Chocolate syrup", qty:"1 bottle"}, {item:"Whipped cream", qty:"1 can"}, {item:"Maraschino cherries", qty:"1 jar"}, {item:"Chopped nuts", qty:"1 cup"} ] },
+  "grilled cheese": { name: "Grilled Cheese", serves: 4, ingredients: [ {item:"Bread", qty:"8 slices"}, {item:"Cheese slices", qty:"8"}, {item:"Butter", qty:"4 tbsp"} ] },
+  "pancakes": { name: "Pancakes", serves: 4, ingredients: [ {item:"Flour", qty:"2 cups"}, {item:"Eggs", qty:"2"}, {item:"Milk", qty:"1.5 cups"}, {item:"Baking powder", qty:"2 tsp"}, {item:"Sugar", qty:"2 tbsp"}, {item:"Butter", qty:"3 tbsp"}, {item:"Maple syrup", qty:"1 bottle"} ] },
+  "burgers": { name: "Burgers", serves: 4, ingredients: [ {item:"Ground beef", qty:"2 lbs"}, {item:"Hamburger buns", qty:"8"}, {item:"Cheese slices", qty:"8"}, {item:"Lettuce", qty:"1 head"}, {item:"Tomato", qty:"2"}, {item:"Onion", qty:"1"}, {item:"Ketchup", qty:"1 bottle"}, {item:"Mustard", qty:"1 bottle"}, {item:"Pickles", qty:"1 jar"} ] },
+  "chili": { name: "Chili", serves: 6, ingredients: [ {item:"Ground beef", qty:"2 lbs"}, {item:"Kidney beans", qty:"2 cans"}, {item:"Diced tomatoes", qty:"2 cans"}, {item:"Tomato paste", qty:"6 oz"}, {item:"Onion", qty:"1 large"}, {item:"Chili powder", qty:"3 tbsp"}, {item:"Cumin", qty:"1 tbsp"}, {item:"Garlic", qty:"3 cloves"} ] },
+  "lasagna": { name: "Lasagna", serves: 8, ingredients: [ {item:"Lasagna noodles", qty:"1 box"}, {item:"Ground beef", qty:"1.5 lbs"}, {item:"Marinara sauce", qty:"32 oz"}, {item:"Ricotta cheese", qty:"15 oz"}, {item:"Mozzarella cheese", qty:"16 oz"}, {item:"Parmesan cheese", qty:"1 cup"}, {item:"Eggs", qty:"1"} ] },
+  "pot roast": { name: "Pot Roast", serves: 6, ingredients: [ {item:"Beef chuck roast", qty:"3 lbs"}, {item:"Potatoes", qty:"2 lbs"}, {item:"Carrots", qty:"1 lb"}, {item:"Onion", qty:"2"}, {item:"Beef broth", qty:"32 oz"}, {item:"Celery", qty:"3 stalks"}, {item:"Garlic", qty:"4 cloves"} ] }
 };
+function normRecipe(r) {
+  if (!r || typeof r !== "object") return null;
+  var serves = (typeof r.serves === "number" && r.serves > 0) ? r.serves : (parseInt(r.serves, 10) || 0);
+  var ings = Array.isArray(r.ingredients) ? r.ingredients : [];
+  ings = ings.map(function (x) {
+    if (typeof x === "string") return { item: x.trim(), qty: "" };
+    if (x && typeof x === "object") return { item: String(x.item || x.name || "").trim(), qty: String(x.qty || x.amount || "").trim() };
+    return null;
+  }).filter(function (x) { return x && x.item; });
+  return { name: String(r.name || ""), serves: serves, ingredients: ings, ai: !!r.ai, by: r.by || null, ts: r.ts || null };
+}
+__name(normRecipe, "normRecipe");
+function recipeHasQty(r) { return !!(r && r.ingredients && r.ingredients.some(function (x) { return x.qty; })); }
+__name(recipeHasQty, "recipeHasQty");
 async function getRecipes(env) {
-  try { var raw = await getSetting(env, "recipes"); var obj = raw ? JSON.parse(raw) : null; if (obj && typeof obj === "object" && Object.keys(obj).length) return obj; } catch (e) {}
-  try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("recipes", JSON.stringify(SEED_RECIPES)).run(); } catch (e) {}
-  return JSON.parse(JSON.stringify(SEED_RECIPES));
+  var stored = null;
+  try { var raw = await getSetting(env, "recipes"); stored = raw ? JSON.parse(raw) : null; } catch (e) {}
+  if (!stored || typeof stored !== "object" || !Object.keys(stored).length) {
+    try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("recipes", JSON.stringify(SEED_RECIPES)).run(); } catch (e) {}
+    return JSON.parse(JSON.stringify(SEED_RECIPES));
+  }
+  var out = {}, changed = false;
+  for (var k in stored) { if (!Object.prototype.hasOwnProperty.call(stored, k)) continue; var n = normRecipe(stored[k]); if (n) out[k] = n; else changed = true; }
+  for (var sk in SEED_RECIPES) {
+    if (!Object.prototype.hasOwnProperty.call(SEED_RECIPES, sk)) continue;
+    if (!out[sk] || !recipeHasQty(out[sk])) { out[sk] = JSON.parse(JSON.stringify(SEED_RECIPES[sk])); changed = true; }
+  }
+  if (changed) { try { await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("recipes", JSON.stringify(out)).run(); } catch (e) {} }
+  return out;
 }
 __name(getRecipes, "getRecipes");
 async function saveRecipes(env, obj) {
@@ -154,24 +179,32 @@ __name(saveRecipes, "saveRecipes");
 async function ensureGrocery(env) {
   try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN meal_group TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN checked INTEGER DEFAULT 0").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN qty TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN serves INTEGER DEFAULT 0").run(); } catch (e) {}
 }
 __name(ensureGrocery, "ensureGrocery");
 async function aiIngredients(env, meal) {
   if (!env || !env.AI) return null;
   try {
     var r = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { messages: [
-      { role: "system", content: "You are a grocery assistant. Given the name of a dish or meal, reply with ONLY a JSON array of the grocery ingredients a shopper would buy to make it. Example: [\"Ground beef\",\"Eggs\",\"Onion\"]. Give 5 to 12 common items. No quantities, no brand names, no commentary, no markdown - just the JSON array." },
+      { role: "system", content: "You are a grocery assistant. Given the name of a dish or meal, reply with ONLY a JSON object like {\"serves\":6,\"ingredients\":[{\"item\":\"Ground beef\",\"qty\":\"2 lbs\"},{\"item\":\"Eggs\",\"qty\":\"2\"}]}. serves is how many people the recipe makes. Give 5 to 12 common ingredients, each with a realistic shopping quantity in qty. No brand names, no commentary, no markdown - just the JSON object." },
       { role: "user", content: String(meal || "").slice(0, 80) }
     ] });
     var t = "";
     if (r) t = (typeof r === "string") ? r : (r.response || r.result || (r.output && r.output.response) || "");
     t = String(t || "");
-    var a = t.indexOf("["), b = t.lastIndexOf("]");
+    var a = t.indexOf("{"), b = t.lastIndexOf("}");
     if (a < 0 || b <= a) return null;
-    var arr = JSON.parse(t.slice(a, b + 1));
-    if (!Array.isArray(arr)) return null;
-    arr = arr.filter(function (x) { return typeof x === "string" && x.trim(); }).map(function (x) { return x.trim().slice(0, 60); }).slice(0, 14);
-    return arr.length ? arr : null;
+    var obj = JSON.parse(t.slice(a, b + 1));
+    var serves = (obj && typeof obj.serves === "number" && obj.serves > 0) ? obj.serves : ((obj && parseInt(obj.serves, 10)) || 4);
+    var list = (obj && Array.isArray(obj.ingredients)) ? obj.ingredients : null;
+    if (!list) return null;
+    var ings = list.map(function (x) {
+      if (typeof x === "string") return { item: x.trim().slice(0, 60), qty: "" };
+      if (x && typeof x === "object") return { item: String(x.item || x.name || "").trim().slice(0, 60), qty: String(x.qty || x.amount || "").trim().slice(0, 30) };
+      return null;
+    }).filter(function (x) { return x && x.item; }).slice(0, 14);
+    return ings.length ? { serves: serves, ingredients: ings } : null;
   } catch (e) { return null; }
 }
 __name(aiIngredients, "aiIngredients");
@@ -718,26 +751,28 @@ if (p === "/api/king/veto" && req.method === "POST") {
         if (!meal) return json({ error: "name required" }, 400);
         const key = meal.toLowerCase();
         const recipes = await getRecipes(env);
-        let ings = null, source = "library", recName = meal;
+        let ings = null, serves = 0, source = "library", recName = meal;
         if (recipes[key] && Array.isArray(recipes[key].ingredients) && recipes[key].ingredients.length) {
           ings = recipes[key].ingredients.slice(0, 30);
+          serves = recipes[key].serves || 0;
           recName = recipes[key].name || meal;
         } else {
           const ai = await aiIngredients(env, meal);
-          if (ai && ai.length) {
-            ings = ai; source = "ai";
-            recipes[key] = { name: meal, ingredients: ai, ai: true, by: me.name, ts: Date.now() };
+          if (ai && ai.ingredients && ai.ingredients.length) {
+            ings = ai.ingredients; serves = ai.serves || 0; source = "ai";
+            recipes[key] = { name: meal, serves: serves, ingredients: ai.ingredients, ai: true, by: me.name, ts: Date.now() };
             await saveRecipes(env, recipes);
           }
         }
         if (!ings || !ings.length) return json({ ok: false, need: true, name: meal });
         const now = Date.now();
         for (const ing of ings) {
-          const nm = String(ing || "").trim().slice(0, 80);
+          const nm = String((ing && ing.item) || "").trim().slice(0, 80);
           if (!nm) continue;
-          await env.DB.prepare("INSERT INTO grocery_items (name,freq,last_bought,added_by,created_at,meal_group,checked) VALUES (?,?,NULL,?,?,?,0)").bind(nm, "once", me.name, now, recName).run();
+          const q = String((ing && ing.qty) || "").trim().slice(0, 40);
+          await env.DB.prepare("INSERT INTO grocery_items (name,freq,last_bought,added_by,created_at,meal_group,checked,qty,serves) VALUES (?,?,NULL,?,?,?,0,?,?)").bind(nm, "once", me.name, now, recName, q, serves).run();
         }
-        return json({ ok: true, source, name: recName, count: ings.length });
+        return json({ ok: true, source, name: recName, count: ings.length, serves: serves });
       }
       if (p === "/api/grocery/check" && req.method === "POST") {
         if (!groceryVisible) return json({ error: "no access" }, 403);
@@ -761,11 +796,12 @@ if (p === "/api/king/veto" && req.method === "POST") {
         const b = await req.json();
         const meal = (b.name || "").trim();
         if (!meal) return json({ error: "name required" }, 400);
-        const rows = (await env.DB.prepare("SELECT name FROM grocery_items WHERE meal_group=? ORDER BY id").bind(meal).all()).results || [];
-        const ings = rows.map(function (r) { return String(r.name || "").trim(); }).filter(function (x) { return x; });
+        const rows = (await env.DB.prepare("SELECT name,qty,serves FROM grocery_items WHERE meal_group=? ORDER BY id").bind(meal).all()).results || [];
+        const ings = rows.map(function (r) { return { item: String(r.name || "").trim(), qty: String(r.qty || "").trim() }; }).filter(function (x) { return x.item; });
         if (!ings.length) return json({ ok: false, error: "no ingredients to save" });
+        let svs = 0; for (const r of rows) { if (r.serves) { svs = r.serves; break; } }
         const recipes = await getRecipes(env);
-        recipes[meal.toLowerCase()] = { name: meal, ingredients: ings, by: me.name, ts: Date.now() };
+        recipes[meal.toLowerCase()] = { name: meal, serves: svs, ingredients: ings, by: me.name, ts: Date.now() };
         await saveRecipes(env, recipes);
         return json({ ok: true, count: ings.length });
       }
@@ -2627,16 +2663,16 @@ function dLeft(it){return Math.max(0,Math.ceil((PERIOD[it.freq]-(Date.now()-it.l
 function gWhen(ts){if(!ts)return'';var s=Math.floor((Date.now()-ts)/1000);if(s<45)return'just now';var m=Math.floor(s/60);if(m<60)return m+'m ago';var hr=Math.floor(m/60);if(hr<24)return hr+'h ago';var d=Math.floor(hr/24);return d+'d ago';}
 function gWho(it){var by=it.added_by?('by '+esc(it.added_by)):'';var wn=gWhen(it.created_at);var sep=(by&&wn)?' · ':'';if(!by&&!wn)return'';return '<div style="font-size:.72rem;color:var(--dim);margin-top:1px">'+by+sep+wn+'</div>';}
 function gidArg(id){return (typeof id==='number')?(''+id):("'"+id+"'");}
-function gRow(it,inMeal){var chk=it.checked?1:0;var nm='<span class="iname" style="'+(chk?'text-decoration:line-through;opacity:.5':'')+'">'+esc(it.name)+'</span>';var box='<input type="checkbox" '+(chk?'checked':'')+' onclick="checkG('+gidArg(it.id)+','+(chk?0:1)+')" title="check off what you already have at home" style="margin-right:7px;vertical-align:-2px;cursor:pointer">';var actions=' ';if(!inMeal){var st=gState(it);if(st==='due')actions+='<button class="mini" onclick="gotG('+gidArg(it.id)+')">got it</button>';if(it.freq&&it.freq!=='once')actions+='<span class="badge">'+esc(it.freq)+'</span>';}actions+='<button class="mini" onclick="delG('+gidArg(it.id)+')">x</button>';return '<li style="display:block">'+box+nm+actions+gWho(it)+'</li>';}
+function gRow(it,inMeal){var chk=it.checked?1:0;var nm='<span class="iname" style="'+(chk?'text-decoration:line-through;opacity:.5':'')+'">'+esc(it.name)+'</span>';var box='<input type="checkbox" '+(chk?'checked':'')+' onclick="checkG('+gidArg(it.id)+','+(chk?0:1)+')" title="check off what you already have at home" style="margin-right:7px;vertical-align:-2px;cursor:pointer">';var actions=' ';if(!inMeal){var st=gState(it);if(st==='due')actions+='<button class="mini" onclick="gotG('+gidArg(it.id)+')">got it</button>';if(it.freq&&it.freq!=='once')actions+='<span class="badge">'+esc(it.freq)+'</span>';}actions+='<button class="mini" onclick="delG('+gidArg(it.id)+')">x</button>';var q=it.qty?' <span style="color:#5fffe0;font-size:.82rem;font-weight:bold">'+esc(it.qty)+'</span>':'';return '<li style="display:block">'+box+nm+q+actions+gWho(it)+'</li>';}
 function groceryView(){
-var h='<div class="card"><h2>🛒 Shared Grocery</h2><div class="sub">Yours and Jaemie&#39;s'+(S.guestShare?' (shared with guests now)':'')+'. Type an item and press Enter, or type a meal (Meatloaf, Chicken Parm, Banana Split) and tap <b>Add meal</b> to auto-fill its ingredients.</div>';
+var h='<style>.gmeal>summary{list-style:none}.gmeal>summary::-webkit-details-marker{display:none}.gmeal>summary .gcaret{display:inline-block;transition:transform .15s ease;color:#00e5ff;font-size:.8em;margin-right:3px}.gmeal[open]>summary .gcaret{transform:rotate(90deg)}.gmeal .gnest{margin:6px 0 2px 7px;padding-left:16px;border-left:2px solid rgba(0,229,255,.3)}.gmeal .gnest ul{margin:0;padding-left:0}.gmeal .gnest li{padding-left:0;list-style:none}</style><div class="card"><h2>🛒 Shared Grocery</h2><div class="sub">Yours and Jaemie&#39;s'+(S.guestShare?' (shared with guests now)':'')+'. Type an item and press Enter, or type a meal (Meatloaf, Chicken Parm, Banana Split) and tap <b>Add meal</b> to auto-fill its ingredients.</div>';
 h+='<div class="row"><input id="gn" placeholder="Add item or meal..." onkeydown="gKey(event)"><select id="gf"><option value="once">One-time</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select><button class="go" onclick="addG()">Add</button><button class="go" style="background:linear-gradient(135deg,#b14bff,#ff3df0)" onclick="addMeal()">🍽 Add meal</button></div>';
 var live=(S.grocery||[]).filter(function(it){return it.meal_group?true:(gState(it)!=='done');});
 var groups={},order=[],standalone=[];
 live.forEach(function(it){if(it.meal_group){if(!groups[it.meal_group]){groups[it.meal_group]=[];order.push(it.meal_group);}groups[it.meal_group].push(it);}else{standalone.push(it);}});
 standalone.sort(function(a,b){return (gState(a)==='due'?0:1)-(gState(b)==='due'?0:1);});
 window.__gmeals=order;
-if(order.length){h+='<div style="margin-top:10px">';order.forEach(function(mname,gi){var items=groups[mname];var toBuy=items.filter(function(x){return !x.checked;}).length;h+='<details open style="margin:8px 0;border:1px solid rgba(0,229,255,.28);border-radius:10px;padding:6px 11px;background:rgba(0,229,255,.04)">';h+='<summary style="cursor:pointer;font-weight:bold;list-style:none">🍽 '+esc(mname)+' <span class="badge">'+toBuy+' to buy</span> <button class="mini" onclick="event.preventDefault();saveRecipeI('+gi+')">save recipe</button> <button class="mini" onclick="event.preventDefault();mealDelI('+gi+')">x all</button></summary>';h+='<ul style="margin-top:6px">';items.forEach(function(it){h+=gRow(it,true);});h+='</ul></details>';});h+='</div>';}
+if(order.length){h+='<div style="margin-top:10px">';order.forEach(function(mname,gi){var items=groups[mname];var toBuy=items.filter(function(x){return !x.checked;}).length;var mserves=0;for(var si=0;si<items.length;si++){if(items[si].serves){mserves=items[si].serves;break;}}h+='<details open class="gmeal" style="margin:8px 0;border:1px solid rgba(0,229,255,.28);border-radius:10px;padding:6px 11px;background:rgba(0,229,255,.04)">';h+='<summary style="cursor:pointer;font-weight:bold"><span class="gcaret">&#9656;</span>🍽 '+esc(mname)+(mserves?' <span style="color:var(--dim);font-weight:normal;font-size:.82rem">Serves '+mserves+'</span>':'')+' <span class="badge">'+toBuy+' to buy</span> <button class="mini" onclick="event.preventDefault();saveRecipeI('+gi+')">save recipe</button> <button class="mini" onclick="event.preventDefault();mealDelI('+gi+')">x all</button></summary>';h+='<div class="gnest"><ul>';items.forEach(function(it){h+=gRow(it,true);});h+='</ul></div></details>';});h+='</div>';}
 if(!standalone.length&&!order.length){h+='<ul style="margin-top:8px"><li class="empty">List is empty.</li></ul>';}else if(standalone.length){h+='<ul style="margin-top:8px">';standalone.forEach(function(it){h+=gRow(it,false);});h+='</ul>';}
 return h+'</div>';
 }
@@ -2644,7 +2680,7 @@ function gKey(e){if(e.key==='Enter'){e.preventDefault();var el=document.getEleme
 function gSync(u,b){fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})}).then(function(){return fetch('/api/state');}).then(function(r){return r.json();}).then(function(ns){if(ns&&!ns.pending){S=ns;if(typeof cur!=='undefined'&&cur==='grocery'&&typeof render==='function')render();}}).catch(function(){});}
 function gToast(t){try{var d=document.getElementById('gToast');if(!d){d=document.createElement('div');d.id='gToast';d.style.cssText='position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#08111c;border:1px solid rgba(0,229,255,.5);color:#cdeefb;padding:10px 16px;border-radius:10px;z-index:99999;box-shadow:0 0 18px rgba(0,229,255,.3);font-size:.9rem;transition:opacity .4s';document.body.appendChild(d);}d.textContent=t;d.style.opacity='1';clearTimeout(window.__gtoT);window.__gtoT=setTimeout(function(){d.style.opacity='0';},2400);}catch(e){}}
 function checkG(id,on){for(var i=0;i<(S.grocery||[]).length;i++){if(String(S.grocery[i].id)===String(id)){S.grocery[i].checked=on?1:0;break;}}if(typeof render==='function')render();gSync('/api/grocery/check',{id:id,on:on?1:0});}
-function addMeal(forced){var el=document.getElementById('gn');var v=((typeof forced==='string'?forced:(el&&el.value))||'').trim();if(!v)return;if(el)el.value='';var R=S.recipes||{};var known=R[v.toLowerCase()];if(known&&known.ingredients&&known.ingredients.length){var now=Date.now();var meName=(S.me&&S.me.name)||'me';var gn=known.name||v;known.ingredients.forEach(function(ing,k){S.grocery.push({id:'tmp'+now+'_'+k,name:ing,freq:'once',last_bought:null,added_by:meName,created_at:now,meal_group:gn,checked:0});});if(typeof render==='function')render();gSync('/api/grocery/meal',{name:v});return;}gToast('Finding ingredients for "'+v+'"…');fetch('/api/grocery/meal',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:v})}).then(function(r){return r.json();}).then(function(d){if(d&&d.ok){gToast((d.source==='ai'?'AI filled ':'Added ')+'"'+(d.name||v)+'" ('+d.count+' items)');return fetch('/api/state').then(function(r){return r.json();}).then(function(ns){if(ns&&!ns.pending){S=ns;if(typeof cur!=='undefined'&&cur==='grocery'&&typeof render==='function')render();}});}else{gToast('No recipe found for "'+v+'". Add its items, then Save recipe.');}}).catch(function(){gToast('Could not reach the kitchen. Try again.');});}
+function addMeal(forced){var el=document.getElementById('gn');var v=((typeof forced==='string'?forced:(el&&el.value))||'').trim();if(!v)return;if(el)el.value='';var R=S.recipes||{};var known=R[v.toLowerCase()];if(known&&known.ingredients&&known.ingredients.length){var now=Date.now();var meName=(S.me&&S.me.name)||'me';var gn=known.name||v;known.ingredients.forEach(function(ing,k){S.grocery.push({id:'tmp'+now+'_'+k,name:(ing&&ing.item)||String(ing),qty:(ing&&ing.qty)||'',serves:known.serves||0,freq:'once',last_bought:null,added_by:meName,created_at:now,meal_group:gn,checked:0});});if(typeof render==='function')render();gSync('/api/grocery/meal',{name:v});return;}gToast('Finding ingredients for "'+v+'"…');fetch('/api/grocery/meal',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:v})}).then(function(r){return r.json();}).then(function(d){if(d&&d.ok){gToast((d.source==='ai'?'AI filled ':'Added ')+'"'+(d.name||v)+'" ('+d.count+' items)');return fetch('/api/state').then(function(r){return r.json();}).then(function(ns){if(ns&&!ns.pending){S=ns;if(typeof cur!=='undefined'&&cur==='grocery'&&typeof render==='function')render();}});}else{gToast('No recipe found for "'+v+'". Add its items, then Save recipe.');}}).catch(function(){gToast('Could not reach the kitchen. Try again.');});}
 function saveRecipeI(i){var m=(window.__gmeals||[])[i];if(!m)return;fetch('/api/recipe/save',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:m})}).then(function(r){return r.json();}).then(function(d){gToast((d&&d.ok)?('Saved "'+m+'" recipe ('+d.count+' items) — type it next time to auto-fill'):'Could not save recipe');}).catch(function(){gToast('Could not save recipe');});}
 function mealDelI(i){var m=(window.__gmeals||[])[i];if(!m)return;if(!confirm('Remove all "'+m+'" items from the list?'))return;S.grocery=(S.grocery||[]).filter(function(x){return x.meal_group!==m;});if(typeof render==='function')render();gSync('/api/grocery/mealdel',{meal:m});}
 function avatarFor(name){var url=(S.avatars||{})[name];if(url)return '<img class="av" src="'+esc(url)+'">';var parts=(name||'?').trim().split(/\\s+/);var init=((parts[0]?parts[0].charAt(0):'?')+(parts[1]?parts[1].charAt(0):'')).toUpperCase();var hue=0;for(var i=0;i<(name||'').length;i++)hue=(hue*31+name.charCodeAt(i))%360;return '<div class="av init" style="background:hsl('+hue+',45%,38%)">'+esc(init)+'</div>';}
