@@ -2673,7 +2673,7 @@ function mountForumsV1(root){
     if(window.__crFilt===undefined){try{window.__crFilt=JSON.parse(LS.getItem('crFilt')||'{}');}catch(e){window.__crFilt={};}}
     if(!window.__fcat){var lf=LS.getItem('crFcat');if(lf)window.__fcat=lf;}
   }catch(e){}
-  var READ={};try{(JSON.parse(window.localStorage.getItem('crRead')||'[]')).forEach(function(x){READ[x]=1;});}catch(e){}
+  var READ={};try{(JSON.parse(window.localStorage.getItem('crRead')||'[]')).forEach(function(x){READ[x]=1;});}catch(e){}try{((window.S&&S.reads)||[]).forEach(function(x){READ[x]=1;});}catch(e){}
   var chans=(typeof fvChannels==='function')?fvChannels():[{id:'general',name:'General',ic:''}];
   var rawfc=window.__fcat||(chans[0]&&chans[0].id)||'general';
   var isPulse=(rawfc==='pulse'),isDM=(rawfc.indexOf('dm|')===0);
@@ -2705,7 +2705,7 @@ function mountForumsV1(root){
   if(flt.media)msgs=msgs.filter(function(m){return isFile(m.body);});
   var h='';
   h+='<div class="fxgrid fxfloor"></div><div class="fxgrid fxceil"></div><div class="fxneb"><div class="nbA"></div><div class="nbB"></div></div><div class="fxsheen"></div>';
-  h+='<div class="fhead"><span class="rdot"></span><span class="ftitle">COMMS</span><button class="fpop" onclick="popOut(&#39;comms&#39;)" title="Pop Comms out into its own window">&#x29c9;</button><span class="fsub">'+esc(curCh.name||fc)+((isPulse||isDM)?'':(tp?(' &#8250; '+esc(tp)):' &#8250; All'))+'</span></div>';
+  h+='<div class="fhead"><span class="rdot"></span><span class="ftitle">COMMS</span>'+(((window.S&&S.mentions)||[]).length?(' <span class="ubadge" style="font-size:10px" title="unread mentions">&#9679; '+(((window.S&&S.mentions)||[]).length)+'</span>'):'')+'<button class="fpop" onclick="popOut(&#39;comms&#39;)" title="Pop Comms out into its own window">&#x29c9;</button><span class="fsub">'+esc(curCh.name||fc)+((isPulse||isDM)?'':(tp?(' &#8250; '+esc(tp)):' &#8250; All'))+'</span></div>';
   h+='<div class="topmenu"><div class="pbuf'+(isPulse?' on':'')+'" data-c="pulse"><i class="ti ti-bolt" style="font-size:15px;color:#aef0ff"></i><span class="pl">PULSE<br>CHAT</span></div><div class="vforums"><span>FORUMS</span></div>';h+='<div class="mi" data-notes="1"><span class="em">&#128221;</span><span class="lb">Personal Notes</span></div>';h+=(window.S&&S.groceryVisible?'<div class="mi" data-shop="1"><span class="em">🛒</span><span class="lb">Shopping</span></div>':'');
   chans.forEach(function(c){var lk=(c.lock||c.id==='home'||c.id==='household'||c.id==='housekeeping')?' <i class="ti ti-lock" style="font-size:8px"></i>':'';h+='<div class="mi'+(c.id===fc&&!isPulse&&!isDM?' on':'')+'" data-c="'+esc(c.id)+'"><span class="em">'+(c.ic||'&#9679;')+'</span><span class="lb">'+lab(c)+lk+'</span></div>';});
   h+='</div>';
@@ -2723,8 +2723,8 @@ function mountForumsV1(root){
   h+='</div></div>';
   h+='<div class="main"><div class="topfilt"><button class="filt fO'+(flt.unread?' on':'')+'" data-filt="unread"><i class="ti ti-bolt"></i> Unread</button><button class="filt fG'+(flt.me?' on':'')+'" data-filt="me"><i class="ti ti-at"></i> Me</button><button class="filt fB'+(flt.media?' on':'')+'" data-filt="media"><i class="ti ti-photo"></i> Media</button></div><div class="thread">';
   var lbl=(curCh.name||fc)+((isPulse||isDM)?'':(tp?(' / '+tp):' / All'));
-  if(isDM){h+='<div class="dmnote">Private channel with '+esc(dmOther)+'.<br>One-to-one DMs go live with the next update (the server privacy gate that keeps them just between you two).</div>';}
-  else{
+  if(isDM){h+='<div class="dmnote">Private channel with '+esc(dmOther)+'. Only you two can see these messages.</div>';}
+  {
     if(!msgs.length){h+='<div class="empty">No transmissions in '+esc(lbl)+' yet. Be the first.</div>';}
     msgs.forEach(function(m){var a=m.author||'?';var isMe=(a===meName);var rmm=null;roster.forEach(function(x){if(x.name===a)rmm=x;});var bar=colOf(rmm||{name:a});
       var raw=m.body||'';var urgent=(raw.indexOf('::U:: ')===0);var disp=urgent?raw.substring(6):raw;
@@ -2742,7 +2742,7 @@ function mountForumsV1(root){
   h+='<div class="droptip"><i class="ti ti-paperclip"></i> paste or drop a file link to post it as a card</div>';
   h+='<div class="ctlrow"><button class="cbtn urg" data-urg="1"><i class="ti ti-alert-triangle"></i> URGENT!</button><button class="cbtn evr" data-evr="1"><i class="ti ti-at"></i> @Everyone</button></div>';
   var dkey='crdraft_'+rawfc;var draft='';try{draft=(window.localStorage&&localStorage.getItem(dkey))||'';}catch(e){}
-  h+='<div class="composer"><textarea id="crmb" '+(isDM?'disabled ':'')+'oninput="fvDraft(this)" placeholder="'+(isDM?'DMs activate with the next update':('message &middot; '+esc(lbl)))+'">'+(isDM?'':esc(draft))+'</textarea><button class="send" data-send="1"'+(isDM?' disabled style="opacity:.4"':'')+'>&#10148;</button></div>';
+  h+='<div class="composer"><textarea id="crmb" oninput="fvDraft(this)" placeholder="'+('message &middot; '+esc(lbl))+'">'+esc(draft)+'</textarea><button class="send" data-send="1">&#10148;</button></div>';
   root.innerHTML=h;
   if(!isPulse&&!isDM){(function layoutTopics(){
     var subEl=root.querySelector('.subwrap'),lg=root.querySelector('.lg'),rg=root.querySelector('.rg'),nd=root.querySelector('.node'),cn=root.querySelector('.conn'),ms=root.querySelector('.meas'),act=root.querySelector('.mi.on');
@@ -2772,7 +2772,7 @@ function mountForumsV1(root){
   var wb=root.querySelector('[data-who]');if(wb)wb.onclick=function(){window.__senWho=((window.__senWho||0)+1)%3;save('crSenWho',''+window.__senWho);render();};
   var pbb=root.querySelector('[data-pres]');if(pbb)pbb.onclick=function(){window.__senPres=((window.__senPres||0)+1)%3;save('crSenPres',''+window.__senPres);render();};
   var cbb=root.querySelector('[data-col]');if(cbb)cbb.onclick=function(){window.__senCol=!window.__senCol;save('crSenCol',window.__senCol?'1':'0');render();};
-  root.querySelectorAll('[data-read]').forEach(function(b){b.onclick=function(){READ[this.getAttribute('data-read')]=1;save('crRead',JSON.stringify(Object.keys(READ)));render();};});
+  root.querySelectorAll('[data-read]').forEach(function(b){b.onclick=function(){var __rid=this.getAttribute('data-read');READ[__rid]=1;save('crRead',JSON.stringify(Object.keys(READ)));try{fetch('/api/forum/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:+__rid})});}catch(e){}render();};});
   var urgB=root.querySelector('[data-urg]');if(urgB)urgB.onclick=function(){var mb=document.getElementById('crmb');if(!mb)return;var now=Date.now();var arr=[];try{arr=JSON.parse(localStorage.getItem('crUrg')||'[]');}catch(e){}arr=arr.filter(function(t){return now-t<60000;});if(arr.length>=2){alert('URGENT is limited to 2 per minute - wait '+Math.ceil((60000-(now-arr[0]))/1000)+'s.');return;}if(!mb.value.trim()){alert('Type your message first, then hit URGENT.');return;}arr.push(now);save('crUrg',JSON.stringify(arr));mb.value='::U:: '+mb.value;if(typeof fvSend==='function')fvSend();alert('URGENT sent - it blinks and pings everyone online ('+arr.length+'/2 this minute).');};
   var evB=root.querySelector('[data-evr]');if(evB)evB.onclick=function(){var mb=document.getElementById('crmb');if(mb){mb.value='@Everyone '+mb.value;mb.focus();}};
 
