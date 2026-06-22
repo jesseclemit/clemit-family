@@ -1683,7 +1683,7 @@ ul{list-style:none;}li{display:flex;align-items:center;gap:10px;padding:9px 4px;
 .npt{font-weight:600;}.npa{color:var(--dim);font-size:.85rem;}
 .eq{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:28px;margin:10px 0;}
 .eq i{width:4px;background:var(--acc);border-radius:2px;height:8px;transition:height .15s;}
-.djctl{display:flex;align-items:center;justify-content:center;gap:14px;padding:2px 0 12px;}
+.odpanel{padding:4px 14px 10px;}.odrow{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);}.odlab{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--acc2);white-space:nowrap;}.odval{font-size:.9rem;font-weight:600;color:var(--txt);text-align:right;overflow:hidden;text-overflow:ellipsis;max-width:62%;}.odsub{margin:10px 0 4px;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}.odlist{display:flex;flex-direction:column;gap:4px;}.odi{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;background:rgba(255,59,84,.06);border:1px solid var(--line);}.odk{color:var(--acc);font-size:.85em;}.odt{font-size:.82rem;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.odempty{font-size:.78rem;color:var(--dim);font-style:italic;padding:4px 2px;}.odnote{margin-top:9px;font-size:.62rem;color:var(--dim);line-height:1.35;}.djctl #dstopb{color:var(--dim);}.djctl #dstopb:hover{color:var(--acc);}.djctl{display:flex;align-items:center;justify-content:center;gap:14px;padding:2px 0 12px;}
 .djctl button{background:none;border:none;color:var(--txt);font-size:1.1rem;cursor:pointer;}
 .djctl .dplay{width:42px;height:42px;border-radius:50%;background:var(--acc);color:#062033;}
 .seekwrap{display:flex;align-items:center;gap:8px;padding:0 12px;margin:6px 0 2px;}
@@ -2097,32 +2097,22 @@ footer{text-align:center;color:#5a5f6b;font-size:.76rem;padding:10px 22px 22px;}
           <div class="npa" id="npa">&mdash;</div>
           <div class="eq" id="eq"></div>
           <div class="seekwrap"><span class="ttime" id="tcur">0:00</span><input type="range" class="seekbar" id="seek" min="0" max="1000" value="0"><span class="ttime" id="tdur">0:00</span></div>
-          <div class="djctl"><button id="dprev" title="Previous">&#9198;</button><button class="dplay" id="dplay" title="Play">&#9654;</button><button id="dnext" title="Next">&#9197;</button></div>
+          <div class="djctl"><button id="dprev" title="Previous">&#9198;</button><button class="dplay" id="dplay" title="Play">&#9654;</button><button id="dnext" title="Next">&#9197;</button><button id="dstopb" title="Stop" onclick="dStopBtn()">&#9632;</button></div>
           <div class="djvol"><span class="vicon" id="vmute" title="Mute">&#128266;</span><input type="range" class="volbar" id="vol" min="0" max="100" value="100"></div>
         </div>
       </div>
     </div>
-    <div class="acc" data-acc="Qctl">
-      <div class="acc-h" onclick="accToggle('Qctl')"><span class="acc-c">&#9662;</span><span>Add to Queue</span></div>
+    <div class="acc" data-acc="OnDeck">
+      <div class="acc-h" onclick="this.parentNode.classList.toggle('collapsed')"><span class="acc-c">&#9662;</span><span>On Deck</span></div>
       <div class="acc-b">
-        <div class="qpick">
-          <input id="qpick" class="qpickin" placeholder="Search the library to add a song&hellip;" oninput="qPickFilter(this.value)" autocomplete="off">
-          <div id="qpickres" class="qpickres"></div>
+        <div class="odpanel">
+          <div class="odrow"><span class="odlab">Next Movie</span><span class="odval" id="odMovie">&mdash;</span></div>
+          <div class="odrow"><span class="odlab">Next Song</span><span class="odval" id="odSong">&mdash;</span></div>
+          <div class="odsub">On deck</div>
+          <div class="odlist" id="odList"><div class="odempty">Nothing on deck.</div></div>
+          <div class="odnote">Fed by the Movie Queue &amp; Library &mdash; manage it there.</div>
         </div>
-        <div class="qtools">
-          <button class="qbtn" id="qbrowse" onclick="window.__lib='song';window.__libMode='song';show('dj')">Browse covers</button>
-          <button class="qbtn" id="qshuf">Shuffle</button>
-          <button class="qbtn warnb" id="qclear">Clear</button>
-          <button class="qbtn" id="mtoff" title="Pause Movie Time scheduling for today" onclick="toggleMovieTime()">Disable Movie Time</button>
-          <button class="qbtn warnb" id="qdelsel" style="display:none" onclick="dqDelSel()">Delete</button>
-        </div>
-      </div>
-    </div>
-    <div class="acc" data-acc="Queue">
-      <div class="acc-h" onclick="accToggle('Queue')"><span class="acc-c">&#9662;</span><span>Queue</span> <b id="qc"></b></div>
-      <div class="acc-b">
-        <div class="djst" id="djst" style="display:none"></div>
-        <div id="qlwrap"><div id="qlpin" style="display:none"></div><div id="ql"></div></div>
+        <div style="display:none" aria-hidden="true"><b id="qc"></b><button id="qshuf"></button><button id="qclear"></button><div id="qlpin"></div><div id="ql"></div></div>
       </div>
     </div>
   </aside>
@@ -3478,6 +3468,10 @@ function popoutApply(){
   if(m==="dj"){try{window.__acc={Player:1,Qctl:1,Queue:1};if(typeof _accApply==="function")_accApply();}catch(e){}}
   try{window.addEventListener("beforeunload",function(){try{localStorage.setItem("pulsePop_"+m,JSON.stringify({x:window.screenX,y:window.screenY,w:window.outerWidth,h:window.outerHeight}));}catch(e){}});}catch(e){}
 }
+function dStopBtn(){var d=document.getElementById('dock');try{d.pause();d.currentTime=0;}catch(e){}if(typeof dstop==='function')dstop();if(typeof msSync==='function')msSync();}
+function odSync(){var DASH=String.fromCharCode(8212);var dqA=(typeof dq!=='undefined'&&dq)?dq:[];var dqiN=(typeof dqi!=='undefined')?dqi:-1;var nextSong=null;if(dqiN>=0){nextSong=dqA[dqiN+1]||null;}else if(dqA.length){nextSong=dqA[0];}var sEl=document.getElementById('odSong');if(sEl)sEl.textContent=(nextSong&&nextSong.t)?nextSong.t:DASH;var MQ=(typeof window!=='undefined'&&window.MQ)?window.MQ:[];var mEl=document.getElementById('odMovie');if(mEl)mEl.textContent=MQ.length?MQ[0]:DASH;var L=document.getElementById('odList');if(L){var start=(dqiN>=0?dqiN+1:0);var deck=[];for(var i=start;i<dqA.length&&deck.length<6;i++){deck.push(dqA[i]);}if(!deck.length){L.innerHTML='<div class="odempty">Nothing on deck.</div>';}else{var h='';for(var j=0;j<deck.length;j++){var it=deck[j];var ic=(typeof qKindIcon==='function')?qKindIcon(it.k):'';h+='<div class="odi"><span class="odk">'+ic+'</span><span class="odt">'+esc(it.t||'')+'</span></div>';}L.innerHTML=h;}}}
+(function(){if(typeof dRender==='function'&&!dRender.__od){var _b=dRender;var w=function(){var r;try{r=_b.apply(this,arguments);}catch(e){}try{odSync();}catch(e){}return r;};w.__od=1;try{dRender=w;}catch(e){}}})();
+try{setInterval(function(){try{odSync();}catch(e){}},4000);}catch(e){}
 function djInit(){if(typeof _accApply==='function')_accApply();var __qlS=document.getElementById('ql');if(__qlS&&!__qlS.__pinWired){__qlS.__pinWired=1;__qlS.addEventListener('scroll',function(){dPinSync();dPinIdle();});}const eq=document.getElementById('eq');if(eq&&!eq.children.length){for(let i=0;i<12;i++)eq.appendChild(document.createElement('i'));}
 document.getElementById('qshuf').onclick=dshufq;document.getElementById('qclear').onclick=dclear;try{qPickFilter('');}catch(e){}var _mt=document.getElementById('mtoff');if(_mt){try{if(localStorage.getItem('mtOffDate')===new Date().toISOString().slice(0,10)){_mt.textContent='Movie Time off today';_mt.classList.add('warnb');}}catch(e){}}
 document.getElementById('dplay').onclick=function(){if(dplaying){document.getElementById('dock').pause();dstop();}else if(!dq.length){dgen(24);}else{document.getElementById('dock').play().catch(()=>{});dstartPlay();}};
