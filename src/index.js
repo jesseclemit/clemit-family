@@ -209,6 +209,9 @@ async function ensureGrocery(env) {
   try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN meal_group TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN checked INTEGER DEFAULT 0").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN qty TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN price REAL").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN store TEXT").run(); } catch (e) {}
+
   try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN serves INTEGER DEFAULT 0").run(); } catch (e) {}
 }
 __name(ensureGrocery, "ensureGrocery");
@@ -907,6 +910,15 @@ if (p === "/api/king/veto" && req.method === "POST") {
         await ensureGrocery(env);
         const b = await req.json();
         await env.DB.prepare("UPDATE grocery_items SET checked=? WHERE id=?").bind(b.on ? 1 : 0, +b.id || 0).run();
+        return json({ ok: true });
+      }
+      if (p === "/api/grocery/price" && req.method === "POST") {
+        if (!groceryVisible) return json({ error: "no access" }, 403);
+        await ensureGrocery(env);
+        const b = await req.json();
+        const pr = (b.price === null || b.price === undefined || b.price === "") ? null : (+b.price || 0);
+        const stq = (b.store || "").toString().slice(0, 40);
+        await env.DB.prepare("UPDATE grocery_items SET price=?, store=? WHERE id=?").bind(pr, stq, +b.id || 0).run();
         return json({ ok: true });
       }
       if (p === "/api/grocery/mealdel" && req.method === "POST") {
@@ -2954,19 +2966,50 @@ function dLeft(it){return Math.max(0,Math.ceil((PERIOD[it.freq]-(Date.now()-it.l
 function gWhen(ts){if(!ts)return'';var s=Math.floor((Date.now()-ts)/1000);if(s<45)return'just now';var m=Math.floor(s/60);if(m<60)return m+'m ago';var hr=Math.floor(m/60);if(hr<24)return hr+'h ago';var d=Math.floor(hr/24);return d+'d ago';}
 function gWho(it){var by=it.added_by?('by '+esc(it.added_by)):'';var wn=gWhen(it.created_at);var sep=(by&&wn)?' · ':'';if(!by&&!wn)return'';return '<div style="font-size:.72rem;color:var(--dim);margin-top:1px">'+by+sep+wn+'</div>';}
 function gidArg(id){return (typeof id==='number')?(''+id):("'"+id+"'");}
-function gRow(it,inMeal){var chk=it.checked?1:0;var nm='<span class="iname" style="'+(chk?'text-decoration:line-through;opacity:.5':'')+'">'+esc(it.name)+'</span>';var box='<input type="checkbox" '+(chk?'checked':'')+' onclick="checkG('+gidArg(it.id)+','+(chk?0:1)+')" title="check off what you already have at home" style="margin-right:7px;vertical-align:-2px;cursor:pointer">';var actions=' ';if(!inMeal){var st=gState(it);if(st==='due')actions+='<button class="mini" onclick="gotG('+gidArg(it.id)+')">got it</button>';if(it.freq&&it.freq!=='once')actions+='<span class="badge">'+esc(it.freq)+'</span>';}actions+='<button class="mini" onclick="delG('+gidArg(it.id)+')">x</button>';var q=it.qty?' <span style="color:#5fffe0;font-size:.82rem;font-weight:bold">'+esc(it.qty)+'</span>':'';return '<li style="display:block">'+box+nm+q+actions+gWho(it)+'</li>';}
+function gRow(it,inMeal){var chk=it.checked?1:0;var nm='<span class="iname" style="'+(chk?'text-decoration:line-through;opacity:.5':'')+'">'+esc(it.name)+'</span>';var box='<input type="checkbox" '+(chk?'checked':'')+' onclick="checkG('+gidArg(it.id)+','+(chk?0:1)+')" title="check off what you already have at home" style="margin-right:7px;vertical-align:-2px;cursor:pointer">';var actions=' ';if(!inMeal){var st=gState(it);if(st==='due')actions+='<button class="mini" onclick="gotG('+gidArg(it.id)+')">got it</button>';if(it.freq&&it.freq!=='once')actions+='<span class="badge">'+esc(it.freq)+'</span>';}actions+='<button class="mini" title="set the price you paid and the store" onclick="gSetPrice('+gidArg(it.id)+')">$</button><button class="mini" onclick="delG('+gidArg(it.id)+')">x</button>';var q=it.qty?' <span style="color:#5fffe0;font-size:.82rem;font-weight:bold">'+esc(it.qty)+'</span>':'';var pr=it.price?(' <span class="gprice">$'+(+it.price).toFixed(2)+'</span>'+(it.store?' <span class="gstore">@'+esc(it.store)+'</span>':'')):'';return '<li style="display:block">'+box+nm+q+pr+actions+gWho(it)+'</li>';}
 function groceryView(){
-var h='<style>.gmeal>summary{list-style:none}.gmeal>summary::-webkit-details-marker{display:none}.gmeal>summary .gcaret{display:inline-block;transition:transform .15s ease;color:#00e5ff;font-size:.8em;margin-right:3px}.gmeal[open]>summary .gcaret{transform:rotate(90deg)}.gmeal .gnest{margin:6px 0 2px 7px;padding-left:16px;border-left:2px solid rgba(0,229,255,.3)}.gmeal .gnest ul{margin:0;padding-left:0}.gmeal .gnest li{padding-left:0;list-style:none}</style><div class="card"><h2>🛒 Shared Grocery</h2><div class="sub">Yours and Jaemie&#39;s'+(S.guestShare?' (shared with guests now)':'')+'. Type an item and press Enter, or type a meal (Meatloaf, Chicken Parm, Banana Split) and tap <b>Add meal</b> to auto-fill its ingredients.</div>';
-h+='<div class="row"><input id="gn" placeholder="Add item or meal..." onkeydown="gKey(event)"><select id="gf"><option value="once">One-time</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select><button class="go" onclick="addG()">Add</button><button class="go" style="background:linear-gradient(135deg,#b14bff,#ff3df0)" onclick="addMeal()">🍽 Add meal</button></div>';
+var h='<style>'+
+'.gmeal>summary{list-style:none}.gmeal>summary::-webkit-details-marker{display:none}'+
+'.gmeal>summary .gcaret{display:inline-block;transition:transform .15s ease;color:var(--acc);font-size:.8em;margin-right:3px}'+
+'.gmeal[open]>summary .gcaret{transform:rotate(90deg)}'+
+'.gmeal .gnest{margin:6px 0 2px 7px;padding-left:14px;border-left:2px solid rgba(var(--acc-rgb),.45)}'+
+'.gmeal .gnest ul{margin:0;padding-left:0}.gmeal .gnest li{padding-left:0;list-style:none}'+
+'#gcard{border:1px solid rgba(var(--acc-rgb),.35);box-shadow:0 0 22px rgba(var(--acc-rgb),.13),inset 0 0 34px rgba(0,229,255,.05);background:linear-gradient(160deg,rgba(8,14,24,.94),rgba(13,8,18,.94))}'+
+'#gcard>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;padding:2px 0 6px}'+
+'#gcard>summary::-webkit-details-marker{display:none}'+
+'#gcard>summary .gx{display:inline-block;transition:transform .15s ease;color:var(--acc);font-size:.85em}'+
+'#gcard[open]>summary .gx{transform:rotate(90deg)}'+
+'.gtools{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:2px 0 10px}'+
+'.gtools .mini{border-color:rgba(var(--acc-rgb),.45)}'+
+'.gtot{margin-left:auto;font-weight:bold;color:var(--acc);text-shadow:0 0 9px rgba(var(--acc-rgb),.5)}'+
+'.gprice{color:#5fffe0;font-size:.8rem;font-weight:bold;margin-left:6px}'+
+'.gstore{color:var(--dim);font-size:.72rem;margin-left:2px}'+
+'.gitems{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:2px 20px}'+
+'@media(max-width:640px){.gitems{grid-template-columns:1fr}}'+
+'</style>';
+h+='<details id="gcard"'+(gCardOpen()?' open':'')+' ontoggle="gCardTog(this)">';
+h+='<summary><span class="gx">&#9656;</span><span style="font-size:1.12rem;font-weight:bold">&#128722; Shared Grocery</span><span class="badge" style="margin-left:auto">'+gToBuyCount()+' to buy</span></summary>';
+h+='<div class="sub">Yours and Jaemie&#39;s'+(S.guestShare?' (shared with guests now)':'')+'. Type an item and press Enter, or type a meal (Meatloaf, Chicken Parm, Banana Split) and tap <b>Add meal</b> to auto-fill its ingredients. Tap <b>$</b> on any item to log the price you paid and where.</div>';
+h+='<div class="row"><input id="gn" placeholder="Add item or meal..." onkeydown="gKey(event)"><select id="gf"><option value="once">One-time</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select><button class="go" onclick="addG()">Add</button><button class="go" style="background:linear-gradient(135deg,#b14bff,#ff3df0)" onclick="addMeal()">&#127869; Add meal</button></div>';
 var live=(S.grocery||[]).filter(function(it){return it.meal_group?true:(gState(it)!=='done');});
 var groups={},order=[],standalone=[];
 live.forEach(function(it){if(it.meal_group){if(!groups[it.meal_group]){groups[it.meal_group]=[];order.push(it.meal_group);}groups[it.meal_group].push(it);}else{standalone.push(it);}});
 standalone.sort(function(a,b){return (gState(a)==='due'?0:1)-(gState(b)==='due'?0:1);});
 window.__gmeals=order;
-if(order.length){h+='<div style="margin-top:10px">';order.forEach(function(mname,gi){var items=groups[mname];var toBuy=items.filter(function(x){return !x.checked;}).length;var mserves=0;for(var si=0;si<items.length;si++){if(items[si].serves){mserves=items[si].serves;break;}}h+='<details open class="gmeal" style="margin:8px 0;border:1px solid rgba(0,229,255,.28);border-radius:10px;padding:6px 11px;background:rgba(0,229,255,.04)">';h+='<summary style="cursor:pointer;font-weight:bold"><span class="gcaret">&#9656;</span>🍽 '+esc(mname)+(mserves?' <span style="color:var(--dim);font-weight:normal;font-size:.82rem">Serves '+mserves+'</span>':'')+' <span class="badge">'+toBuy+' to buy</span> <button class="mini" onclick="event.preventDefault();saveRecipeI('+gi+')">save recipe</button> <button class="mini" onclick="event.preventDefault();mealDelI('+gi+')">x all</button></summary>';h+='<div class="gnest"><ul>';items.forEach(function(it){h+=gRow(it,true);});h+='</ul></div></details>';});h+='</div>';}
-if(!standalone.length&&!order.length){h+='<ul style="margin-top:8px"><li class="empty">List is empty.</li></ul>';}else if(standalone.length){h+='<ul style="margin-top:8px">';standalone.forEach(function(it){h+=gRow(it,false);});h+='</ul>';}
-return h+'</div>';
+var est=gEstTotal();
+h+='<div class="gtools">';
+if(order.length)h+='<button class="mini" onclick="gAll(1)">Expand all</button><button class="mini" onclick="gAll(0)">Collapse all</button>';
+h+='<span class="gtot">'+(est>0?('Est. total ~$'+est.toFixed(2)):'')+'</span></div>';
+if(order.length){h+='<div style="margin-top:2px">';order.forEach(function(mname,gi){var items=groups[mname];var toBuy=items.filter(function(x){return !x.checked;}).length;var mserves=0;for(var si=0;si<items.length;si++){if(items[si].serves){mserves=items[si].serves;break;}}h+='<details class="gmeal" style="margin:7px 0;border:1px solid rgba(var(--acc-rgb),.3);border-radius:10px;padding:5px 11px;background:rgba(var(--acc-rgb),.05)">';h+='<summary style="cursor:pointer;font-weight:bold"><span class="gcaret">&#9656;</span>&#127869; '+esc(mname)+(mserves?' <span style="color:var(--dim);font-weight:normal;font-size:.82rem">Serves '+mserves+'</span>':'')+' <span class="badge">'+toBuy+' to buy</span> <button class="mini" onclick="event.preventDefault();saveRecipeI('+gi+')">save recipe</button> <button class="mini" onclick="event.preventDefault();mealDelI('+gi+')">x all</button></summary>';h+='<div class="gnest"><ul>';items.forEach(function(it){h+=gRow(it,true);});h+='</ul></div></details>';});h+='</div>';}
+if(!standalone.length&&!order.length){h+='<ul style="margin-top:8px"><li class="empty">List is empty.</li></ul>';}else if(standalone.length){h+='<ul class="gitems" style="margin-top:8px">';standalone.forEach(function(it){h+=gRow(it,false);});h+='</ul>';}
+return h+'</details>';
 }
+function gCardOpen(){try{return localStorage.getItem('gcardOpen')!=='0';}catch(e){return true;}}
+function gCardTog(d){try{localStorage.setItem('gcardOpen',d.open?'1':'0');}catch(e){}}
+function gToBuyCount(){var n=0;(S.grocery||[]).forEach(function(it){var keep=it.meal_group?true:(gState(it)!=='done');if(keep&&!it.checked)n++;});return n;}
+function gEstTotal(){var t=0;(S.grocery||[]).forEach(function(it){var keep=it.meal_group?true:(gState(it)!=='done');if(keep&&!it.checked&&it.price)t+=(+it.price||0);});return t;}
+function gAll(on){var ds=document.querySelectorAll('.gmeal');for(var i=0;i<ds.length;i++){ds[i].open=!!on;}}
+function gSetPrice(id){var arr=S.grocery||[],cur=null,i;for(i=0;i<arr.length;i++){if(String(arr[i].id)===String(id)){cur=arr[i];break;}}var p=prompt('Price you paid (number only, e.g. 3.49):',(cur&&cur.price)?cur.price:'');if(p===null)return;var v=parseFloat(p);if(isNaN(v))v=null;var st=prompt('Which store? (Kroger, Walmart, Safeway, ...):',(cur&&cur.store)?cur.store:'');if(st===null)st='';for(i=0;i<arr.length;i++){if(String(arr[i].id)===String(id)){arr[i].price=v;arr[i].store=st;break;}}if(typeof render==='function')render();gSync('/api/grocery/price',{id:id,price:v,store:st});}
 function gKey(e){if(e.key==='Enter'){e.preventDefault();var el=document.getElementById('gn');var v=((el&&el.value)||'').trim();if(!v)return;var R=S.recipes||{};if(R[v.toLowerCase()]){addMeal();}else{addG();}}}
 function gSync(u,b){fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})}).then(function(){return fetch('/api/state');}).then(function(r){return r.json();}).then(function(ns){if(ns&&!ns.pending){S=ns;if(typeof cur!=='undefined'&&cur==='grocery'&&typeof render==='function')render();}}).catch(function(){});}
 function gToast(t){try{var d=document.getElementById('gToast');if(!d){d=document.createElement('div');d.id='gToast';d.style.cssText='position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#08111c;border:1px solid rgba(0,229,255,.5);color:#cdeefb;padding:10px 16px;border-radius:10px;z-index:99999;box-shadow:0 0 18px rgba(0,229,255,.3);font-size:.9rem;transition:opacity .4s';document.body.appendChild(d);}d.textContent=t;d.style.opacity='1';clearTimeout(window.__gtoT);window.__gtoT=setTimeout(function(){d.style.opacity='0';},2400);}catch(e){}}
