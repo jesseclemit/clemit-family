@@ -902,6 +902,7 @@ if (p === "/api/king/veto" && req.method === "POST") {
           await env.DB.prepare("ALTER TABLE messages ADD COLUMN category TEXT DEFAULT 'general'").run();
         } catch (e) {
         }
+        var __dup=null;try{__dup=await env.DB.prepare("SELECT id FROM messages WHERE author=? AND body=? AND created_at > ? LIMIT 1").bind(me.name, body2, Date.now()-60000).first();}catch(e){}if(__dup)return json({ ok: true, dup: 1 });
         const r = await env.DB.prepare("INSERT INTO messages (author,body,created_at,category) VALUES (?,?,?,?)").bind(me.name, body2, Date.now(), cat).run();
         const mid = r.meta && r.meta.last_row_id;
         const hits = body2.match(new RegExp("\\b(" + BADWORDS.join("|") + ")\\b", "ig"));
@@ -956,6 +957,30 @@ if (p === "/api/king/veto" && req.method === "POST") {
         } catch (e) {
         }
         return json({ ok: true, recycle: rl });
+      }
+      if (p === "/api/forum/delete" && req.method === "POST") {
+        const b = await req.json(); const id = parseInt(b.id,10); if(!id) return json({error:"bad request"},400);
+        try{await env.DB.prepare("ALTER TABLE messages ADD COLUMN deleted INTEGER DEFAULT 0").run();}catch(e){}
+        try{await env.DB.prepare("ALTER TABLE messages ADD COLUMN deleted_by TEXT").run();}catch(e){}
+        try{await env.DB.prepare("ALTER TABLE messages ADD COLUMN deleted_at INTEGER").run();}catch(e){}
+        const row = await env.DB.prepare("SELECT author,body FROM messages WHERE id=?").bind(id).first();
+        if(!row) return json({error:"not found"},404);
+        var __mod=false;try{var __fm=JSON.parse((await getSetting(env,"forum_meta"))||"{}");__mod=!!((__fm[(me.email||"").toLowerCase()]||{}).mod);}catch(e){}
+        if(row.author !== me.name && !isRoyal && !isAdmin && !__mod) return json({error:"forbidden"},403);
+        await env.DB.prepare("UPDATE messages SET body='', deleted=1, deleted_by=?, deleted_at=? WHERE id=?").bind(me.name, Date.now(), id).run();
+        try{await logAudit(env, me.name, "delete", "deleted msg "+id+" by "+row.author+": "+String(row.body||"").slice(0,120), "Forum/Delete");}catch(e){}
+        return json({ ok: 1 });
+      }
+      if (p === "/api/forum/edit" && req.method === "POST") {
+        const b = await req.json(); const id = parseInt(b.id,10); const __nb=(b.body||"").trim();
+        if(!id||!__nb) return json({error:"bad request"},400);
+        try{await env.DB.prepare("ALTER TABLE messages ADD COLUMN edited INTEGER DEFAULT 0").run();}catch(e){}
+        try{await env.DB.prepare("ALTER TABLE messages ADD COLUMN edited_at INTEGER").run();}catch(e){}
+        const row = await env.DB.prepare("SELECT author FROM messages WHERE id=?").bind(id).first();
+        if(!row) return json({error:"not found"},404);
+        if(row.author !== me.name) return json({error:"forbidden"},403);
+        await env.DB.prepare("UPDATE messages SET body=?, edited=1, edited_at=? WHERE id=?").bind(__nb, Date.now(), id).run();
+        return json({ ok: 1 });
       }
       if (p === "/api/forum/read" && req.method === "POST") {
         const b = await req.json();
