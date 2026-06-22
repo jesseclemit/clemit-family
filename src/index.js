@@ -181,6 +181,8 @@ async function ensureGrocery(env) {
   try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN checked INTEGER DEFAULT 0").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN qty TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN serves INTEGER DEFAULT 0").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE grocery_items ADD COLUMN price REAL").run(); } catch (e) {}
+
 }
 __name(ensureGrocery, "ensureGrocery");
 async function aiIngredients(env, meal) {
@@ -838,6 +840,15 @@ if (p === "/api/king/veto" && req.method === "POST") {
         await env.DB.prepare("UPDATE grocery_items SET checked=? WHERE id=?").bind(b.on ? 1 : 0, +b.id || 0).run();
         return json({ ok: true });
       }
+      if (p === "/api/grocery/price" && req.method === "POST") {
+        if (!groceryVisible) return json({ error: "no access" }, 403);
+        await ensureGrocery(env);
+        const b = await req.json();
+        let pv = parseFloat(b.price); if (!isFinite(pv) || pv < 0) pv = 0;
+        await env.DB.prepare("UPDATE grocery_items SET price=? WHERE id=?").bind(pv, +b.id || 0).run();
+        return json({ ok: true });
+      }
+
       if (p === "/api/grocery/mealdel" && req.method === "POST") {
         if (!groceryVisible) return json({ error: "no access" }, 403);
         await ensureGrocery(env);
@@ -2739,7 +2750,7 @@ function dLeft(it){return Math.max(0,Math.ceil((PERIOD[it.freq]-(Date.now()-it.l
 function gWhen(ts){if(!ts)return'';var s=Math.floor((Date.now()-ts)/1000);if(s<45)return'just now';var m=Math.floor(s/60);if(m<60)return m+'m ago';var hr=Math.floor(m/60);if(hr<24)return hr+'h ago';var d=Math.floor(hr/24);return d+'d ago';}
 function gWho(it){var by=it.added_by?('by '+esc(it.added_by)):'';var wn=gWhen(it.created_at);var sep=(by&&wn)?' · ':'';if(!by&&!wn)return'';return '<div style="font-size:.72rem;color:var(--dim);margin-top:1px">'+by+sep+wn+'</div>';}
 function gidArg(id){return (typeof id==='number')?(''+id):("'"+id+"'");}
-function gRow(it,inMeal){var chk=it.checked?1:0;var nm='<span class="iname" style="'+(chk?'text-decoration:line-through;opacity:.5':'')+'">'+esc(it.name)+'</span>';var box='<input type="checkbox" '+(chk?'checked':'')+' onclick="checkG('+gidArg(it.id)+','+(chk?0:1)+')" title="check off what you already have at home" style="margin-right:7px;vertical-align:-2px;cursor:pointer">';var actions=' ';if(!inMeal){var st=gState(it);if(st==='due')actions+='<button class="mini" onclick="gotG('+gidArg(it.id)+')">got it</button>';if(it.freq&&it.freq!=='once')actions+='<span class="badge">'+esc(it.freq)+'</span>';}actions+='<button class="mini" onclick="delG('+gidArg(it.id)+')">x</button>';var q=it.qty?' <span style="color:#5fffe0;font-size:.82rem;font-weight:bold">'+esc(it.qty)+'</span>':'';return '<li style="display:block">'+box+nm+q+actions+gWho(it)+'</li>';}
+function gRow(it,inMeal){var chk=it.checked?1:0;var nm='<span class="iname" style="'+(chk?'text-decoration:line-through;opacity:.5':'')+'">'+esc(it.name)+'</span>';var box='<input type="checkbox" '+(chk?'checked':'')+' onclick="checkG('+gidArg(it.id)+','+(chk?0:1)+')" title="check off what you already have at home" style="margin-right:7px;vertical-align:-2px;cursor:pointer">';var actions=' ';if(!inMeal){var st=gState(it);if(st==='due')actions+='<button class="mini" onclick="gotG('+gidArg(it.id)+')">got it</button>';if(it.freq&&it.freq!=='once')actions+='<span class="badge">'+esc(it.freq)+'</span>';}actions+='<button class="mini" onclick="delG('+gidArg(it.id)+')">x</button>';var q=it.qty?' <span style="color:#5fffe0;font-size:.82rem;font-weight:bold">'+esc(it.qty)+'</span>':'';var __pv=(typeof it.price!=='undefined'&&it.price!==null&&+it.price>0)?(+it.price).toFixed(2):'';var gpx='<input type="number" step="0.01" min="0" placeholder="$" value="'+__pv+'" onchange="gPrice('+gidArg(it.id)+',this.value)" title="price (optional) - feeds the total" style="width:58px;margin-left:8px;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:6px;color:#27e08a;padding:2px 6px;font-size:.78rem">';return '<li style="display:block">'+box+nm+q+actions+gpx+gWho(it)+'</li>';}
 function groceryView(){
 var h='<style>.gmeal>summary{list-style:none}.gmeal>summary::-webkit-details-marker{display:none}.gmeal>summary .gcaret{display:inline-block;transition:transform .15s ease;color:#00e5ff;font-size:.8em;margin-right:3px}.gmeal[open]>summary .gcaret{transform:rotate(90deg)}.gmeal .gnest{margin:6px 0 2px 7px;padding-left:16px;border-left:2px solid rgba(0,229,255,.3)}.gmeal .gnest ul{margin:0;padding-left:0}.gmeal .gnest li{padding-left:0;list-style:none}</style><div class="card"><h2>🛒 Shared Grocery</h2><div class="sub">Yours and Jaemie&#39;s'+(S.guestShare?' (shared with guests now)':'')+'. Type an item and press Enter, or type a meal (Meatloaf, Chicken Parm, Banana Split) and tap <b>Add meal</b> to auto-fill its ingredients.</div>';
 h+='<div class="row"><input id="gn" placeholder="Add item or meal..." onkeydown="gKey(event)"><select id="gf"><option value="once">One-time</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select><button class="go" onclick="addG()">Add</button><button class="go" style="background:linear-gradient(135deg,#b14bff,#ff3df0)" onclick="addMeal()">🍽 Add meal</button></div>';
@@ -2750,6 +2761,7 @@ standalone.sort(function(a,b){return (gState(a)==='due'?0:1)-(gState(b)==='due'?
 window.__gmeals=order;
 if(order.length){h+='<div style="margin-top:10px">';order.forEach(function(mname,gi){var items=groups[mname];var toBuy=items.filter(function(x){return !x.checked;}).length;var mserves=0;for(var si=0;si<items.length;si++){if(items[si].serves){mserves=items[si].serves;break;}}h+='<details open class="gmeal" style="margin:8px 0;border:1px solid rgba(0,229,255,.28);border-radius:10px;padding:6px 11px;background:rgba(0,229,255,.04)">';h+='<summary style="cursor:pointer;font-weight:bold"><span class="gcaret">&#9656;</span>🍽 '+esc(mname)+(mserves?' <span style="color:var(--dim);font-weight:normal;font-size:.82rem">Serves '+mserves+'</span>':'')+' <span class="badge">'+toBuy+' to buy</span> <button class="mini" onclick="event.preventDefault();saveRecipeI('+gi+')">save recipe</button> <button class="mini" onclick="event.preventDefault();mealDelI('+gi+')">x all</button></summary>';h+='<div class="gnest"><ul>';items.forEach(function(it){h+=gRow(it,true);});h+='</ul></div></details>';});h+='</div>';}
 if(!standalone.length&&!order.length){h+='<ul style="margin-top:8px"><li class="empty">List is empty.</li></ul>';}else if(standalone.length){h+='<ul style="margin-top:8px">';standalone.forEach(function(it){h+=gRow(it,false);});h+='</ul>';}
+var __gt=0,__gu=0;(S.grocery||[]).forEach(function(it){var ok=it.meal_group?true:(gState(it)!=='done');if(ok){if(it.price&&+it.price>0)__gt+=+it.price;else __gu++;}});h+='<div style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:1.15rem;font-weight:800;color:#27e08a">$'+__gt.toFixed(2)+'</span><span class="sub" style="margin:0">estimated total'+(__gu?(' · '+__gu+' unpriced'):'')+'</span></div>';
 return h+'</div>';
 }
 function gKey(e){if(e.key==='Enter'){e.preventDefault();var el=document.getElementById('gn');var v=((el&&el.value)||'').trim();if(!v)return;var R=S.recipes||{};if(R[v.toLowerCase()]){addMeal();}else{addG();}}}
@@ -3312,6 +3324,7 @@ async function post(u,b){await fetch(u,{method:'POST',headers:{'content-type':'a
 function addG(){var n=document.getElementById('gn');var v=((n&&n.value)||'').trim();if(!v)return;var fq=(document.getElementById('gf')||{}).value||'once';var R=S.recipes||{};if(R[v.toLowerCase()]){if(n)n.value='';return addMeal(v);}S.grocery=S.grocery||[];S.grocery.push({id:'tmp'+Date.now(),name:v,freq:fq,last_bought:null,added_by:(S.me&&S.me.name)||'me',created_at:Date.now(),meal_group:null,checked:0});if(n)n.value='';if(typeof render==='function')render();gSync('/api/grocery',{name:v,freq:fq});}
 function gotG(id){for(var i=0;i<(S.grocery||[]).length;i++){if(String(S.grocery[i].id)===String(id)){S.grocery[i].last_bought=Date.now();break;}}if(typeof render==='function')render();gSync('/api/grocery/bought',{id:id});}
 function delG(id){S.grocery=(S.grocery||[]).filter(function(x){return String(x.id)!==String(id);});if(typeof render==='function')render();gSync('/api/grocery/delete',{id:id});}
+function gPrice(id,v){var p=parseFloat(v);if(!isFinite(p)||p<0)p=0;for(var i=0;i<(S.grocery||[]).length;i++){if(String(S.grocery[i].id)===String(id)){S.grocery[i].price=p;break;}}gSync('/api/grocery/price',{id:id,price:p});}
 function addM(){const t=document.getElementById('mb');if(!t.value.trim())return;var c=window.__fcat||'general';audit('post',t.value.slice(0,80),'Forum/'+c);try{localStorage.removeItem('mbdraft_'+c);}catch(e){}post('/api/message',{body:t.value,category:c});}
 function addR(){const h=document.getElementById('rh');post('/api/rsvp',{year:2027,household:h.value,headcount:+document.getElementById('rc').value||0,note:document.getElementById('rn').value});}
 function addMedia(){const u=document.getElementById('mu');if(!u.value.trim())return;var k=document.getElementById('mk').value;audit('upload',document.getElementById('mc').value||u.value,(k==='photo'?'Pictures':k==='video'?'Videos':'Music'));post('/api/media',{url:u.value,kind:k,people:document.getElementById('mp').value,place:document.getElementById('ml').value,caption:document.getElementById('mc').value});}
