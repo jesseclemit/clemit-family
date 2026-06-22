@@ -2125,6 +2125,34 @@ header.hdr2{display:flex;align-items:flex-start;gap:12px;background:transparent;
 .hdr2 .hdR a{color:var(--dim);text-decoration:none;border:1px solid var(--line);padding:6px 11px;border-radius:8px;}
 .hdr2 .hdR a:hover{color:var(--acc);border-color:var(--acc);}
 @media(max-width:560px){header.hdr2{flex-direction:column;gap:8px;padding:8px 8px 4px;}.hdr2 .hdMain{width:100%;}.hdr2 .hdR{align-self:flex-end;}.hdr2 .wmC{display:none;}}
+</style><style>/*HDRBOX*/
+header.hdr2{display:flex;align-items:flex-start;gap:12px;background:transparent;border:0;padding:14px 18px 6px;}
+.hdr2 .tcbox{position:relative;background:rgba(8,11,24,.5);-webkit-backdrop-filter:blur(7px) saturate(125%);backdrop-filter:blur(7px) saturate(125%);border:1.5px solid rgba(var(--acc-rgb),.5);border-radius:15px;box-shadow:0 0 24px rgba(var(--acc-rgb),.13),0 0 1px rgba(var(--acc-rgb),.5) inset,0 12px 30px rgba(0,0,0,.4);}
+.hdr2 .tcbox::before,.hdr2 .tcbox::after{content:"";position:absolute;width:15px;height:15px;border:2px solid var(--acc);pointer-events:none;filter:drop-shadow(0 0 4px var(--acc-glow));}
+.hdr2 .tcbox::before{top:7px;left:7px;border-right:0;border-bottom:0;border-top-left-radius:4px;}
+.hdr2 .tcbox::after{bottom:7px;right:7px;border-left:0;border-top:0;border-bottom-right-radius:4px;}
+.hdr2 .hdMain{flex:1 1 auto;min-width:0;padding:10px 18px 11px;overflow:hidden;}
+.hdr2 .tcsheen{position:absolute;top:0;left:-20%;height:100%;width:36%;transform:skewX(-18deg);background:linear-gradient(100deg,transparent,rgba(120,200,255,.05),rgba(255,255,255,.06) 50%,transparent);pointer-events:none;border-radius:15px;animation:hdsheen 9s ease-in-out infinite;}
+@keyframes hdsheen{0%,100%{left:-25%}50%{left:88%}}
+.hdr2 .hdrow1{position:relative;z-index:2;display:flex;align-items:center;gap:12px;flex-wrap:nowrap;overflow:hidden;}
+.hdr2 .wm{flex:none;margin:0;font-family:"Cinzel",Georgia,'Times New Roman',serif;line-height:1;display:flex;align-items:baseline;gap:7px;white-space:nowrap;}
+.hdr2 .wmC{font-weight:600;font-size:.72rem;letter-spacing:.34em;color:#dfe9ff;text-shadow:0 0 10px rgba(var(--acc-rgb),.35);text-transform:uppercase;}
+.hdr2 .wmP{font-weight:700;font-size:1.32rem;letter-spacing:.03em;color:var(--acc);text-shadow:0 0 16px var(--acc-glow);text-transform:uppercase;}
+.hdr2 .tdiv{flex:none;width:1px;height:1.35em;background:rgba(255,255,255,.32);box-shadow:0 0 6px rgba(255,255,255,.22);}
+.hdr2 .hero-greet{font-size:1.3rem;font-weight:700;line-height:1.2;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hdr2 .hero-greet b{color:var(--acc);}
+.hdr2 .honors{flex:none;display:inline-flex;align-items:center;gap:8px;padding:3px 10px;border:1px solid rgba(var(--acc-rgb),.3);border-radius:999px;background:rgba(var(--acc-rgb),.06);}
+.hdr2 .honors>span{line-height:1;}
+.hdr2 .kingHon{display:none;align-items:center;gap:8px;}
+.hdr2 .hWand{filter:drop-shadow(0 0 6px rgba(170,120,255,.9));}
+.hdr2 .hShield{filter:drop-shadow(0 0 6px rgba(0,229,255,.8));}
+.hdr2 .hNum{font-family:"Cinzel",Georgia,serif;font-weight:700;font-size:1rem;color:var(--acc);text-shadow:0 0 10px var(--acc-glow);padding-left:8px;border-left:1px solid rgba(var(--acc-rgb),.4);}
+.hdr2 .wsep{position:relative;z-index:2;height:1px;margin:7px 0 6px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.62),transparent);box-shadow:0 0 6px rgba(255,255,255,.25);}
+.hdr2 .hdrow2{position:relative;z-index:2;}
+.hdr2 .hdR{flex:none;align-self:flex-start;display:flex;align-items:center;gap:11px;padding:9px 13px;color:var(--dim);font-size:.82rem;}
+.hdr2 .hdR a{color:var(--dim);text-decoration:none;border:1px solid var(--line);padding:6px 11px;border-radius:8px;}
+.hdr2 .hdR a:hover{color:var(--acc);border-color:var(--acc);}
+@media(max-width:560px){header.hdr2{flex-direction:column;gap:8px;padding:8px 8px 4px;}.hdr2 .hdMain{width:100%;}.hdr2 .hdR{align-self:flex-end;}.hdr2 .wmC{display:none;}}
 </style></style></head><body><div id="bootveil"></div><div id="wrap">
 <header class="hdr2"><div class="hdMain tcbox"><span class="tcsheen"></span><div class="hdrow hdrow1"><h1 class="wm"><span class="wmC">Clemit</span> <span class="wmP">Pulse</span></h1><span class="tdiv"></span><div class="hero-greet" id="heroGreet">Good evening, <b>Boss</b>.</div><span class="honors"><span id="crownBadge" style="cursor:help;font-size:1.02rem"></span><span id="kingHon" class="kingHon"><span class="hWand" title="MyWand — the wizard's mark">🪄</span><span class="hShield" title="Protector of the family">🛡️</span><span class="hNum" title="The Third">Ⅲ</span></span></span><span class="role" id="role" style="display:none">...</span><span id="clock" style="display:none"></span></div><div class="wsep"></div><div class="hdrow hdrow2"><div class="hdQline" id="heroQline"><span class="hdQwrap" id="heroQwrap"><span class="hero-q" id="heroQ">&hellip;</span> <span class="hero-a" id="heroA"></span></span></div><div class="hero-sub" id="heroSub"></div></div></div><div class="hdR tcbox"><span class="hdColor tcwrap" style="display:inline-flex;align-items:center;position:relative"><button id="themeSw" type="button" class="tcbtn" title="Choose your PULSE color" aria-label="Choose your PULSE color" onclick="var p=document.getElementById('tcpop');p.hidden=!p.hidden;if(!p.hidden){try{var hh=document.getElementById('tcHue');if(hh&&typeof lsHexToHue==='function')hh.value=lsHexToHue(getComputedStyle(document.documentElement).getPropertyValue('--acc').trim());}catch(e){}}"></button><div id="tcpop" class="tcpop" hidden><input type="range" min="0" max="360" id="tcHue" class="lpsld" oninput="if(typeof lsHslToHex==='function')themeSet(lsHslToHex(this.value,82,57),true)" style="width:184px;vertical-align:middle"></div></span><a href="/cdn-cgi/access/logout">Sign Out</a></div><span id="heroFav" style="display:none"></span></header>
 <div class="ministrip" id="ministrip"><div class="ms-player"><button id="msPlay" title="Play / Pause">&#9654;</button><button id="msNext" title="Next">&#9197;</button><span class="ms-title" id="msTitle">&mdash;</span></div><div class="ms-quote" id="msQuote"></div></div>
@@ -2213,6 +2241,10 @@ function heroTimeWord(){var h=new Date().getHours();if(h<12)return "Good Morning
 function heroIsPhone(){return (window.innerWidth||999)<=560;}
 function heroMonHtml(){return '<b class="monClick" onclick="monOpenForge()" title="Click to open your Title Forge" style="cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px">'+esc(monStableName())+'</b>';}
 function heroNoteBtn(){return ' <button class="note-cta" onclick="noteQuickOpen()" title="Got a note now?" aria-label="Got a note now?">&#128172;</button>';}
+function heroMonFirst(){var nm=(window.S&&S.me&&S.me.name)?(''+S.me.name).trim().split(' ')[0]:monStableName();return '<b class="monClick" onclick="monOpenForge()" title="Click to open your Title Forge" style="cursor:pointer">'+esc(nm)+'</b>';}
+function __hdrW(){try{var h=document.querySelector('header.hdr2');return h?h.clientWidth:(window.innerWidth||999);}catch(e){return window.innerWidth||999;}}
+function __hdrFit(){var h=document.querySelector('header.hdr2');if(!h)return;var w=h.clientWidth;var c=h.querySelector('.wmC');if(c)c.style.display=(w<820)?'none':'';try{var k=document.getElementById('kingHon');if(k&&window.S&&S.me)k.style.display=S.me.isKing?'inline-flex':'none';}catch(e){}if(typeof heroGreetUpd==='function'&&window.__heroFinished)heroGreetUpd();}
+(function(){var tries=0;function attach(){var h=document.querySelector('header.hdr2');if(!h){if(tries++<80){setTimeout(attach,300);}return;}__hdrFit();if(window.ResizeObserver){try{new ResizeObserver(function(){__hdrFit();}).observe(h);}catch(e){}}window.addEventListener('resize',__hdrFit);var nn=0,iv=setInterval(function(){__hdrFit();if(++nn>24)clearInterval(iv);},500);}attach();})();
 function heroMonFirst(){var nm=(window.S&&S.me&&S.me.name)?(''+S.me.name).trim().split(' ')[0]:monStableName();return '<b class="monClick" onclick="monOpenForge()" title="Click to open your Title Forge" style="cursor:pointer">'+esc(nm)+'</b>';}
 function __hdrW(){try{var h=document.querySelector('header.hdr2');return h?h.clientWidth:(window.innerWidth||999);}catch(e){return window.innerWidth||999;}}
 function __hdrFit(){var h=document.querySelector('header.hdr2');if(!h)return;var w=h.clientWidth;var c=h.querySelector('.wmC');if(c)c.style.display=(w<820)?'none':'';try{var k=document.getElementById('kingHon');if(k&&window.S&&S.me)k.style.display=S.me.isKing?'inline-flex':'none';}catch(e){}if(typeof heroGreetUpd==='function'&&window.__heroFinished)heroGreetUpd();}
