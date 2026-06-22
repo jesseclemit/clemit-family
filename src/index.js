@@ -958,6 +958,15 @@ if (p === "/api/king/veto" && req.method === "POST") {
         }
         return json({ ok: true, recycle: rl });
       }
+      if (p === "/api/forum/restore" && req.method === "POST") {
+        const b = await req.json(); const id = parseInt(b.id,10); if(!id) return json({error:"bad request"},400);
+        const row = await env.DB.prepare("SELECT author FROM messages WHERE id=?").bind(id).first();
+        if(!row) return json({error:"not found"},404);
+        var __mod=false;try{var __fm=JSON.parse((await getSetting(env,"forum_meta"))||"{}");__mod=!!((__fm[(me.email||"").toLowerCase()]||{}).mod);}catch(e){}
+        if(row.author !== me.name && !isRoyal && !isAdmin && !__mod) return json({error:"forbidden"},403);
+        try{await env.DB.prepare("UPDATE messages SET deleted=0 WHERE id=?").bind(id).run();}catch(e){}
+        return json({ ok: 1 });
+      }
       if (p === "/api/forum/delete" && req.method === "POST") {
         const b = await req.json(); const id = parseInt(b.id,10); if(!id) return json({error:"bad request"},400);
         try{await env.DB.prepare("ALTER TABLE messages ADD COLUMN deleted INTEGER DEFAULT 0").run();}catch(e){}
@@ -967,7 +976,7 @@ if (p === "/api/king/veto" && req.method === "POST") {
         if(!row) return json({error:"not found"},404);
         var __mod=false;try{var __fm=JSON.parse((await getSetting(env,"forum_meta"))||"{}");__mod=!!((__fm[(me.email||"").toLowerCase()]||{}).mod);}catch(e){}
         if(row.author !== me.name && !isRoyal && !isAdmin && !__mod) return json({error:"forbidden"},403);
-        await env.DB.prepare("UPDATE messages SET body='', deleted=1, deleted_by=?, deleted_at=? WHERE id=?").bind(me.name, Date.now(), id).run();
+        await env.DB.prepare("UPDATE messages SET deleted=1, deleted_by=?, deleted_at=? WHERE id=?").bind(me.name, Date.now(), id).run();
         try{await logAudit(env, me.name, "delete", "deleted msg "+id+" by "+row.author+": "+String(row.body||"").slice(0,120), "Forum/Delete");}catch(e){}
         return json({ ok: 1 });
       }
