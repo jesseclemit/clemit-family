@@ -546,6 +546,7 @@ var index_default = {
         const grocery = groceryVisible ? (await env.DB.prepare("SELECT * FROM grocery_items ORDER BY id").all()).results : [];
         const recipes = groceryVisible ? await getRecipes(env) : {};
         let messages = (await env.DB.prepare("SELECT * FROM messages ORDER BY id DESC LIMIT 200").all()).results;
+        /*__dmgate*/messages=messages.filter(function(m){var c=String(m.category||"");if(c.indexOf("dm|")!==0)return true;var pp=c.split("|");return me.name===pp[1]||me.name===pp[2];});
         if (!householdOk) messages = messages.filter(function(m) {
           return m.category !== "household" && m.category !== "housekeeping";
         });
@@ -689,8 +690,9 @@ let __letter = ""; try { __letter = (await getSetting(env, "king_letter")) || ""
         let __crRows=[];try{__crRows=(await env.DB.prepare("SELECT name,email FROM users ORDER BY name").all()).results||[];}catch(e){}
         const __crRoster=__crRows.map(function(u){const m=__crMeta[String(u.email||"").toLowerCase()]||{};return {name:u.name,email:isRoyal?u.email:undefined,title:m.title||"",color:m.color||"",king:(u.name===__king)?1:0,wiz:m.wiz||0,mod:m.mod||0,elder:m.elder||0,guest:m.guest||0,locked:m.locked||0,you:(u.name===me.name)?1:0};});
         const __crReact={};try{await env.DB.prepare("CREATE TABLE IF NOT EXISTS message_reactions (message_id INTEGER, name TEXT, emoji TEXT, created_at INTEGER, PRIMARY KEY (message_id,name,emoji))").run();var __ids=(messages||[]).map(function(m){return m.id;}).filter(function(x){return x!=null;});if(__ids.length){var __ph=__ids.map(function(){return "?";}).join(",");var __rr=(await env.DB.prepare("SELECT message_id,name,emoji FROM message_reactions WHERE message_id IN ("+__ph+")").bind(...__ids).all()).results||[];__rr.forEach(function(row){if(!__crReact[row.message_id])__crReact[row.message_id]={};if(!__crReact[row.message_id][row.emoji])__crReact[row.message_id][row.emoji]=[];__crReact[row.message_id][row.emoji].push(row.name);});}}catch(e){}
+        let __reads=[],__ment=[];try{await env.DB.prepare("CREATE TABLE IF NOT EXISTS message_reads (name TEXT, message_id INTEGER, PRIMARY KEY (name,message_id))").run();__reads=((await env.DB.prepare("SELECT message_id FROM message_reads WHERE name=?").bind(me.name).all()).results||[]).map(function(r){return r.message_id;});var __rs={};__reads.forEach(function(x){__rs[x]=1;});var __ml=(me.name||"").toLowerCase();(messages||[]).forEach(function(m){if(m.id==null||m.author===me.name)return;var bl=String(m.body||"").toLowerCase();if((bl.indexOf("@everyone")>=0||(__ml&&bl.indexOf("@"+__ml)>=0))&&!__rs[m.id])__ment.push(m.id);});}catch(e){}
         const __cr={forumRoster:__crRoster,presence:__crPres,reactions:__crReact};
-        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "", digestOff: me.digest_off ? 1 : 0 }, king: __king, succession: __isKing ? __succ : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, recipes, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, memberProfiles: isAdmin ? memberProfiles : {}, householdsMap: isAdmin ? __hhMap : null, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, libPlaylists, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", themeColor: (await getSetting(env, "theme_color")) || "#2f9bff", forumGrants: isRoyal ? forumGrants : null, members: forumMembers, forumRoster: __cr.forumRoster, presence: __cr.presence, reactions: __cr.reactions });
+        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "", digestOff: me.digest_off ? 1 : 0 }, king: __king, succession: __isKing ? __succ : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, recipes, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, memberProfiles: isAdmin ? memberProfiles : {}, householdsMap: isAdmin ? __hhMap : null, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, libPlaylists, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", themeColor: (await getSetting(env, "theme_color")) || "#2f9bff", forumGrants: isRoyal ? forumGrants : null, members: forumMembers, forumRoster: __cr.forumRoster, presence: __cr.presence, reactions: __cr.reactions, reads: __reads, mentions: __ment });
       }
       if (p === "/api/king/succession" && req.method === "POST") {
   const __k = (await getSetting(env, "king")) || OWNER;
@@ -890,14 +892,14 @@ if (p === "/api/king/veto" && req.method === "POST") {
         const body = (b.body || "").trim();
         if (!body) return json({ error: "empty" }, 400);
         const cat = String(b.category || "general").slice(0, 40);
-        { var __ch = cat.indexOf("|")>0 ? cat.substring(0,cat.indexOf("|")) : cat; if ((__ch === "household" || __ch === "housekeeping") && !householdOk) return json({ error: "no access" }, 403); }
+        { var __ch = cat.indexOf("|")>0 ? cat.substring(0,cat.indexOf("|")) : cat; if ((__ch === "household" || __ch === "housekeeping") && !householdOk) return json({ error: "no access" }, 403); } let body2=body;/*__urg*/if(body2.indexOf("::U:: ")===0){try{var __uc=await env.DB.prepare("SELECT COUNT(*) AS n FROM messages WHERE author=? AND body LIKE '::U:: %' AND created_at > ?").bind(me.name,Date.now()-60000).first();if(__uc&&__uc.n>=2)body2=body2.substring(6);}catch(e){}}
         try {
           await env.DB.prepare("ALTER TABLE messages ADD COLUMN category TEXT DEFAULT 'general'").run();
         } catch (e) {
         }
-        const r = await env.DB.prepare("INSERT INTO messages (author,body,created_at,category) VALUES (?,?,?,?)").bind(me.name, body, Date.now(), cat).run();
+        const r = await env.DB.prepare("INSERT INTO messages (author,body,created_at,category) VALUES (?,?,?,?)").bind(me.name, body2, Date.now(), cat).run();
         const mid = r.meta && r.meta.last_row_id;
-        const hits = body.match(new RegExp("\\b(" + BADWORDS.join("|") + ")\\b", "ig"));
+        const hits = body2.match(new RegExp("\\b(" + BADWORDS.join("|") + ")\\b", "ig"));
         if (hits && mid) {
           try {
             await env.DB.prepare("ALTER TABLE messages ADD COLUMN flag_review INTEGER DEFAULT 0").run();
@@ -949,6 +951,13 @@ if (p === "/api/king/veto" && req.method === "POST") {
         } catch (e) {
         }
         return json({ ok: true, recycle: rl });
+      }
+      if (p === "/api/forum/read" && req.method === "POST") {
+        const b = await req.json();
+        await env.DB.prepare("CREATE TABLE IF NOT EXISTS message_reads (name TEXT, message_id INTEGER, PRIMARY KEY (name,message_id))").run();
+        var ids = Array.isArray(b.ids) ? b.ids : (b.id!=null ? [b.id] : []);
+        for (var __ri=0; __ri<ids.length; __ri++){ var __rid=parseInt(ids[__ri],10); if(__rid){ try{ await env.DB.prepare("INSERT OR IGNORE INTO message_reads (name,message_id) VALUES (?,?)").bind(me.name, __rid).run(); }catch(e){} } }
+        return json({ ok: 1, n: ids.length });
       }
       if (p === "/api/forum/react" && req.method === "POST") {
         const b = await req.json();const id=parseInt(b.id,10);const emoji=String(b.emoji||"").slice(0,16);
