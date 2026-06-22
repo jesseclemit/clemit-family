@@ -2700,7 +2700,7 @@ function mountForumsV1(root){
   var meName=(window.S&&S.me&&S.me.name)||'';
   try{var LS=window.localStorage;
     if(window.__senWho===undefined)window.__senWho=parseInt(LS.getItem('crSenWho')||'0',10)||0;
-    if(window.__senPres===undefined)window.__senPres=parseInt(LS.getItem('crSenPres')||'0',10)||0;
+    if(window.__senPres===undefined){var __sp=LS.getItem('crSenPres');window.__senPres=(__sp===null?1:(parseInt(__sp,10)||0));}
     if(window.__senCol===undefined)window.__senCol=(LS.getItem('crSenCol')==='1');
     if(window.__crFilt===undefined){try{window.__crFilt=JSON.parse(LS.getItem('crFilt')||'{}');}catch(e){window.__crFilt={};}}
     if(!window.__fcat){var lf=LS.getItem('crFcat');if(lf)window.__fcat=lf;}
@@ -2720,9 +2720,9 @@ function mountForumsV1(root){
   var rx=(window.S&&S.reactions)||{};
   var all=(window.S&&S.messages)||[];function hasUnreadDM(nm){if(nm===meName)return false;var pr=[meName,nm].sort();var ky='dm|'+pr[0]+'|'+pr[1];return (all||[]).some(function(mm){return mm.category===ky&&mm.author===nm&&mm.id!=null&&!READ[mm.id];});}
   var flt=window.__crFilt||{};
-  var WHO=[['all','All','0,229,255','ti-list'],['family','Family','25,182,255','ti-users'],['admin','Admin','255,210,70','ti-crown']];
+  var WHO=[['all','All Users','0,229,255','ti-list'],['family','Family','25,182,255','ti-users'],['admin','Admin','255,210,70','ti-crown']];
   var PRES=[['all','All','0,229,255','ti-list'],['online','Online','55,214,122','ti-bolt'],['offline','Offline','120,140,160','ti-zzz']];
-  var wi=(window.__senWho||0)%3, pi=(window.__senPres||0)%3,scol=!!window.__senCol;
+  var wi=(window.__senWho||0)%3, pi=(window.__senPres==null?1:window.__senPres)%3,scol=!!window.__senCol;
   function lab(c){if(c.id==='dnd')return 'Gaming<br>(D&amp;D)';var n=c.name||c.id;if(c.id==='readfirst')return esc(n);var sp=n.indexOf(' ');if(sp>0&&n.indexOf(' ',sp+1)<0)return esc(n.substring(0,sp))+'<br>'+esc(n.substring(sp+1));return esc(n);}
   function isFile(b){b=(b||'').toLowerCase();if(b.indexOf('http')!==0)return false;var x=['.jpg','.jpeg','.png','.gif','.webp','.mp3','.wav','.m4a','.mp4','.mov','.pdf','.doc','.docx','.xls','.xlsx','.ppt','.pptx','.zip'];for(var i=0;i<x.length;i++){if(b.indexOf(x[i])>=0)return true;}return false;}
   function fkind(b){b=(b||'').toLowerCase();if(b.indexOf('.jpg')>=0||b.indexOf('.jpeg')>=0||b.indexOf('.png')>=0||b.indexOf('.gif')>=0||b.indexOf('.webp')>=0)return 'image';if(b.indexOf('.mp3')>=0||b.indexOf('.wav')>=0||b.indexOf('.m4a')>=0)return 'music';if(b.indexOf('.doc')>=0)return 'word';if(b.indexOf('.mp4')>=0||b.indexOf('.mov')>=0)return 'video';return 'file';}
@@ -2731,7 +2731,7 @@ function mountForumsV1(root){
   function colOf(o){var c=(typeof fvColor==='function')?fvColor(o):'0,229,255';return (String(c).indexOf('hsl')===0)?c:('rgb('+c+')');}
   function mns(nm){return (typeof fvMins==='function')?fvMins(nm):null;}
   function memMatch(m){var w=WHO[wi][0];if(w==='admin')return !!(m.king||m.mod);if(w==='family')return !m.guest;return true;}
-  function presMatch(m){var p=PRES[pi][0];var mm=mns(m.name);var on=(mm!==null&&mm<3);if(p==='online')return on;if(p==='offline')return !on;return true;}
+  function presMatch(m){var p=PRES[pi][0];var mm=mns(m.name);var on=(m.name===meName)||(mm!==null&&mm<3);if(p==='online')return on;if(p==='offline')return !on;return true;}
   var msgs=all.filter(function(m){var c=m.category||'general';if(isPulse)return c==='pulse';if(isDM)return c===rawfc;var bar=c.indexOf('|');var ch=bar>0?c.substring(0,bar):c;if(ch!==fc)return false;if(tp){var mt=bar>0?c.substring(bar+1):'';return mt===tp;}return true;}).slice().reverse();
   if(flt.me)msgs=msgs.filter(function(m){return (m.author||'')===meName;});
   if(flt.media)msgs=msgs.filter(function(m){return isFile(m.body);});
