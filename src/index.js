@@ -2983,14 +2983,14 @@ function mountForumsV1(root){if(document.body.classList.contains("comms-out")){t
   else{var ci=0;chans.forEach(function(c,i){if(c.id===fc)ci=i;});curCh=chans[ci]||chans[0];fc=curCh.id;}
   var topics=(isPulse||isDM)?[]:((typeof fvTopics==='function')?fvTopics(fc):[]);
   var tp=(isPulse||isDM)?'':(window.__ftopic||'');
-  var roster=(typeof fvRoster==='function')?fvRoster():[];
+  var roster=(typeof fvRoster==='function')?fvRoster():[];if(isDM){roster=roster.filter(function(m){return m.name===meName||m.name===dmOther;});}
   var isRoyal=!!(window.S&&S.me&&S.me.isRoyal);
   var rx=(window.S&&S.reactions)||{};
   var all=(window.S&&S.messages)||[];function hasUnreadDM(nm){if(nm===meName)return false;var pr=[meName,nm].sort();var ky='dm|'+pr[0]+'|'+pr[1];return (all||[]).some(function(mm){return mm.category===ky&&mm.author===nm&&mm.id!=null&&!READ[mm.id];});}
-  var flt=window.__crFilt||{};
+  var flt={};
   var WHO=[['all','All Users','0,229,255','ti-list'],['family','Family','25,182,255','ti-users'],['admin','Admin','255,210,70','ti-crown']];
   var PRES=[['all','All','0,229,255','ti-list'],['online','Online','55,214,122','ti-bolt'],['offline','Offline','120,140,160','ti-zzz']];
-  var wi=(window.__senWho||0)%3, pi=(window.__senPres==null?1:window.__senPres)%3,scol=!!window.__senCol;
+  var wi=(window.__senWho||0)%3, pi=(window.__senPres==null?0:window.__senPres)%3,scol=!!window.__senCol;
   function lab(c){if(c.id==='dnd')return 'Gaming<br>(D&amp;D)';var n=c.name||c.id;if(c.id==='readfirst')return esc(n);var sp=n.indexOf(' ');if(sp>0&&n.indexOf(' ',sp+1)<0)return esc(n.substring(0,sp))+'<br>'+esc(n.substring(sp+1));return esc(n);}
   function isFile(b){b=(b||'').toLowerCase();if(b.indexOf('http')!==0)return false;var x=['.jpg','.jpeg','.png','.gif','.webp','.mp3','.wav','.m4a','.mp4','.mov','.pdf','.doc','.docx','.xls','.xlsx','.ppt','.pptx','.zip'];for(var i=0;i<x.length;i++){if(b.indexOf(x[i])>=0)return true;}return false;}
   function fkind(b){b=(b||'').toLowerCase();if(b.indexOf('.jpg')>=0||b.indexOf('.jpeg')>=0||b.indexOf('.png')>=0||b.indexOf('.gif')>=0||b.indexOf('.webp')>=0)return 'image';if(b.indexOf('.mp3')>=0||b.indexOf('.wav')>=0||b.indexOf('.m4a')>=0)return 'music';if(b.indexOf('.doc')>=0)return 'word';if(b.indexOf('.mp4')>=0||b.indexOf('.mov')>=0)return 'video';return 'file';}
@@ -3010,7 +3010,7 @@ function mountForumsV1(root){if(document.body.classList.contains("comms-out")){t
   chans.forEach(function(c){var lk=(c.lock||c.id==='home'||c.id==='household'||c.id==='housekeeping')?' <i class="ti ti-lock" style="font-size:8px"></i>':'';h+='<div class="mi'+(c.id===fc&&!isPulse&&!isDM?' on':'')+'" data-c="'+esc(c.id)+'"><span class="em">'+((CICON[c.id])?('<i class="ti '+CICON[c.id]+'"></i>'):(c.ic||'&#9679;'))+'</span><span class="lb">'+lab(c)+lk+'</span></div>';});
   h+='<div class="mi" data-notes="1"><span class="em"><i class="ti ti-notes"></i></span><span class="lb">Notes</span></div>'+pinTabs()+'</div>';
   if(!isPulse&&!isDM){h+='<div class="subwrap"><div class="conn"></div><div class="lg"></div><div class="node"></div><div class="rg"></div><div class="meas"></div></div>';}else{h+='<div style="height:8px"></div>';}
-  h+='<div class="frow"><div class="sen'+(scol?' col':'')+'"><div class="senhrow"><i class="ti ti-shield-bolt" style="color:#cf9bff"></i><span style="font-size:11px;font-weight:bold;letter-spacing:2px;color:#cf9bff;text-shadow:0 0 8px #b14bff">SENATE</span><span class="scol" data-col="1">'+(scol?'&#8249;':'&#8250;')+'</span></div>';
+  h+='<div class="frow"><div class="sen'+(scol?' col':'')+'"><div class="senhrow"><i class="ti ti-shield-bolt" style="color:#cf9bff"></i><span style="font-size:11px;font-weight:bold;letter-spacing:2px;color:#cf9bff;text-shadow:0 0 8px #b14bff">SENATE</span>'+(scol?'':'<span class="senchan" style="margin-left:auto;margin-right:8px;font-size:11px;font-weight:bold;color:#aef0ff;text-shadow:0 0 8px rgba(0,229,255,.6);max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(curCh.name||fc)+'</span>')+'<span class="scol" data-col="1">'+(scol?'&#8249;':'&#8250;')+'</span></div>';
   h+='<div class="tgs'+(scol?' col':'')+'"><span class="tg'+(scol?' col':'')+'" data-who="1" style="--fc:'+WHO[wi][2]+'"><i class="ti '+WHO[wi][3]+'"></i> <span>'+WHO[wi][1]+'</span></span><span class="tg'+(scol?' col':'')+'" data-pres="1" style="--fc:'+PRES[pi][2]+'"><i class="ti '+PRES[pi][3]+'"></i> <span>'+PRES[pi][1]+'</span></span></div>';
   h+='<div class="senlist">';
   roster.sort(function(a,b){var am=mns(a.name),bm=mns(b.name);var ay=(a.name===meName)?-1:0,by=(b.name===meName)?-1:0;if(ay!==by)return ay-by;if(am===null&&bm===null)return 0;if(am===null)return 1;if(bm===null)return -1;return am-bm;});
@@ -3021,7 +3021,7 @@ function mountForumsV1(root){if(document.body.classList.contains("comms-out")){t
       h+='</div></div>';}
   });
   h+='</div></div>';
-  h+='<div class="main"><div class="topfilt"><button class="filt fO'+(flt.unread?' on':'')+'" data-filt="unread"><i class="ti ti-bolt"></i> Unread</button><button class="filt fG'+(flt.me?' on':'')+'" data-filt="me"><i class="ti ti-at"></i> Me</button><button class="filt fB'+(flt.media?' on':'')+'" data-filt="media"><i class="ti ti-photo"></i> Media</button></div><div class="thread">';
+  h+='<div class="main"><div class="thread">';
   var lbl=(curCh.name||fc)+((isPulse||isDM)?'':(tp?(' / '+tp):' / All'));
   if(isDM){h+='<div class="dmnote">Private channel with '+esc(dmOther)+'. Only you two can see these messages.</div>';}
   {
