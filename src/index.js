@@ -1046,6 +1046,47 @@ if (p === "/api/king/veto" && req.method === "POST") {
         await env.DB.prepare("UPDATE grocery_items SET price=?, store=? WHERE id=?").bind(pr, stq, +b.id || 0).run();
         return json({ ok: true });
       }
+      if (p === "/api/loc/here" && req.method === "POST") {
+        if (!groceryVisible) return json({ error: "no access" }, 403);
+        const tok = await krogerToken(env);
+        if (!tok) return json({ ok: false, need: "setup" });
+        const lb = await req.json();
+        const near = (lb.lat && lb.lon) ? ("filter.latLong.near=" + (+lb.lat) + "," + (+lb.lon)) : ("filter.zipCode.near=" + encodeURIComponent((lb.zip || "").toString().slice(0, 10)));
+        const lr = await fetch("https://api.kroger.com/v1/locations?" + near + "&filter.limit=1", { headers: { Authorization: "Bearer " + tok } });
+        if (!lr.ok) return json({ ok: false, noStore: true });
+        const lj = await lr.json();
+        const loc = (lj.data && lj.data[0]) || null;
+        if (!loc) return json({ ok: false, noStore: true });
+        const store = { id: loc.locationId, name: loc.name || "Kroger", city: (loc.address && loc.address.city) || "", state: (loc.address && loc.address.state) || "" };
+        await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("kroger_loc", JSON.stringify(store)).run();
+        return json({ ok: true, store });
+      }
+      if (p === "/api/grocery/kroger" && req.method === "POST") {
+        if (!groceryVisible) return json({ error: "no access" }, 403);
+        const tok = await krogerToken(env);
+        if (!tok) return json({ ok: false, need: "setup" });
+        const lraw = await getSetting(env, "kroger_loc");
+        const loc = lraw ? JSON.parse(lraw) : null;
+        if (!loc || !loc.id) return json({ ok: false, noLoc: true });
+        const kb = await req.json();
+        const term = (kb.item || "").toString().slice(0, 40);
+        if (!term) return json({ ok: false });
+        const prr = await fetch("https://api.kroger.com/v1/products?filter.term=" + encodeURIComponent(term) + "&filter.locationId=" + encodeURIComponent(loc.id) + "&filter.limit=1", { headers: { Authorization: "Bearer " + tok } });
+        if (!prr.ok) return json({ ok: false });
+        const pj = await prr.json();
+        const it = (pj.data && pj.data[0]) || null;
+        const price = it && it.items && it.items[0] && it.items[0].price || null;
+        if (!price) return json({ ok: true, found: false, store: loc.name });
+        return json({ ok: true, found: true, regular: price.regular || 0, promo: price.promo || 0, store: loc.name, desc: it.description || term });
+      }
+      async function krogerToken(env) {
+        if (!env.KROGER_CLIENT_ID || !env.KROGER_CLIENT_SECRET) return null;
+        const auth = btoa(env.KROGER_CLIENT_ID + ":" + env.KROGER_CLIENT_SECRET);
+        const r = await fetch("https://api.kroger.com/v1/connect/oauth2/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Authorization: "Basic " + auth }, body: "grant_type=client_credentials&scope=product.compact" });
+        if (!r.ok) return null;
+        const j = await r.json();
+        return j.access_token || null;
+      }
       if (p === "/api/grocery/mealdel" && req.method === "POST") {
         if (!groceryVisible) return json({ error: "no access" }, 403);
         await ensureGrocery(env);
@@ -3226,7 +3267,7 @@ window.__gmeals=order;
 var est=gEstTotal();
 h+='<div class="gtools">';
 if(order.length)h+='<button class="mini" onclick="gAll(1)">Expand all</button><button class="mini" onclick="gAll(0)">Collapse all</button>';
-h+='<span class="gtot">'+(est>0?('Est. total ~$'+est.toFixed(2)):'')+'</span></div>';
+h+='<button class="mini" onclick="gKrogerHere()" title="Set your current Kroger store">&#128205; Set store</button><button class="mini" onclick="gKrogerAll()" title="Fill prices from your nearest Kroger">&#128178; Kroger prices</button>';h+='<span class="gtot">'+(est>0?('Est. total ~$'+est.toFixed(2)):'')+'</span></div>';
 if(order.length){h+='<div style="margin-top:2px">';order.forEach(function(mname,gi){var items=groups[mname];var toBuy=items.filter(function(x){return !x.checked;}).length;var mserves=0;for(var si=0;si<items.length;si++){if(items[si].serves){mserves=items[si].serves;break;}}h+='<details class="gmeal" style="margin:7px 0;border:1px solid rgba(var(--acc-rgb),.3);border-radius:10px;padding:5px 11px;background:rgba(var(--acc-rgb),.05)">';h+='<summary style="cursor:pointer;font-weight:bold"><span class="gcaret">&#9656;</span>&#127869; '+esc(mname)+(mserves?' <span style="color:var(--dim);font-weight:normal;font-size:.82rem">Serves '+mserves+'</span>':'')+' <span class="badge">'+toBuy+' to buy</span> <button class="mini" onclick="event.preventDefault();saveRecipeI('+gi+')">save recipe</button> <button class="mini" onclick="event.preventDefault();mealDelI('+gi+')">x all</button></summary>';h+='<div class="gnest"><ul>';items.forEach(function(it){h+=gRow(it,true);});h+='</ul></div></details>';});h+='</div>';}
 if(!standalone.length&&!order.length){h+='<ul style="margin-top:8px"><li class="empty">List is empty.</li></ul>';}else if(standalone.length){h+='<ul class="gitems" style="margin-top:8px">';standalone.forEach(function(it){h+=gRow(it,false);});h+='</ul>';}
 return h+'</details>';
@@ -3236,7 +3277,7 @@ function gCardTog(d){try{localStorage.setItem('gcardOpen',d.open?'1':'0');}catch
 function gToBuyCount(){var n=0;(S.grocery||[]).forEach(function(it){var keep=it.meal_group?true:(gState(it)!=='done');if(keep&&!it.checked)n++;});return n;}
 function gEstTotal(){var t=0;(S.grocery||[]).forEach(function(it){var keep=it.meal_group?true:(gState(it)!=='done');if(keep&&!it.checked&&it.price)t+=(+it.price||0);});return t;}
 function gAll(on){var ds=document.querySelectorAll('.gmeal');for(var i=0;i<ds.length;i++){ds[i].open=!!on;}}
-function gSetPrice(id){var arr=S.grocery||[],cur=null,i;for(i=0;i<arr.length;i++){if(String(arr[i].id)===String(id)){cur=arr[i];break;}}var p=prompt('Price you paid (number only, e.g. 3.49):',(cur&&cur.price)?cur.price:'');if(p===null)return;var v=parseFloat(p);if(isNaN(v))v=null;var st=prompt('Which store? (Kroger, Walmart, Safeway, ...):',(cur&&cur.store)?cur.store:'');if(st===null)st='';for(i=0;i<arr.length;i++){if(String(arr[i].id)===String(id)){arr[i].price=v;arr[i].store=st;break;}}if(typeof render==='function')render();gSync('/api/grocery/price',{id:id,price:v,store:st});}
+function gSetPrice(id){var arr=S.grocery||[],cur=null,i;for(i=0;i<arr.length;i++){if(String(arr[i].id)===String(id)){cur=arr[i];break;}}var p=prompt('Price you paid (number only, e.g. 3.49):',(cur&&cur.price)?cur.price:'');if(p===null)return;var v=parseFloat(p);if(isNaN(v))v=null;var st=prompt('Which store? (Kroger, Walmart, Safeway, ...):',(cur&&cur.store)?cur.store:'');if(st===null)st='';for(i=0;i<arr.length;i++){if(String(arr[i].id)===String(id)){arr[i].price=v;arr[i].store=st;break;}}if(typeof render==='function')render();gSync('/api/grocery/price',{id:id,price:v,store:st});}function gKrogerHere(){function send(body){gToast('Finding the nearest Kroger...');fetch('/api/loc/here',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();}).then(function(d){if(d&&d.ok&&d.store){gToast('Store set: '+d.store.name+(d.store.city?(' - '+d.store.city+', '+d.store.state):''));}else if(d&&d.need==='setup'){gToast('Kroger keys not added yet - run Add Kroger Keys.');}else{gToast('No Kroger store found near there.');}}).catch(function(){gToast('Could not reach Kroger.');});}if(navigator.geolocation){gToast('Getting your location...');navigator.geolocation.getCurrentPosition(function(p){send({lat:p.coords.latitude,lon:p.coords.longitude});},function(){var z=prompt('Enter the ZIP where you are now:');if(z)send({zip:z});},{timeout:8000});}else{var z=prompt('Enter the ZIP where you are now:');if(z)send({zip:z});}}function gKrogerAll(){var items=(S.grocery||[]).filter(function(it){var keep=it.meal_group?true:(gState(it)!=='done');return keep&&!it.checked;});if(!items.length){gToast('No items to price.');return;}gToast('Pricing '+items.length+' item(s) at your Kroger...');var i=0,found=0;function fin(){if(typeof render==='function')render();gToast('Kroger prices: '+found+' of '+items.length+' found.');}function next(){if(i>=items.length){fin();return;}var it=items[i++];fetch('/api/grocery/kroger',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({item:it.name})}).then(function(r){return r.json();}).then(function(d){if(d&&d.need==='setup'){gToast('Kroger keys not added yet.');fin();return;}if(d&&d.noLoc){gToast('Tap Set store first.');fin();return;}if(d&&d.ok&&d.found){var p8=(d.promo&&d.promo>0)?d.promo:d.regular;found++;for(var j=0;j<S.grocery.length;j++){if(String(S.grocery[j].id)===String(it.id)){S.grocery[j].price=p8;S.grocery[j].store=d.store;break;}}fetch('/api/grocery/price',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:it.id,price:p8,store:d.store})});}next();}).catch(function(){next();});}next();}
 function gKey(e){if(e.key==='Enter'){e.preventDefault();var el=document.getElementById('gn');var v=((el&&el.value)||'').trim();if(!v)return;var R=S.recipes||{};if(R[v.toLowerCase()]){addMeal();}else{addG();}}}
 function gSync(u,b){fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})}).then(function(){return fetch('/api/state');}).then(function(r){return r.json();}).then(function(ns){if(ns&&!ns.pending){S=ns;if(typeof cur!=='undefined'&&cur==='grocery'&&typeof render==='function')render();}}).catch(function(){});}
 function gToast(t){try{var d=document.getElementById('gToast');if(!d){d=document.createElement('div');d.id='gToast';d.style.cssText='position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#08111c;border:1px solid rgba(0,229,255,.5);color:#cdeefb;padding:10px 16px;border-radius:10px;z-index:99999;box-shadow:0 0 18px rgba(0,229,255,.3);font-size:.9rem;transition:opacity .4s';document.body.appendChild(d);}d.textContent=t;d.style.opacity='1';clearTimeout(window.__gtoT);window.__gtoT=setTimeout(function(){d.style.opacity='0';},2400);}catch(e){}}
