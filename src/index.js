@@ -3031,7 +3031,7 @@ function mountBigDecisions(){try{
     if(it.struck)li.style.opacity='.5';
     li.querySelectorAll('.bdtag').forEach(function(ch){ch.onclick=function(ev){ev.stopPropagation();var on=ch.getAttribute('data-on')==='1';ch.setAttribute('data-on',on?0:1);var t=TAGS.filter(function(x){return x[0]===ch.getAttribute('data-k');})[0];ch.style.background=on?'transparent':(t[2]+'22');ch.style.borderColor=on?(t[2]+'66'):t[2];persist();};});
     li.querySelector('input').onchange=persist;
-    li.querySelector('.bdx').onclick=function(){if(li.getAttribute('data-struck')==='1'){li.remove();persist();return;}li.setAttribute('data-struck','1');var bx=li.querySelector('.bx');bx.style.textDecoration='line-through';bx.style.color='#9b8a92';li.style.opacity='.5';list.appendChild(li);persist();};
+    li.querySelector('.bdx').onclick=function(){if(li.getAttribute('data-struck')==='1'){li.remove();persist();return;}li.setAttribute('data-struck','1');var bx=li.querySelector('.bx');bx.style.textDecoration='line-through';bx.style.color='#9b8a92';li.style.opacity='.5';list.appendChild(li);persist();};li.querySelector('.bx').onclick=function(){if(li.getAttribute('data-struck')!=='1')return;li.setAttribute('data-struck','0');var bx2=li.querySelector('.bx');bx2.style.textDecoration='none';bx2.style.color='#ffd6e0';li.style.opacity='1';var dx=li.querySelector('.bdx');if(dx){dx.title='Cross off';dx.style.borderColor='rgba(255,45,85,.5)';}persist();};li.querySelector('.bx').style.cursor='pointer';li.querySelector('.bx').title='Tap to restore if crossed off';
     reorder(li);
     return li;
   }
