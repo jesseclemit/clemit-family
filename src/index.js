@@ -891,6 +891,28 @@ if (p === "/api/king/veto" && req.method === "POST") {
         await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES ('bd_items',?)").bind(JSON.stringify(__all)).run();
         return json({ ok: true });
       }
+      if (p === "/api/bd/synopsis" && req.method === "POST") {
+        const b = await req.json();
+        const __cat = String(b.chat || "general");
+        if (__cat.indexOf("dm|") === 0) { const __pp = __cat.split("|"); if (!(me.name === __pp[1] || me.name === __pp[2])) return json({ bullets: [] }); }
+        let __rows = [];
+        try { __rows = (await env.DB.prepare("SELECT author, body FROM messages WHERE (category = ? OR category LIKE ?) ORDER BY id DESC LIMIT 40").bind(__cat, __cat + "|%").all()).results || []; } catch (e) {}
+        __rows = __rows.reverse();
+        if (!__rows.length || !env.AI) return json({ bullets: [] });
+        let __tx = __rows.map(function (m) { return String(m.author || "?") + ": " + String(m.body || "").slice(0, 240); }).join("\n").slice(0, 6000);
+        let __out = [];
+        try {
+          const __r = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { messages: [
+            { role: "system", content: "You summarize a family chat into BIG DECISIONS. Reply with ONLY a JSON array of 3 to 6 short strings - each a decision the group made or an open question they still need to resolve. Keep each under 14 words. No commentary, no markdown, just the JSON array." },
+            { role: "user", content: __tx }
+          ] });
+          let __t = __r ? ((typeof __r === "string") ? __r : (__r.response || __r.result || "")) : "";
+          __t = String(__t || "");
+          const __ia = __t.indexOf("["), __ib = __t.lastIndexOf("]");
+          if (__ia >= 0 && __ib > __ia) { const __arr = JSON.parse(__t.slice(__ia, __ib + 1)); if (Array.isArray(__arr)) __out = __arr.filter(function (x) { return typeof x === "string" && x.trim(); }).map(function (x) { return x.trim().slice(0, 120); }).slice(0, 6); }
+        } catch (e) {}
+        return json({ bullets: __out });
+      }
       if (p === "/api/notes" && req.method === "GET") {
         try { await env.DB.prepare("CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY AUTOINCREMENT, owner_email TEXT, owner_name TEXT, body TEXT, created_at INTEGER, updated_at INTEGER, shares TEXT DEFAULT '[]')").run(); } catch (e) {}
         try { await env.DB.prepare("ALTER TABLE notes ADD COLUMN important INTEGER DEFAULT 0").run(); } catch (e) {}
@@ -3018,7 +3040,7 @@ function mountBigDecisions(){try{
   gItems().forEach(row);try{fetch('/api/bd?chat='+encodeURIComponent(fcat||'general')).then(function(r){return r.json();}).then(function(d){if(d&&d.items&&d.items.length){try{localStorage.setItem(key,JSON.stringify(d.items));}catch(_){}list.innerHTML='';d.items.forEach(row);}}).catch(function(){});}catch(e){}
   function add(){var v=win.querySelector('#bdInp').value.trim();if(!v)return;row({text:v,tags:[]});win.querySelector('#bdInp').value='';persist();}
   win.querySelector('#bdAdd').onclick=add;win.querySelector('#bdInp').addEventListener('keydown',function(e){if(e.key==='Enter')add();});
-  win.querySelector('#bdAi').onclick=function(){var b=win.querySelector('#bdAiBox');var sh=b.style.display==='none';b.style.display=sh?'block':'none';this.style.background=sh?'rgba(177,75,255,.18)':'transparent';this.style.color=sh?'#d4b6ff':'#8a7ba8';};
+  win.querySelector('#bdAi').onclick=function(){var b=win.querySelector('#bdAiBox');var btn=this;var sh=b.style.display==='none';b.style.display=sh?'block':'none';btn.style.background=sh?'rgba(177,75,255,.18)':'transparent';btn.style.color=sh?'#d4b6ff':'#8a7ba8';if(!sh)return;function E(x){return String(x).split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;');}b.innerHTML='<div style="font-size:11px;color:#c9a8ff;padding:6px 2px">Summarizing this conversation...</div>';fetch('/api/bd/synopsis',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({chat:(fcat||'general')})}).then(function(r){return r.json();}).then(function(d){var bs=(d&&d.bullets)||[];if(!bs.length){b.innerHTML='<div style="font-size:11px;color:#6f8aa0;padding:6px 2px">No clear decisions to summarize yet.</div>';return;}b.innerHTML='<div style="font-size:10px;letter-spacing:1.5px;color:#c9a8ff;font-weight:bold;margin:4px 0 6px">AI SYNOPSIS</div>';bs.forEach(function(tx){var li=document.createElement('div');li.style.cssText='display:flex;align-items:center;gap:7px;margin-bottom:5px';li.innerHTML='<button style="flex:none;width:19px;height:19px;border-radius:6px;border:1px solid rgba(255,45,85,.55);background:rgba(255,45,85,.12);color:#ff8aa0;font-size:12px;line-height:1;cursor:pointer">+</button><span style="flex:1;min-width:0;font-size:12px;color:#d7ecff">'+E(tx)+'</span>';li.querySelector('button').onclick=function(){row({text:tx,tags:[]});persist();if(typeof linkNote==='function')linkNote(tx);};b.appendChild(li);});}).catch(function(){b.innerHTML='<div style="font-size:11px;color:#ff9ab0;padding:6px 2px">Could not summarize right now.</div>';});};
   function setOpen(o){win.style.display=o?'flex':'none';tab.style.display=o?'none':'flex';geom.open=o;sGeom();}
   win.querySelector('#bdMin').onclick=function(){setOpen(false);};tab.onclick=function(){setOpen(true);};
   var md=null,sx,sy,ox,oy,ow,oh;
