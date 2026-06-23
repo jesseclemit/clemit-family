@@ -875,6 +875,22 @@ if (p === "/api/king/veto" && req.method === "POST") {
   try { await logAudit(env, me.name, "king", "vetoed succession claim (the King is present)", "King"); } catch (e) {}
   return json({ ok: true });
 }
+      if (p === "/api/bd" && req.method === "GET") {
+        const __cat = url.searchParams.get("chat") || "general";
+        if (__cat.indexOf("dm|") === 0) { const __pp = __cat.split("|"); if (!(me.name === __pp[1] || me.name === __pp[2])) return json({ items: [] }); }
+        let __all = {}; try { __all = JSON.parse((await getSetting(env, "bd_items")) || "{}"); } catch (e) {}
+        return json({ items: __all[__cat] || [] });
+      }
+      if (p === "/api/bd/save" && req.method === "POST") {
+        const b = await req.json();
+        const __cat = String(b.chat || "general");
+        if (__cat.indexOf("dm|") === 0) { const __pp = __cat.split("|"); if (!(me.name === __pp[1] || me.name === __pp[2])) return json({ error: "forbidden" }, 403); }
+        const __items = Array.isArray(b.items) ? b.items.slice(0, 500) : [];
+        let __all = {}; try { __all = JSON.parse((await getSetting(env, "bd_items")) || "{}"); } catch (e) {}
+        __all[__cat] = __items;
+        await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES ('bd_items',?)").bind(JSON.stringify(__all)).run();
+        return json({ ok: true });
+      }
       if (p === "/api/notes" && req.method === "GET") {
         try { await env.DB.prepare("CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY AUTOINCREMENT, owner_email TEXT, owner_name TEXT, body TEXT, created_at INTEGER, updated_at INTEGER, shares TEXT DEFAULT '[]')").run(); } catch (e) {}
         try { await env.DB.prepare("ALTER TABLE notes ADD COLUMN important INTEGER DEFAULT 0").run(); } catch (e) {}
@@ -2971,7 +2987,7 @@ function mountBigDecisions(){try{
   else{var chans=(typeof fvChannels==='function')?fvChannels():[];var c=chans.filter(function(x){return x.id===fcat;})[0];label=(c&&c.name)||(fcat==='pulse'?'PULSE Chat':(fcat||'General Discussion'));}
   var key='bd_'+(fcat||'general'); var geom={}; try{geom=JSON.parse(localStorage.getItem('bd_geom')||'{}');}catch(e){}
   function gItems(){try{return JSON.parse(localStorage.getItem(key)||'[]');}catch(e){return[];}}
-  function sItems(a){try{localStorage.setItem(key,JSON.stringify(a));}catch(e){}}
+  function sItems(a){try{localStorage.setItem(key,JSON.stringify(a));}catch(e){}try{fetch('/api/bd/save',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({chat:(fcat||'general'),items:a})});}catch(e){}}
   function sGeom(){try{localStorage.setItem('bd_geom',JSON.stringify(geom));}catch(e){}}
   var root=document.createElement('div');root.id='bdRoot';host.appendChild(root);
   var TAGS=[['triton','MyTriton','#7df9ff'],['shop','Shop','#8be8a8'],['idea','Idea','#cBA8ff']];
@@ -2999,7 +3015,7 @@ function mountBigDecisions(){try{
   }
   function persist(){var arr=[].slice.call(list.children).map(function(li){return {text:li.querySelector('.bx').textContent,done:li.querySelector('input').checked,struck:li.getAttribute('data-struck')==='1',tags:[].slice.call(li.querySelectorAll('.bdtag')).filter(function(c){return c.getAttribute('data-on')==='1';}).map(function(c){return c.getAttribute('data-k');})};});sItems(arr);}
   function reorder(li){li.addEventListener('pointerdown',function(e){if(e.target.closest('button')||e.target.closest('input')||e.target.closest('.bdtag'))return;var sy=e.clientY,drag=false;try{li.setPointerCapture(e.pointerId);}catch(_){}function mv(ev){if(!drag&&Math.abs(ev.clientY-sy)<5)return;drag=true;li.style.opacity='.65';var wr=win.getBoundingClientRect();var off=ev.clientX<wr.left||ev.clientX>wr.right||ev.clientY<wr.top||ev.clientY>wr.bottom;li.style.boxShadow=off?'0 0 0 2px #ff2d55':'0 0 0 1px rgba(0,229,255,.6)';if(!off){var sib=[].slice.call(list.children).filter(function(x){return x!==li;});var pl=false;for(var i=0;i<sib.length;i++){var r=sib[i].getBoundingClientRect();if(ev.clientY<r.top+r.height/2){list.insertBefore(li,sib[i]);pl=true;break;}}if(!pl)list.appendChild(li);}}function up(ev){li.removeEventListener('pointermove',mv);li.removeEventListener('pointerup',up);li.style.cursor='grab';li.style.boxShadow='none';li.style.opacity=li.getAttribute('data-struck')==='1'?'.5':'1';if(!drag)return;var wr=win.getBoundingClientRect();var off=ev.clientX<wr.left||ev.clientX>wr.right||ev.clientY<wr.top||ev.clientY>wr.bottom;if(off)li.remove();persist();}li.addEventListener('pointermove',mv);li.addEventListener('pointerup',up);});}
-  gItems().forEach(row);
+  gItems().forEach(row);try{fetch('/api/bd?chat='+encodeURIComponent(fcat||'general')).then(function(r){return r.json();}).then(function(d){if(d&&d.items&&d.items.length){try{localStorage.setItem(key,JSON.stringify(d.items));}catch(_){}list.innerHTML='';d.items.forEach(row);}}).catch(function(){});}catch(e){}
   function add(){var v=win.querySelector('#bdInp').value.trim();if(!v)return;row({text:v,tags:[]});win.querySelector('#bdInp').value='';persist();}
   win.querySelector('#bdAdd').onclick=add;win.querySelector('#bdInp').addEventListener('keydown',function(e){if(e.key==='Enter')add();});
   win.querySelector('#bdAi').onclick=function(){var b=win.querySelector('#bdAiBox');var sh=b.style.display==='none';b.style.display=sh?'block':'none';this.style.background=sh?'rgba(177,75,255,.18)':'transparent';this.style.color=sh?'#d4b6ff':'#8a7ba8';};
