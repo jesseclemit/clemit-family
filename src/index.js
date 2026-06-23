@@ -414,7 +414,7 @@ async function runDigests(env, key) {
     if (!u.email) continue;
     const lc = String(u.email).toLowerCase();
     const isKing = lc === String(king).toLowerCase();
-    const pub = msgs.filter(function (m) { const c = String(m.category || ""); return isKing || (c !== "household" && c !== "housekeeping"); });
+    const pub = msgs.filter(function (m) { const c = String(m.category || ""); if (c.indexOf("dm|") === 0) { const pp = c.split("|"); return u.name === pp[1] || u.name === pp[2]; } return isKing || (c !== "household" && c !== "housekeeping"); });
     let shared = []; try { shared = ((await env.DB.prepare("SELECT owner_name,body,updated_at FROM notes WHERE updated_at > ? AND shares LIKE ?").bind(since, "%" + lc + "%").all()).results) || []; } catch (e) {}
     let rem = []; try { rem = ((await env.DB.prepare("SELECT title,body,due_at FROM reminders WHERE owner_email=? AND status='pending' AND due_at>=? AND due_at<? ORDER BY due_at ASC").bind(lc, dayStart, dayEnd).all()).results) || []; } catch (e) {}
     const sec = []; let any = false;
