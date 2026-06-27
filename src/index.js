@@ -2872,7 +2872,7 @@ function subBarHtml(parent,items,curId){var h='<div class="subnav">';items.forEa
 function controlView(){var isAdm=!!(S.me.isAdmin||S.me.isRoyal);var ng=S.me.role!=='guest';var cats=[];if(isAdm)cats.push(['overview','🎛 Overview']);cats.push(['updates','✨ Updates']);if(ng)cats.push(['logs','📜 Logs']);if(S.me.isAdmin)cats.push(['rotation','🔄 Rotation']);if(isAdm)cats.push(['iam','🔒 IAM']);if(ng)cats.push(['settings','⚙ Settings']);if(!cats.length)return '<div class="card"><div class="empty">Nothing here for your account.</div></div>';var sub=subResolve('control',cats);var h='<div class="vhead"><h2>🎛 Control Panel</h2></div>';h+=subBarHtml('control',cats,sub);if(sub==='overview')h+=controlOverview();else if(sub==='updates')h+=updatesView();else if(sub==='logs')h+=logsView();else if(sub==='rotation')h+=rotationView();else if(sub==='iam')h+=iamView();else if(sub==='settings')h+=adminView();return h;}
 function mytritonView(){var cats=[['tele','🔱 Telemetry'],['cameras','📷 Cameras']];var sub=subResolve('mytriton',cats);var h='<div class="vhead"><h2>🔱 MyTriton</h2></div>';h+=subBarHtml('mytriton',cats,sub);if(sub==='cameras')h+=camerasView();else h+=mytritonTele();return h;}
 function boardView(){if(window.__notesOpen)return boardMain();var cats=[['forums','🔊 Forums'],['reunion','🎉 Reunion 2027'],['quotes','💬 Quotes']];var sub=subResolve('board',cats);var h='<div class="vhead"><h2>🔊 Forums</h2></div>';h+=subBarHtml('board',cats,sub);if(sub==='reunion')h+=reunionView();else if(sub==='quotes')h+=quotesView();else h+=boardMain();return h;}
-function tabsBase(){var t=[['dj','📚 Library'],['karaoke','🎤 Karaoke'],['home','🏠 Home'],['daymanager','🗓 Day Manager']];if(S.groceryVisible)t.push(['grocery','🛒 Grocery']);t.push(['board','🔊 Forums'],['mytriton','🔱 MyTriton'],['arcade','🎮 Arcade'],['launchpad','🚀 The Launch Pad']);t.push(['control','🎛 Control Panel']);if(S.me.isKing)t.push(['king','👑 King']);return t;}
+function tabsBase(){var t=[['dj','📚 Library'],['karaoke','🎤 Karaoke'],['home','🏠 Home'],['daymanager','🗓 Day Manager']];if(S.groceryVisible)t.push(['grocery','🛒 Shopping List']);t.push(['board','🔊 Forums'],['mytriton','🔱 MyTriton'],['arcade','🎮 Arcade'],['launchpad','🚀 The Launch Pad']);t.push(['control','🎛 Control Panel']);if(S.me.isKing)t.push(['king','👑 King']);return t;}
 function tabs(){var base=tabsBase();var c=(typeof ucfg==='function')?ucfg():{};var order=c.tabOrder||[];var hide=c.tabHide||{};if(c.tabOrderV!==3){order=[];try{ucfgSet({tabOrder:[],tabOrderV:3});}catch(e){}}var lock={home:1,admin:1};var byId={};base.forEach(function(t){byId[t[0]]=t;});var out=[];order.forEach(function(id){var t=byId[id];if(t&&(lock[id]||!hide[id])){out.push(t);delete byId[id];}});base.forEach(function(t){if(byId[t[0]]&&(lock[t[0]]||!hide[t[0]]))out.push(t);});return out.filter(function(x){return x[0]!=='home'&&!iamCut(x[0]);});}
 /* ===== nav button hover FX (shaky + particle bursts) ===== */
 var HFX={home:['♪','♫','♬'],reunion:['🎉','🎊','🎆','🎇','🎈'],grocery:['🛒','🥕','🍎','🥛','🧀'],board:['📝','✉','📜','📃'],dj:['♫','📖','🎬','📚'],arcade:['🎮','👾','⭐','🎲'],daymanager:['🗓','✨','✅','🛒','💡'],launchpad:['🚀','✨','🛸','⭐','🌟'],updates:['⭐','✨','🌟','💫'],king:['❤','💜','💛','💖'],quotes:['❝','❞','✨']};
@@ -3321,6 +3321,50 @@ function gWhen(ts){if(!ts)return'';var s=Math.floor((Date.now()-ts)/1000);if(s<4
 function gWho(it){var by=it.added_by?('by '+esc(it.added_by)):'';var wn=gWhen(it.created_at);var sep=(by&&wn)?' · ':'';if(!by&&!wn)return'';return '<div style="font-size:.72rem;color:var(--dim);margin-top:1px">'+by+sep+wn+'</div>';}
 function gidArg(id){return (typeof id==='number')?(''+id):("'"+id+"'");}
 function gRow(it,inMeal){var chk=it.checked?1:0;var nm='<span class="iname" style="'+(chk?'text-decoration:line-through;opacity:.5':'')+'">'+esc(it.name)+'</span>';var box='<input type="checkbox" '+(chk?'checked':'')+' onclick="checkG('+gidArg(it.id)+','+(chk?0:1)+')" title="check off what you already have at home" style="margin-right:7px;vertical-align:-2px;cursor:pointer">';var actions=' ';if(!inMeal){var st=gState(it);if(st==='due')actions+='<button class="mini" onclick="gotG('+gidArg(it.id)+')">got it</button>';if(it.freq&&it.freq!=='once')actions+='<span class="badge">'+esc(it.freq)+'</span>';}actions+='<button class="mini" title="set the price you paid and the store" onclick="gSetPrice('+gidArg(it.id)+')">$</button><button class="mini" onclick="delG('+gidArg(it.id)+')">x</button>';var q=it.qty?' <span style="color:#5fffe0;font-size:.82rem;font-weight:bold">'+esc(it.qty)+'</span>':'';var pr=it.price?(' <span class="gprice">$'+(+it.price).toFixed(2)+'</span>'+(it.store?' <span class="gstore">@'+esc(it.store)+'</span>':'')):'';return '<li style="display:block">'+box+nm+q+pr+actions+gWho(it)+'</li>';}
+var SLST={
+hardware:{name:"Hardware",stores:"Lowe's · Home Depot · Ace Hardware",cats:[
+["Hardware (Bolts & Nuts)",["bolt","nut","screw","washer","nail","anchor","bracket","hinge","fastener","staple","rivet","clip","hook","chain"]],
+["Tool Corral",["drill","saw","hammer","wrench","tool","bit","blade","driver","plier","screwdriver","tape measure","level","clamp","sander","grinder","sawzall","ratchet","socket","vise","chisel"]],
+["Lumber",["lumber","wood","plywood","board","2x4","2x6","stud","trim","molding","deck","fence","post","mdf","osb","beam","dowel","shelf"]],
+["Plumbing",["pipe","pvc","fitting","valve","faucet","drain","plumb","sealant","teflon","coupling","toilet","flange","gasket","supply line","shutoff","wax ring"]],
+["Electrical",["wire","outlet","switch","breaker","conduit","electrical","romex","gfci","extension cord","plug","junction","wire nut","fixture","bulb","ballast","cable"]],
+["Paint & Finish",["paint","primer","brush","roller","stain","caulk","painters tape","spackle","putty","drop cloth","sandpaper","varnish","sealer"]],
+["Garden & Outdoor",["soil","mulch","plant","fertilizer","hose","seed","sprinkler","garden","grass","weed","lawn","shovel","rake"]]
+]},
+grocery:{name:"Grocery",stores:"Kroger · Walmart · Whole Foods · etc",cats:[
+["Pharmacy",["pharmacy","prescription","medicine","tylenol","advil","ibuprofen","vitamin","bandage","first aid","cold","allergy","cough","antacid","supplement","aspirin","melatonin","sunscreen"]],
+["Grocery",["milk","egg","bread","cheese","butter","yogurt","chicken","beef","pork","fish","rice","pasta","cereal","coffee","tea","apple","banana","lettuce","tomato","onion","potato","sugar","flour","sauce","soup","beans","snack","chip","cookie","water","soda","juice","frozen","produce","meat","dairy","food","bacon","fruit","veggie","vegetable","spice","salt","ketchup","mustard"]],
+["Automotive",["oil","wiper","coolant","antifreeze","wd-40","fuel","filter","fluid","car wash","windshield","tire","funnel","jumper"]],
+["Pet / Dog Food",["dog food","cat food","pet","treat","litter","kibble","leash","collar","chew","catnip","pet food","bird seed","fish food","puppy","kitten"]],
+["Clothes",["shirt","sock","pant","jean","jacket","shoe","underwear","dress","hat","glove","coat","sweater","short","clothes","belt","boot","pajama"]],
+["Home Goods",["towel","sheet","pillow","blanket","curtain","rug","candle","detergent","soap","cleaner","trash bag","paper towel","toilet paper","dish","sponge","laundry","napkin","foil","storage","bin","mop","broom","decor"]],
+["Electronics",["battery","charger","hdmi","usb","headphone","earbud","mouse","keyboard","speaker","tablet","sd card","power strip","adapter","camera","router"]],
+["Toys / Games",["toy","game","puzzle","lego","doll","card game","board game","figure","craft","crayon","coloring","blocks","nerf","plush","video game","controller"]]
+]},
+packages:{name:"Packages",stores:"Post Office · FedEx · UPS",cats:[
+["Post Office (USPS)",["usps","post office","stamp","certified","money order","po box","priority mail","first class"]],
+["FedEx",["fedex","fed ex"]],
+["UPS",["ups","ups store"]],
+["Amazon / Returns",["amazon","return","drop off","dropoff","kohls","label"]]
+]},
+party:{name:"Party",stores:"Liquor · Dispensary · Party Store · Spirit Halloween",cats:[
+["Liquor Store",["beer","wine","whiskey","vodka","rum","tequila","liquor","bourbon","gin","seltzer","champagne","mixer","tonic","ice","scotch","cider","spirits"]],
+["Dispensary",["weed","cannabis","edible","gummy","flower","vape","cart","pre-roll","dispensary","thc","cbd","joint","concentrate"]],
+["Party Store",["balloon","banner","streamer","plates","cups","confetti","party favor","gift bag","decoration","tablecloth","invitation","pinata"]],
+["Spirit Halloween",["costume","mask","halloween","spirit","fog machine","prop","wig","makeup","fake blood","cobweb","skeleton","pumpkin"]]
+]}
+};
+var SLSCAN=["hardware","party","packages","grocery"];
+var SLSHOW=["hardware","grocery","packages","party"];
+function slSecOrder(st){var a=SLST[st].cats.map(function(c){return c[0];});a.push("Other");return a;}
+function slClassify(name,forceSt){var t=" "+String(name).toLowerCase()+" ";var ord=forceSt?[forceSt]:SLSCAN;for(var oi=0;oi<ord.length;oi++){var stk=ord[oi];var cats=SLST[stk].cats;for(var i=0;i<cats.length;i++){var kws=cats[i][1];for(var j=0;j<kws.length;j++){if(t.indexOf(kws[j])>=0)return {st:stk,sec:cats[i][0]};}}}return {st:forceSt||"grocery",sec:"Other"};}
+function slMapAll(){try{return JSON.parse(localStorage.getItem("pulse.sl.map")||"{}")||{};}catch(e){return {};}}
+function slMapGet(name){var m=slMapAll();return m[String(name).toLowerCase()]||null;}
+function slMapSet(name,v){var m=slMapAll();m[String(name).toLowerCase()]=v;try{localStorage.setItem("pulse.sl.map",JSON.stringify(m));}catch(e){}}
+function slPlace(it){var ov=slMapGet(it.name);if(ov&&ov.st&&SLST[ov.st])return {st:ov.st,sec:ov.sec||slClassify(it.name,ov.st).sec};return slClassify(it.name);}
+function slColOpen(st){try{return localStorage.getItem("pulse.sl.col."+st)!=="0";}catch(e){return true;}}
+function slToggleCol(el){var st=el.getAttribute("data-st");var open=slColOpen(st);try{localStorage.setItem("pulse.sl.col."+st,open?"0":"1");}catch(e){}if(typeof render==="function")render();}
+function slAddTo(btn){var st=btn.getAttribute("data-st");var el=document.getElementById("sladd_"+st);var v=((el&&el.value)||"").trim();if(!v)return;el.value="";var R=S.recipes||{};if(R[v.toLowerCase()]){return addMeal(v);}var pl=slClassify(v,st);slMapSet(v,{st:st,sec:pl.sec});S.grocery=S.grocery||[];S.grocery.push({id:"tmp"+Date.now(),name:v,freq:"once",last_bought:null,added_by:(S.me&&S.me.name)||"me",created_at:Date.now(),meal_group:null,checked:0});if(typeof render==="function")render();gSync("/api/grocery",{name:v,freq:"once"});}
 function groceryView(){
 var h='<style>'+
 '.gmeal>summary{list-style:none}.gmeal>summary::-webkit-details-marker{display:none}'+
@@ -3338,12 +3382,24 @@ var h='<style>'+
 '.gtot{margin-left:auto;font-weight:bold;color:var(--acc);text-shadow:0 0 9px rgba(var(--acc-rgb),.5)}'+
 '.gprice{color:#5fffe0;font-size:.8rem;font-weight:bold;margin-left:6px}'+
 '.gstore{color:var(--dim);font-size:.72rem;margin-left:2px}'+
-'.gitems{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:2px 20px}'+
-'@media(max-width:640px){.gitems{grid-template-columns:1fr}}'+
+'.slgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:12px;margin-top:12px}'+
+'@media(max-width:640px){.slgrid{grid-template-columns:1fr}}'+
+'.slcol{border:1px solid rgba(var(--acc-rgb),.32);border-radius:12px;background:rgba(var(--acc-rgb),.05);padding:9px 11px}'+
+'.slhead{display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none}'+
+'.slhead .slc{display:inline-block;transition:transform .15s ease;color:var(--acc);font-size:.8em}'+
+'.slcol.slclosed .slc{transform:rotate(-90deg)}'+
+'.slhead .sltitle{font-weight:bold;font-size:1.02rem}'+
+'.slhead .slstores{color:var(--dim);font-size:.7rem;display:block;margin-top:1px}'+
+'.slhead .badge{margin-left:auto}'+
+'.slbody{margin-top:9px}.slcol.slclosed .slbody{display:none}'+
+'.slsec{margin:8px 0}'+
+'.slsec .slsh{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--acc);font-weight:bold;margin-bottom:3px;opacity:.92}'+
+'.slsec ul{margin:0;padding-left:0;list-style:none}.slsec li{padding-left:0;list-style:none;display:block}'+
+'.sladd{display:flex;gap:6px;margin-top:10px}.sladd input{flex:1;min-width:0}'+
 '</style>';
 h+='<details id="gcard"'+(gCardOpen()?' open':'')+' ontoggle="gCardTog(this)">';
-h+='<summary><span class="gx">&#9656;</span><span style="font-size:1.12rem;font-weight:bold">&#128722; Shared Grocery</span><span class="badge" style="margin-left:auto">'+gToBuyCount()+' to buy</span></summary>';
-h+='<div class="sub">Yours and Jaemie&#39;s'+(S.guestShare?' (shared with guests now)':'')+'. Type an item and press Enter, or type a meal (Meatloaf, Chicken Parm, Banana Split) and tap <b>Add meal</b> to auto-fill its ingredients. Tap <b>$</b> on any item to log the price you paid and where.</div>';
+h+='<summary><span class="gx">&#9656;</span><span style="font-size:1.12rem;font-weight:bold">&#128722; Shopping List</span><span class="badge" style="margin-left:auto">'+gToBuyCount()+' to buy</span></summary>';
+h+='<div class="sub">Yours and Jaemie&#39;s'+(S.guestShare?' (shared with guests now)':'')+'. Add an item to a store below, or type a meal (Meatloaf, Chicken Parm) up here and tap <b>Add meal</b> to auto-fill its ingredients. Tap <b>$</b> on any item to log price &amp; store.</div>';
 h+='<div class="row"><input id="gn" placeholder="Add item or meal..." onkeydown="gKey(event)"><select id="gf"><option value="once">One-time</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select><button class="go" onclick="addG()">Add</button><button class="go" style="background:linear-gradient(135deg,#b14bff,#ff3df0)" onclick="addMeal()">&#127869; Add meal</button></div>';
 var live=(S.grocery||[]).filter(function(it){return it.meal_group?true:(gState(it)!=='done');});
 var groups={},order=[],standalone=[];
@@ -3355,7 +3411,11 @@ h+='<div class="gtools">';
 if(order.length)h+='<button class="mini" onclick="gAll(1)">Expand all</button><button class="mini" onclick="gAll(0)">Collapse all</button>';
 h+='<button class="mini" onclick="gKrogerHere()" title="Set your current Kroger store">&#128205; Set store</button><button class="mini" onclick="gKrogerAll()" title="Fill prices from your nearest Kroger">&#128178; Kroger prices</button><button class="mini" onclick="gKrogerCart()" title="Send this list to your family Kroger cart for pickup">&#128722; Send to Kroger</button>';h+='<span class="gtot">'+(est>0?('Est. total ~$'+est.toFixed(2)):'')+'</span></div>';
 if(order.length){h+='<div style="margin-top:2px">';order.forEach(function(mname,gi){var items=groups[mname];var toBuy=items.filter(function(x){return !x.checked;}).length;var mserves=0;for(var si=0;si<items.length;si++){if(items[si].serves){mserves=items[si].serves;break;}}h+='<details class="gmeal" style="margin:7px 0;border:1px solid rgba(var(--acc-rgb),.3);border-radius:10px;padding:5px 11px;background:rgba(var(--acc-rgb),.05)">';h+='<summary style="cursor:pointer;font-weight:bold"><span class="gcaret">&#9656;</span>&#127869; '+esc(mname)+(mserves?' <span style="color:var(--dim);font-weight:normal;font-size:.82rem">Serves '+mserves+'</span>':'')+' <span class="badge">'+toBuy+' to buy</span> <button class="mini" onclick="event.preventDefault();saveRecipeI('+gi+')">save recipe</button> <button class="mini" onclick="event.preventDefault();mealDelI('+gi+')">x all</button></summary>';h+='<div class="gnest"><ul>';items.forEach(function(it){h+=gRow(it,true);});h+='</ul></div></details>';});h+='</div>';}
-if(!standalone.length&&!order.length){h+='<ul style="margin-top:8px"><li class="empty">List is empty.</li></ul>';}else if(standalone.length){h+='<ul class="gitems" style="margin-top:8px">';standalone.forEach(function(it){h+=gRow(it,false);});h+='</ul>';}
+var slG={hardware:{},grocery:{},packages:{},party:{}};
+standalone.forEach(function(it){var p=slPlace(it);if(!slG[p.st])p={st:'grocery',sec:p.sec};(slG[p.st][p.sec]=slG[p.st][p.sec]||[]).push(it);});
+h+='<div class="slgrid">';
+SLSHOW.forEach(function(st){var meta=SLST[st];var secs=slG[st];var cnt=0,k;for(k in secs){if(secs.hasOwnProperty(k)){for(var z=0;z<secs[k].length;z++){if(!secs[k][z].checked)cnt++;}}}var open=slColOpen(st);h+='<div class="slcol'+(open?'':' slclosed')+'">';h+='<div class="slhead" data-st="'+st+'" onclick="slToggleCol(this)"><span class="slc">&#9656;</span><span><span class="sltitle">'+meta.name+'</span><span class="slstores">'+meta.stores+'</span></span><span class="badge">'+cnt+'</span></div>';h+='<div class="slbody">';var any=false;slSecOrder(st).forEach(function(sec){var arr=secs[sec];if(!arr||!arr.length)return;any=true;arr.sort(function(a,b){return (gState(a)==='due'?0:1)-(gState(b)==='due'?0:1);});h+='<div class="slsec"><div class="slsh">'+esc(sec)+'</div><ul>';arr.forEach(function(it){h+=gRow(it,false);});h+='</ul></div>';});if(!any)h+='<div class="empty" style="padding:5px 2px">Nothing here yet.</div>';h+='<div class="sladd"><input id="sladd_'+st+'" placeholder="Add to '+meta.name+'..." onkeydown="if(event.keyCode===13)slAddTo(this.nextElementSibling)"><button class="go" data-st="'+st+'" onclick="slAddTo(this)">+</button></div>';h+='</div></div>';});
+h+='</div>';
 return h+'</details>';
 }
 function gCardOpen(){try{return localStorage.getItem('gcardOpen')!=='0';}catch(e){return true;}}
