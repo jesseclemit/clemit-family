@@ -4197,7 +4197,7 @@ function JPV_IN(){return /[?&]inphone=1/.test(location.search);}
 var JPV_DEV={pixel:{n:'Pixel 7 · Android',w:412,h:915,os:'android'},galaxy:{n:'Galaxy S22 · Android',w:360,h:780,os:'android'},iphone:{n:'iPhone 15',w:393,h:852,os:'ios'}};
 var jpvDev='pixel',jpvScale='fit',jpvDrag=null;
 function jpvCfg(){var c=ucfg();if(c.phoneDev&&JPV_DEV[c.phoneDev])jpvDev=c.phoneDev;if(c.phoneScale!=null)jpvScale=c.phoneScale;return c;}
-function phonePreviewMaybe(){if(JPV_IN())return;if(!(S&&S.me&&S.me.isOwner))return;var __rb=document.getElementById('jpvReopen');if(__rb)__rb.style.display='inline-flex';if(window.__jpvUserClosed)return;if(document.getElementById('jpvWrap')){jpvOpen();return;}jpvCfg();jpvBuild();jpvOpen();}
+function phonePreviewMaybe(){return;if(JPV_IN())return;if(!(S&&S.me&&S.me.isOwner))return;var __rb=document.getElementById('jpvReopen');if(__rb)__rb.style.display='inline-flex';if(window.__jpvUserClosed)return;if(document.getElementById('jpvWrap')){jpvOpen();return;}jpvCfg();jpvBuild();jpvOpen();}
 function jpvBuild(){
   var c=ucfg();var w=document.createElement('div');w.id='jpvWrap';
   var opts='';for(var k in JPV_DEV){opts+='<option value="'+k+'"'+(k===jpvDev?' selected':'')+'>'+JPV_DEV[k].n+'</option>';}
