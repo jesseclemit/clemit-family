@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clemit Family Health</title>
+<style>
+  :root{
+    --nhs-blue:#005eb8; --nhs-dark:#003087; --teal:#00857d;
+    --ink:#212b32; --muted:#4c6272; --line:#d8dde0;
+    --bg:#ffffff; --bg-soft:#f0f4f5; --warn-bg:#fff9e6; --warn-line:#ffb81c;
+    --acc:var(--nhs-blue); --rad:8px;
+    --font:"Helvetica Neue",Arial,"Segoe UI",Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--ink);background:var(--bg-soft);line-height:1.5;padding:14px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto}
+  a{color:var(--nhs-blue)} a:hover{color:var(--nhs-dark)}
+
+  /* header */
+  .hero{background:var(--bg);border:1px solid var(--line);border-radius:var(--rad);padding:14px 18px;margin-bottom:12px}
+  .hero h1{font-size:1.35rem;letter-spacing:-.4px;margin-bottom:4px}
+  .hero p.lede{color:var(--muted);font-size:.9rem;max-width:760px}
+  .reviewed{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:.78rem;color:var(--muted)}
+  .reviewed b{color:var(--ink)}
+  .badge{display:inline-block;background:var(--bg-soft);border:1px solid var(--line);border-radius:3px;padding:1px 7px;font-size:.72rem;font-weight:600;color:var(--muted)}
+
+  /* sub-tab bar */
+  .tabbar{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;background:var(--nhs-dark);border-radius:var(--rad) var(--rad) 0 0;padding:6px 6px 0}
+  .tabbar button{flex:0 0 auto;border:0;background:transparent;color:#cfe0f2;font-family:var(--font);font-size:.9rem;font-weight:700;padding:11px 16px;border-radius:6px 6px 0 0;cursor:pointer;white-space:nowrap;position:relative}
+  .tabbar button .pill{display:inline-block;min-width:18px;margin-left:6px;background:rgba(255,255,255,.18);color:#fff;border-radius:20px;font-size:.7rem;padding:0 6px;font-weight:700}
+  .tabbar button:hover{background:rgba(255,255,255,.12);color:#fff}
+  .tabbar button.active{background:var(--bg-soft);color:var(--nhs-dark)}
+  .panes{background:var(--bg-soft);border:1px solid var(--line);border-top:0;border-radius:0 0 var(--rad) var(--rad);padding:16px}
+  .panel{display:none}
+  .panel.active{display:block}
+  .panel h2.head{font-size:1.25rem;letter-spacing:-.3px;margin-bottom:4px}
+  .panel p.sub{color:var(--muted);font-size:.9rem;margin-bottom:14px}
+
+  /* reconcile + plan */
+  .reconcile-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:#eef3fb;border:1px solid #c5d7f0;border-radius:var(--rad);padding:14px 16px;margin-bottom:14px}
+  .reconcile-bar p{font-size:.86rem;color:#1c3d6e;flex:1;min-width:220px}
+  .btn{border:0;border-radius:6px;font-weight:700;font-size:.88rem;padding:10px 18px;cursor:pointer;color:#fff;background:var(--nhs-blue)}
+  .btn:hover{background:var(--nhs-dark)}
+  .btn.teal{background:var(--teal)} .btn.teal:hover{background:#06746d}
+  .btn:disabled{opacity:.55;cursor:default}
+  .plan{background:var(--bg);border:1px solid var(--line);border-left:5px solid var(--teal);border-radius:var(--rad);padding:16px 18px;white-space:pre-wrap;font-size:.92rem}
+  .plan h3{font-size:1.05rem;margin-bottom:8px}
+  .plan .when{font-size:.74rem;color:var(--muted);font-weight:400;margin-left:8px}
+  .plan.empty{color:var(--muted);border-left-color:var(--line);white-space:normal}
+  .tally{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 16px}
+  .tally .chip{background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:5px 13px;font-size:.82rem;color:var(--muted)}
+  .tally .chip b{color:var(--ink)}
+
+  /* topic = rich summary + capture */
+  .topic .summary{padding:0 0 12px}
+  .topic .summary p{font-size:.9rem;color:var(--muted)}
+  .topic .summary ul{margin:10px 0 0 18px;font-size:.88rem;color:var(--muted)}
+  .topic .summary ul li{margin-bottom:4px}
+  .intake{background:var(--bg);border:1px solid var(--line);border-radius:var(--rad);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .intake-head{display:flex;justify-content:space-between;align-items:center}
+  .intake-title{font-weight:700;font-size:.92rem}
+  .intake-count{font-size:.74rem;color:var(--muted);background:var(--bg-soft);border:1px solid var(--line);border-radius:20px;padding:2px 10px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row.end{justify-content:flex-end}
+  label{font-size:.74rem;font-weight:600;color:var(--muted);display:flex;flex-direction:column;gap:3px;flex:1;min-width:140px}
+  select,input,textarea{font-family:var(--font);font-size:.88rem;border:1px solid var(--line);border-radius:5px;padding:7px 9px;color:var(--ink);background:#fff;width:100%}
+  textarea{resize:vertical}
+  select:focus,input:focus,textarea:focus{outline:2px solid var(--acc);border-color:var(--acc)}
+  .queue{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:2px}
+  .queue li{background:var(--bg-soft);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:5px;padding:8px 11px;font-size:.84rem;position:relative}
+  .queue li .meta{font-size:.72rem;color:var(--muted);margin-bottom:3px}
+  .queue li .meta b{color:var(--teal)}
+  .queue li .src{font-size:.72rem;color:var(--nhs-blue);word-break:break-all;margin-top:3px}
+  .queue li .del{position:absolute;top:6px;right:8px;border:0;background:transparent;color:#b00;cursor:pointer;font-size:.9rem;font-weight:700}
+  .queue .empty{background:transparent;border:1px dashed var(--line);border-left:1px dashed var(--line);color:var(--muted);text-align:center;padding:10px;font-size:.8rem}
+
+  /* monographs */
+  .mono{background:var(--bg);border:1px solid var(--line);border-radius:var(--rad);overflow:hidden;margin-bottom:14px}
+  .mono .head{background:var(--ink);color:#fff;padding:12px 18px}
+  .mono .head .gen{font-size:1.12rem;font-weight:700}
+  .mono .head .brand{font-size:.84rem;opacity:.8;font-style:italic}
+  .mono .head .cls{display:inline-block;margin-top:6px;background:var(--teal);color:#fff;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:3px 8px;border-radius:3px}
+  .mono table{width:100%;border-collapse:collapse;font-size:.87rem}
+  .mono th{text-align:left;vertical-align:top;width:160px;background:var(--bg-soft);font-weight:700;padding:10px 18px;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+  .mono td{padding:10px 18px;border-bottom:1px solid var(--line);color:var(--muted)}
+  .mono tr:last-child th,.mono tr:last-child td{border-bottom:0}
+  .blackbox{margin:12px 18px;background:#fdecea;border:1px solid #f1948a;border-left:5px solid #c0392b;border-radius:4px;padding:11px 14px;font-size:.84rem;color:#922b21}
+  .blackbox b{text-transform:uppercase;letter-spacing:.5px;font-size:.7rem;display:block;margin-bottom:4px;color:#c0392b}
+  .evid{font-size:.82rem;color:var(--muted)}
+
+  /* generic cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:14px}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:var(--rad);overflow:hidden}
+  .card .bar{height:6px;background:var(--nhs-blue)}
+  .card.teal .bar{background:var(--teal)} .card.amber .bar{background:var(--warn-line)}
+  .card .body{padding:14px 16px}
+  .card h3{font-size:1.05rem;margin-bottom:5px}
+  .card p{font-size:.88rem;color:var(--muted)}
+
+  .disc{background:var(--warn-bg);border:1px solid var(--warn-line);border-left:5px solid var(--warn-line);border-radius:6px;padding:13px 17px;font-size:.84rem;color:#594d1a}
+  .disc b{color:#3d3410}
+  /* records + dropzone */
+  .mini-head{font-size:1.05rem;margin:18px 0 4px}
+  .linklike{border:0;background:transparent;color:var(--nhs-blue);font:inherit;font-weight:700;cursor:pointer;padding:0;text-decoration:underline}
+  .dropzone{border:2px dashed #9bb8d6;background:#f3f8fd;border-radius:var(--rad);padding:26px 18px;text-align:center;color:var(--muted);transition:background .15s,border-color .15s}
+  .dropzone.small{padding:16px}
+  .dropzone.drag{background:#e3f0fb;border-color:var(--nhs-blue);color:var(--nhs-dark)}
+  .dropzone b{color:var(--ink)}
+  .dz-sub{font-size:.78rem;margin-top:5px;color:var(--muted)}
+  .upload-status{font-size:.82rem;color:var(--muted);margin-top:8px}
+  .upload-status .ok{color:var(--teal)} .upload-status .err{color:#b00}
+  .reclist,.auditlist{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  .reclist li{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:.86rem}
+  .reclist .fmeta{flex:1;min-width:0}
+  .reclist .fname{font-weight:700;color:var(--ink);word-break:break-all}
+  .reclist .fsub{font-size:.74rem;color:var(--muted);margin-top:2px}
+  .reclist .owner{display:inline-block;background:var(--bg-soft);border:1px solid var(--line);border-radius:20px;padding:1px 8px;font-size:.7rem;margin-left:6px}
+  .reclist .acts{display:flex;gap:6px;flex-shrink:0}
+  .reclist .acts button{border:1px solid var(--line);background:#fff;border-radius:5px;padding:6px 10px;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--nhs-blue)}
+  .reclist .acts button.danger{color:#b00}
+  .reclist .acts button:hover{background:var(--bg-soft)}
+  .reclist .empty,.auditlist .empty{justify-content:center;color:var(--muted);border:1px dashed var(--line);background:transparent;text-align:center;display:block;padding:14px;font-size:.82rem}
+  .auditlist li{background:var(--bg-soft);border:1px solid var(--line);border-left:3px solid var(--nhs-blue);border-radius:5px;padding:7px 11px;font-size:.78rem;color:var(--muted)}
+  .auditlist li b{color:var(--ink)} .auditlist li .res-denied{color:#b00;font-weight:700} .auditlist li .res-ok{color:var(--teal);font-weight:700}
+  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+  @media(max-width:640px){ .mono th{width:116px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="hero">
+    <h1>Clemit Family Health</h1>
+    <p class="lede">Evidence-based health information for the family &mdash; useful to a trained nurse and a curious reader alike. The aim is healthspan: staying strong, sharp, and capable for as long as possible.</p>
+    <div class="reviewed">
+      <span>📋 Modeled on <b>NHS</b>, <b>Cleveland Clinic</b> &amp; standard nursing drug references</span>
+      <span>🩺 Reviewed by family <b>RNs</b> (Jaemie &amp; Tori)</span>
+      <span class="badge">private &middot; family only</span>
+    </div>
+  </div>
+
+  <!-- SUB-TAB BAR -->
+  <div class="tabbar" id="tabbar">
+    <button data-tab="overview" class="active" onclick="showTab('overview')">Overview &amp; Plan</button>
+    <button data-tab="nutrition" onclick="showTab('nutrition')">Nutrition<span class="pill" data-pill="nutrition">0</span></button>
+    <button data-tab="movement" onclick="showTab('movement')">Movement<span class="pill" data-pill="movement">0</span></button>
+    <button data-tab="longevity" onclick="showTab('longevity')">Prevention<span class="pill" data-pill="longevity">0</span></button>
+    <button data-tab="records" onclick="showTab('records')">Records<span class="pill" data-pill="records">0</span></button>
+    <button data-tab="drugs" onclick="showTab('drugs')">Drug Reference</button>
+    <button data-tab="tools" onclick="showTab('tools')">Tools &amp; Sources</button>
+  </div>
+
+  <div class="panes">
+
+    <!-- OVERVIEW & PLAN -->
+    <section class="panel active" id="panel-overview">
+      <h2 class="head">Research intake &amp; reconcile</h2>
+      <p class="sub">Jaemie and Tori paste findings on the topic tabs. When there's enough, run the reconcile agent &mdash; it merges duplicates and contradictions into one short, plain-language plan for Jesse &amp; Brenda, with clinician-decision items flagged.</p>
+      <div class="tally" id="tally"></div>
+      <div class="reconcile-bar">
+        <p><b>Reconcile.</b> Grouped by topic; dose / diagnosis / WPW-cardiac items flagged for your clinician; ends with a not-medical-advice note.</p>
+        <button class="btn teal" id="reconcileBtn" onclick="reconcile()">⚙️ Generate simplified plan</button>
+      </div>
+      <div class="plan empty" id="plan">No reconciled plan yet. Capture findings on the topic tabs, then run the reconcile agent.</div>
+
+      <h3 class="mini-head">📎 Add records</h3>
+      <p class="sub">Drop lab PDFs, imaging, or notes here to collect them. Files are private to you and the King, encrypted in transit and at rest, and every access is logged. <span class="badge">HIPAA-aligned &middot; pending BAA</span></p>
+      <div class="dropzone" id="dropzone">
+        <div><b>Drop files here</b> &mdash; or <button type="button" class="linklike" onclick="document.getElementById('fileInput').click()">browse</button></div>
+        <div class="dz-sub">PDF, images, documents &middot; up to 25&nbsp;MB each</div>
+        <input type="file" id="fileInput" multiple style="display:none">
+      </div>
+      <div id="uploadStatus" class="upload-status"></div>
+    </section>
+
+    <!-- TOPIC PANELS (filled by JS) -->
+    <section class="panel" id="panel-nutrition"><div id="host-nutrition"></div></section>
+    <section class="panel" id="panel-movement"><div id="host-movement"></div></section>
+    <section class="panel" id="panel-longevity"><div id="host-longevity"></div></section>
+
+    <!-- RECORDS -->
+    <section class="panel" id="panel-records">
+      <h2 class="head">Records</h2>
+      <p class="sub" id="recScope">Your uploaded records. Access is limited to <b>you and the King</b>; every view, download, and delete is logged to an audit trail. <span class="badge">HIPAA-aligned &middot; pending BAA</span></p>
+      <div class="dropzone small" id="dropzone2">
+        <div><b>Drop files here</b> &mdash; or <button type="button" class="linklike" onclick="document.getElementById('fileInput2').click()">browse</button></div>
+        <input type="file" id="fileInput2" multiple style="display:none">
+      </div>
+      <ul class="reclist" id="reclist"></ul>
+      <h3 class="mini-head" id="auditHead">Access log</h3>
+      <p class="sub" id="auditNote">Every access to your records, newest first.</p>
+      <ul class="auditlist" id="auditlist"></ul>
+    </section>
+
+    <!-- DRUG & SUPPLEMENT REFERENCE -->
+    <section class="panel" id="panel-drugs">
+      <h2 class="head">Drug &amp; supplement reference</h2>
+      <p class="sub">Quick-reference monographs in a familiar nursing-handbook format. <span class="badge">Reference only &mdash; not a prescription</span></p>
+
+      <div class="mono">
+        <div class="head"><div class="gen">Atorvastatin</div><div class="brand">brand: Lipitor</div><br><span class="cls">HMG-CoA reductase inhibitor (statin)</span></div>
+        <table>
+          <tr><th>Therapeutic use</th><td>Lowers LDL cholesterol; primary &amp; secondary prevention of atherosclerotic cardiovascular disease.</td></tr>
+          <tr><th>Usual adult dosing</th><td>10&ndash;80&nbsp;mg PO once daily, any time of day, with or without food. Titrate to LDL target / risk.</td></tr>
+          <tr><th>Key considerations</th><td>Assess baseline lipids, LFTs, and CK if symptomatic. Counsel on muscle pain/weakness. Avoid large amounts of grapefruit juice. Pregnancy: contraindicated.</td></tr>
+          <tr><th>Common effects</th><td>Myalgia, GI upset, headache. Rare: rhabdomyolysis, transaminase elevation, new-onset diabetes.</td></tr>
+          <tr><th>Monitoring</th><td>Lipid panel 4&ndash;12 weeks after start/dose change, then periodically. LFTs as clinically indicated.</td></tr>
+        </table>
+        <div class="blackbox"><b>Safety note</b> Discontinue and evaluate promptly for unexplained muscle pain, tenderness, or weakness &mdash; especially with fever or malaise (possible myopathy/rhabdomyolysis).</div>
+      </div>
+
+      <div class="mono">
+        <div class="head"><div class="gen">Vitamin D₃ (Cholecalciferol)</div><div class="brand">OTC supplement</div><br><span class="cls">Fat-soluble vitamin · supplement</span></div>
+        <table>
+          <tr><th>Therapeutic use</th><td>Correction/prevention of vitamin D deficiency; supports calcium absorption and bone health.</td></tr>
+          <tr><th>Typical dosing</th><td>Maintenance 600&ndash;2,000&nbsp;IU/day for most adults; deficiency repletion per serum 25-OH-D level and clinician guidance. Take with a fat-containing meal.</td></tr>
+          <tr><th>Key considerations</th><td>Check serum 25-hydroxyvitamin D before high-dose repletion. Excess is stored &mdash; toxicity (hypercalcemia) is possible at sustained very high intakes.</td></tr>
+          <tr><th>Interactions</th><td>Thiazides (↑ hypercalcemia risk), corticosteroids (↓ effect), some weight-loss/cholesterol agents (↓ absorption).</td></tr>
+          <tr><th>Monitoring</th><td>Serum 25-OH-D; calcium if high-dose or symptomatic.</td></tr>
+        </table>
+      </div>
+
+      <div class="mono">
+        <div class="head"><div class="gen">Tirzepatide</div><div class="brand">brands: Mounjaro, Zepbound</div><br><span class="cls">GIP / GLP-1 receptor agonist</span></div>
+        <table>
+          <tr><th>Therapeutic use</th><td>Type 2 diabetes (Mounjaro) and chronic weight management (Zepbound); improves glycemic control and produces substantial weight loss.</td></tr>
+          <tr><th>Administration</th><td>Once-weekly subcutaneous injection, same day each week, any time of day; rotate sites. Dose escalated gradually per labeling and tolerance.</td></tr>
+          <tr><th>Key considerations</th><td>GI effects (nausea, diarrhea, constipation) common during titration. Protect lean mass with adequate protein and resistance training. Slower loss preserves muscle. Set goal weight by body composition, not scale alone, with the prescriber.</td></tr>
+          <tr><th>Cautions</th><td>Pancreatitis history, severe GI disease, gallbladder disease; delays gastric emptying (affects other oral meds). Not for type 1 diabetes.</td></tr>
+          <tr><th>Monitoring</th><td>Weight, glycemic markers, GI tolerance; lean mass / body composition where available.</td></tr>
+        </table>
+        <div class="blackbox"><b>Boxed warning (class)</b> Thyroid C-cell tumors seen in rodents; contraindicated with personal/family history of medullary thyroid carcinoma or MEN&nbsp;2. Confirm specifics with the prescriber.</div>
+      </div>
+      <p class="evid">Monographs are reference summaries of standard labeling and clinical references &mdash; not individualized dosing. Anything specific to Jesse or Brenda is a clinician decision.</p>
+    </section>
+
+    <!-- TOOLS & SOURCES -->
+    <section class="panel" id="panel-tools">
+      <h2 class="head">Tools &amp; sources</h2>
+      <p class="sub">Helpers and how we choose references.</p>
+      <div class="cards">
+        <div class="card teal"><div class="bar"></div><div class="body"><h3>Calculators &amp; prep</h3><p>Body-composition targets, protein needs, VO₂ estimates, and question sheets to bring to appointments.</p></div></div>
+        <div class="card teal"><div class="bar"></div><div class="body"><h3>How to read your labs</h3><p>Plain-language guides to lipid panels, A1c, vitamin D, and the markers that track your trajectory.</p></div></div>
+        <div class="card amber"><div class="bar"></div><div class="body"><h3>About our sources</h3><p>We favor NHS, Cleveland Clinic, NIH, and peer-reviewed guidelines; emerging research is labeled as such.</p></div></div>
+      </div>
+      <div class="disc"><b>Reference only.</b> This space organizes research and education; it is not medical advice and not a prescription. The reconciled plan is a starting point for conversations with your own clinicians, who decide anything involving dosing, diagnosis, or your specific cardiac (WPW), orthopedic, or medication situation. For anything urgent, contact a clinician or emergency services.</div>
+    </section>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  var SECTIONS = [
+    { key: "nutrition", title: "Nutrition",
+      blurb: "What to eat and why - frameworks compared on the evidence, not the hype.",
+      points: ["Mediterranean, protein-forward & time-restricted eating",
+               "Protein targets (~1.2-1.6 g/kg, more if lifting) to preserve muscle on tirzepatide",
+               "Off-grid & RV-friendly meal strategy",
+               "Micronutrients: who actually needs what"] },
+    { key: "movement", title: "Movement & Strength",
+      blurb: "The cheapest predictors of a long life - and training that respects existing injuries.",
+      points: ["VO2 max & grip strength: why they matter",
+               "Building chest/torso with spine-safe, chest-supported presses",
+               "Training around hip replacements & shoulder repairs",
+               "Cardiac-safe resistance work - no breath-holding (WPW)"] },
+    { key: "longevity", title: "Prevention & Longevity",
+      blurb: "Get ahead of the slow killers before they get ahead of you.",
+      points: ["Heart rhythm & cardiac risk (incl. WPW: stress test / EP study / ablation question)",
+               "Screening calendar by age",
+               "Family-history-driven risk planning",
+               "How to read your own lab results"] }
+  ];
+  var WHO = ["Jaemie", "Tori (Brenda Martinez, RN)", "Jesse", "Other"];
+  var state = { findings: [], plan: null };
+
+  try { var c = new URLSearchParams(location.search).get("c"); if (c) document.documentElement.style.setProperty("--acc", c); } catch (e) {}
+
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>\"]/g, function(ch){ return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"})[ch]; }); }
+  function toast(msg){ var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(function(){ t.classList.remove("show"); }, 1800); }
+
+  function showTab(key){
+    var btns = document.querySelectorAll("#tabbar button");
+    for (var i = 0; i < btns.length; i++){ btns[i].classList.toggle("active", btns[i].getAttribute("data-tab") === key); }
+    var pans = document.querySelectorAll(".panel");
+    for (var j = 0; j < pans.length; j++){ pans[j].classList.toggle("active", pans[j].id === "panel-" + key); }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function buildTopics(){
+    SECTIONS.forEach(function(sec){
+      var html =
+        '<div class="topic">' +
+          '<h2 class="head">' + esc(sec.title) + '</h2>' +
+          '<div class="summary"><p>' + esc(sec.blurb) + '</p><ul>' +
+            sec.points.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join("") +
+          '</ul></div>' +
+          '<div class="intake">' +
+            '<div class="intake-head"><span class="intake-title">📥 Research intake</span><span class="intake-count" data-count="' + sec.key + '">0 captured</span></div>' +
+            '<div class="row">' +
+              '<label>Posted by<select id="who-' + sec.key + '">' + WHO.map(function(w){ return '<option>' + esc(w) + '</option>'; }).join("") + '</select></label>' +
+              '<label>Source (URL or citation)<input id="src-' + sec.key + '" type="text" placeholder="nhs.uk/... or journal citation"></label>' +
+            '</div>' +
+            '<textarea id="text-' + sec.key + '" rows="3" placeholder="Paste the finding here - abstract, guideline excerpt, article, notes..."></textarea>' +
+            '<div class="row end"><button class="btn" onclick="capture(\'' + sec.key + '\')">Capture finding</button></div>' +
+            '<ul class="queue" id="queue-' + sec.key + '"></ul>' +
+          '</div>' +
+        '</div>';
+      document.getElementById("host-" + sec.key).innerHTML = html;
+    });
+  }
+
+  function renderFindings(){
+    var counts = {};
+    SECTIONS.forEach(function(sec){
+      var items = state.findings.filter(function(f){ return f.section === sec.key; });
+      counts[sec.key] = items.length;
+      var q = document.getElementById("queue-" + sec.key);
+      document.querySelector('[data-count="' + sec.key + '"]').textContent = items.length + " captured";
+      var pill = document.querySelector('[data-pill="' + sec.key + '"]'); if (pill) pill.textContent = items.length;
+      if (!items.length){ q.innerHTML = '<li class="empty">No findings captured yet.</li>'; return; }
+      q.innerHTML = items.map(function(f){
+        return '<li><button class="del" title="Remove" onclick="del(\'' + f.id + '\')">x</button>' +
+          '<div class="meta"><b>' + esc(f.who) + '</b> &middot; ' + esc(f.when) + '</div>' +
+          '<div>' + esc(f.text) + '</div>' +
+          (f.src ? '<div class="src">' + esc(f.src) + '</div>' : "") + '</li>';
+      }).join("");
+    });
+    var tally = document.getElementById("tally");
+    var total = state.findings.length;
+    tally.innerHTML =
+      '<span class="chip"><b>' + total + '</b> total captured</span>' +
+      '<span class="chip">Nutrition <b>' + (counts.nutrition || 0) + '</b></span>' +
+      '<span class="chip">Movement <b>' + (counts.movement || 0) + '</b></span>' +
+      '<span class="chip">Prevention <b>' + (counts.longevity || 0) + '</b></span>';
+  }
+
+  function renderPlan(){
+    var el = document.getElementById("plan");
+    if (!state.plan || !state.plan.text){ el.className = "plan empty"; el.textContent = "No reconciled plan yet. Capture findings on the topic tabs, then run the reconcile agent."; return; }
+    el.className = "plan";
+    el.innerHTML = '<h3>Simplified plan <span class="when">' + esc(state.plan.when) + '</span></h3>' + esc(state.plan.text);
+  }
+
+  function loadAll(){
+    fetch("/api/health").then(function(r){ return r.json(); }).then(function(d){
+      state.findings = (d && d.findings) || []; state.plan = (d && d.plan) || null;
+      renderFindings(); renderPlan();
+    }).catch(function(){ toast("Could not load (are you signed in?)"); });
+  }
+
+  function capture(section){
+    var ta = document.getElementById("text-" + section);
+    var text = ta.value.trim(); if (!text){ ta.focus(); return; }
+    var body = { section: section, who: document.getElementById("who-" + section).value, src: document.getElementById("src-" + section).value.trim(), text: text };
+    fetch("/api/health", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if (d && d.ok){ ta.value = ""; document.getElementById("src-" + section).value = ""; loadAll(); toast("Captured"); } else { toast((d && d.error) || "Save failed"); } })
+      .catch(function(){ toast("Save failed"); });
+  }
+
+  function del(id){
+    fetch("/api/health", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ del: id }) })
+      .then(function(r){ return r.json(); }).then(function(){ loadAll(); }).catch(function(){ toast("Delete failed"); });
+  }
+
+  function reconcile(){
+    var btn = document.getElementById("reconcileBtn");
+    if (!state.findings.length){ toast("Capture some findings first"); return; }
+    btn.disabled = true; btn.textContent = "Reconciling...";
+    fetch("/api/health/reconcile", { method: "POST" }).then(function(r){ return r.json(); })
+      .then(function(d){ btn.disabled = false; btn.textContent = "⚙️ Generate simplified plan";
+        if (d && d.ok && d.plan){ state.plan = d.plan; renderPlan(); toast("Plan updated"); showTab("overview"); }
+        else { toast((d && d.error) || "Reconcile failed"); } })
+      .catch(function(){ btn.disabled = false; btn.textContent = "⚙️ Generate simplified plan"; toast("Reconcile failed"); });
+  }
+
+  // ---- Records + audit ----
+  function fmtSize(b){ b = +b || 0; if (b < 1024) return b + " B"; if (b < 1048576) return (b/1024).toFixed(1) + " KB"; return (b/1048576).toFixed(1) + " MB"; }
+
+  function refreshRecords(){ loadRecords(); loadAudit(); }
+
+  function loadRecords(){
+    fetch("/api/health/records").then(function(r){ return r.json(); }).then(function(d){
+      state.king = !!(d && d.king); state.me = (d && d.me) || "";
+      renderRecords((d && d.records) || []);
+    }).catch(function(){ /* not signed in */ });
+  }
+
+  function renderRecords(records){
+    var ul = document.getElementById("reclist");
+    var pill = document.querySelector('[data-pill="records"]'); if (pill) pill.textContent = records.length;
+    var scope = document.getElementById("recScope");
+    if (state.king && scope) scope.innerHTML = 'You are the <b>King</b>: you can see every family member's records. Each access is logged. <span class="badge">HIPAA-aligned · pending BAA</span>';
+    if (!records.length){ ul.innerHTML = '<li class="empty">No records uploaded yet. Drop files on the Overview tab or above.</li>'; return; }
+    ul.innerHTML = records.map(function(r){
+      var owner = (state.king && String(r.owner).toLowerCase() !== String(state.me).toLowerCase()) ? '<span class="owner">' + esc(r.owner) + '</span>' : '';
+      var when = esc(String(r.when || "").slice(0, 10));
+      return '<li><div class="fmeta"><div class="fname">' + esc(r.name) + owner + '</div>' +
+             '<div class="fsub">' + fmtSize(r.size) + ' &middot; ' + when + '</div></div>' +
+             '<div class="acts"><button onclick="downloadRecord(\'' + esc(r.id) + '\')">Download</button>' +
+             '<button class="danger" onclick="deleteRecord(\'' + esc(r.id) + '\')">Delete</button></div></li>';
+    }).join("");
+  }
+
+  function loadAudit(){
+    fetch("/api/health/audit").then(function(r){ return r.json(); }).then(function(d){
+      var note = document.getElementById("auditNote");
+      if (note) note.textContent = (d && d.king) ? "Full family access trail, newest first." : "Every access to your records, newest first.";
+      renderAudit((d && d.audit) || []);
+    }).catch(function(){});
+  }
+
+  function renderAudit(rows){
+    var ul = document.getElementById("auditlist");
+    if (!rows.length){ ul.innerHTML = '<li class="empty">No access logged yet.</li>'; return; }
+    ul.innerHTML = rows.map(function(a){
+      var res = (a.result === "denied") ? '<span class="res-denied">DENIED</span>' : '<span class="res-ok">' + esc(a.result || "ok") + '</span>';
+      var ts = esc(String(a.ts || "").replace("T", " ").slice(0, 16));
+      return '<li><b>' + esc(a.actor) + '</b> ' + esc(a.action) + ' &ldquo;' + esc(a.name || a.recordId) + '&rdquo; ' + res +
+             ' &middot; ' + ts + (a.ip ? ' &middot; ' + esc(a.ip) : '') + '</li>';
+    }).join("");
+  }
+
+  function uploadFiles(files){
+    if (!files || !files.length) return;
+    var status = document.getElementById("uploadStatus");
+    var arr = Array.prototype.slice.call(files);
+    var done = 0, ok = 0, fail = 0;
+    if (status) status.textContent = "Uploading " + arr.length + " file(s)...";
+    var next = function(i){
+      if (i >= arr.length){
+        if (status) status.innerHTML = '<span class="' + (fail ? "err" : "ok") + '">Uploaded ' + ok + ' of ' + arr.length + (fail ? (", " + fail + " failed") : "") + '.</span>';
+        refreshRecords(); return;
+      }
+      var f = arr[i];
+      if (f.size > 26214400){ fail++; done++; toast(f.name + " is over 25 MB"); next(i+1); return; }
+      fetch("/api/health/records/upload", { method: "POST", headers: { "content-type": f.type || "application/octet-stream", "x-filename": encodeURIComponent(f.name) }, body: f })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if (d && d.ok) ok++; else { fail++; toast((d && d.error) || "Upload failed"); } done++; next(i+1); })
+        .catch(function(){ fail++; done++; next(i+1); });
+    };
+    next(0);
+  }
+
+  function downloadRecord(id){
+    var a = document.createElement("a");
+    a.href = "/api/health/records/file?id=" + encodeURIComponent(id);
+    a.rel = "noopener";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  function deleteRecord(id){
+    if (!window.confirm("Delete this record? This cannot be undone.")) return;
+    fetch("/api/health/records", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ del: id }) })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if (d && d.ok){ toast("Deleted"); refreshRecords(); } else { toast((d && d.error) || "Delete failed"); } })
+      .catch(function(){ toast("Delete failed"); });
+  }
+
+  function wireDrop(zoneId, inputId){
+    var zone = document.getElementById(zoneId), input = document.getElementById(inputId);
+    if (!zone) return;
+    ["dragenter","dragover"].forEach(function(ev){ zone.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); zone.classList.add("drag"); }); });
+    ["dragleave","dragend","drop"].forEach(function(ev){ zone.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); zone.classList.remove("drag"); }); });
+    zone.addEventListener("drop", function(e){ if (e.dataTransfer && e.dataTransfer.files) uploadFiles(e.dataTransfer.files); });
+    if (input) input.addEventListener("change", function(){ uploadFiles(input.files); input.value = ""; });
+  }
+
+  buildTopics();
+  loadAll();
+  wireDrop("dropzone", "fileInput");
+  wireDrop("dropzone2", "fileInput2");
+  refreshRecords();
+</script>
+</body>
+</html>

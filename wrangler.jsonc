@@ -27,7 +27,8 @@
   "r2_buckets": [
     { "binding": "MOV",   "bucket_name": "clemit-movies" },
     { "binding": "MUSIC", "bucket_name": "clemit-music" },
-    { "binding": "PICS",  "bucket_name": "clemit-pictures" }
+    { "binding": "PICS",  "bucket_name": "clemit-pictures" },
+    { "binding": "HDOCS", "bucket_name": "clemit-health-records" }
     // Future: clemit-books exists but isn't bound yet. Add here when wired.
   ],
 
