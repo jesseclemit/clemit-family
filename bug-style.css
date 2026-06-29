@@ -1,0 +1,49 @@
+/* PULSE Report-Bug TCV styles. Escape-free (no backslashes). */
+.bugModal{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(2,4,10,.72);backdrop-filter:blur(6px);padding:14px;box-sizing:border-box}
+.bugCard{position:relative;width:min(560px,96vw);max-height:92vh;overflow:auto;background:linear-gradient(160deg,#0a0e1c 0%,#070912 100%);border:1px solid rgba(0,229,255,.45);border-radius:14px;box-shadow:0 0 0 1px rgba(177,75,255,.25),0 24px 70px rgba(0,0,0,.7),0 0 40px rgba(0,229,255,.12);color:#dfe9ff;font-family:inherit;padding:18px 18px 16px}
+.bugCard::before,.bugCard::after{content:"";position:absolute;width:16px;height:16px;border:2px solid #00e5ff;opacity:.7}
+.bugCard::before{top:8px;left:8px;border-right:0;border-bottom:0}
+.bugCard::after{bottom:8px;right:8px;border-left:0;border-top:0}
+.bugHead{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.bugTitle{font-size:1.18rem;font-weight:800;letter-spacing:.04em;color:#fff;text-shadow:0 0 10px rgba(0,229,255,.5)}
+.bugX{margin-left:auto;background:transparent;border:0;color:#9fb4d6;font-size:1.5rem;line-height:1;cursor:pointer}
+.bugX:hover{color:#ff2d55}
+.bugSub{font-size:.82rem;color:#9fb4d6;margin:2px 0 12px}
+.bugShotBox{position:relative;border:1px dashed rgba(0,229,255,.35);border-radius:10px;min-height:120px;display:flex;align-items:center;justify-content:center;background:rgba(0,229,255,.04);cursor:pointer;overflow:hidden;margin-bottom:12px}
+.bugShotBox img{width:100%;display:block}
+.bugShotStatus{position:absolute;bottom:6px;left:8px;right:8px;font-size:.72rem;color:#8fd9ff;background:rgba(3,6,14,.66);padding:3px 6px;border-radius:6px;text-align:center}
+.bugInfo{display:grid;grid-template-columns:1fr;gap:4px;margin-bottom:12px}
+.bugRow{display:flex;gap:8px;font-size:.78rem;border-bottom:1px solid rgba(120,150,200,.12);padding:3px 0}
+.bugK{color:#7fb0e0;min-width:64px;font-weight:600}
+.bugV{color:#cdddf5;word-break:break-all}
+.bugTa{width:100%;box-sizing:border-box;min-height:88px;resize:vertical;background:#05070f;border:1px solid rgba(120,150,200,.3);border-radius:9px;color:#eaf2ff;padding:10px;font-family:inherit;font-size:.92rem}
+.bugTa:focus{outline:0;border-color:#00e5ff;box-shadow:0 0 0 2px rgba(0,229,255,.2)}
+.bugActions{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.bugBtn{cursor:pointer;border-radius:9px;padding:9px 14px;font-size:.86rem;font-weight:700;font-family:inherit;border:1px solid transparent}
+.bugBtn.go{background:linear-gradient(135deg,#ff2d55,#b14bff);color:#fff;box-shadow:0 6px 18px rgba(255,45,85,.3)}
+.bugBtn.go:hover{filter:brightness(1.1)}
+.bugBtn.go:disabled{opacity:.6;cursor:default}
+.bugBtn.ghost{background:transparent;border-color:rgba(0,229,255,.4);color:#bfe6ff}
+.bugBtn.ghost:hover{background:rgba(0,229,255,.1)}
+.bugDone{text-align:center;padding:22px 8px}
+.bugDoneMark{font-size:2.6rem;color:#3affb0;text-shadow:0 0 18px rgba(58,255,176,.6);margin-bottom:8px}
+.bugReports{display:none;margin-top:14px;border-top:1px solid rgba(0,229,255,.25);padding-top:10px}
+.bugListHead{font-size:.78rem;color:#7fb0e0;margin-bottom:6px;font-weight:700}
+.bugLi{border:1px solid rgba(120,150,200,.18);border-radius:9px;padding:8px 10px;margin-bottom:7px;cursor:pointer;background:rgba(10,16,30,.6)}
+.bugLi:hover{border-color:rgba(0,229,255,.4)}
+.bugLiTop{display:flex;justify-content:space-between;gap:8px;font-size:.8rem}
+.bugLiWhen{color:#7f93b4;font-size:.72rem}
+.bugLiTxt{font-size:.82rem;color:#cdddf5;margin:3px 0}
+.bugLiMeta{font-size:.7rem;color:#7f93b4}
+.bugDetail{display:none;margin-top:8px;border-top:1px dashed rgba(120,150,200,.25);padding-top:8px}
+.bugDetUrl a{color:#5fd0ff;font-size:.76rem;word-break:break-all}
+.bugDetTxt{font-size:.86rem;color:#eaf2ff;margin:6px 0;white-space:pre-wrap}
+.bugDetMeta{font-size:.72rem;color:#9fb4d6}
+.bugDetUa{font-size:.66rem;color:#6f83a4;word-break:break-all;margin-top:4px}
+.bugDetShot{width:100%;margin-top:8px;border:1px solid rgba(0,229,255,.3);border-radius:8px}
+/* header buttons: ALWAYS visible, every user, desktop + phone (HARD RULE) */
+.pulseHdrBtn{display:inline-flex!important;align-items:center;gap:5px;cursor:pointer;border:1px solid rgba(0,229,255,.4);background:rgba(0,229,255,.07);color:#cdeeff;border-radius:8px;padding:5px 9px;font-size:.8rem;font-family:inherit;font-weight:600;white-space:nowrap}
+.pulseHdrBtn:hover{background:rgba(0,229,255,.16);border-color:#00e5ff}
+.pulseHdrBtn.bug{border-color:rgba(255,45,85,.45);background:rgba(255,45,85,.08);color:#ffd2dc}
+.pulseHdrBtn.bug:hover{background:rgba(255,45,85,.18);border-color:#ff2d55}
+@media(max-width:640px){.pulseHdrBtn{padding:5px 7px;font-size:.74rem}.pulseHdrBtn .pulseHdrTxt{display:none}}

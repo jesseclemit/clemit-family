@@ -145,6 +145,10 @@ async function logAudit(env, who, kind, label, tag) {
   }
 }
 __name(logAudit, "logAudit");
+async function ensureBugReports(env) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS bug_reports (id INTEGER PRIMARY KEY AUTOINCREMENT, reporter_email TEXT, reporter_name TEXT, url TEXT, ua TEXT, platform TEXT, browser TEXT, viewport TEXT, feedback TEXT, shot TEXT, created_at INTEGER, status TEXT DEFAULT 'open')").run();
+}
+__name(ensureBugReports, "ensureBugReports");
 async function ensureReminders(env) {
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS reminders (id INTEGER PRIMARY KEY AUTOINCREMENT, owner_email TEXT, owner_name TEXT, title TEXT, body TEXT, due_at INTEGER, channels TEXT DEFAULT 'inapp', to_email TEXT, to_phone TEXT, repeat_kind TEXT DEFAULT '', status TEXT DEFAULT 'pending', created_at INTEGER, fired_at INTEGER)").run();
   try { await env.DB.prepare("ALTER TABLE reminders ADD COLUMN note_id INTEGER DEFAULT 0").run(); } catch (e) {}
@@ -1979,6 +1983,26 @@ if (p === "/api/king/veto" && req.method === "POST") {
         }
         return new Response(obj.body, { headers: h });
       }
+      if (p === "/api/bug/report" && req.method === "POST") {
+        await ensureBugReports(env);
+        const b = await req.json();
+        const shot = String(b.shot || "");
+        const r = await env.DB.prepare("INSERT INTO bug_reports (reporter_email,reporter_name,url,ua,platform,browser,viewport,feedback,shot,created_at,status) VALUES (?,?,?,?,?,?,?,?,?,?, 'open')").bind((me.email||"").toLowerCase(), me.name||"", String(b.url||"").slice(0,400), String(b.ua||"").slice(0,500), String(b.platform||"").slice(0,80), String(b.browser||"").slice(0,40), String(b.viewport||"").slice(0,40), String(b.feedback||"").slice(0,4000), shot.slice(0,900000), Date.now()).run();
+        return json({ ok: true, id: (r && r.meta) ? r.meta.last_row_id : 0 });
+      }
+      if (p === "/api/bug/list" && req.method === "GET") {
+        await ensureBugReports(env);
+        if (!me.isRoyal) return json({ error: "forbidden" }, 403);
+        const rows = await env.DB.prepare("SELECT id,reporter_email,reporter_name,platform,browser,feedback,created_at,status FROM bug_reports ORDER BY id DESC LIMIT 200").all();
+        return json({ reports: (rows && rows.results) || [] });
+      }
+      if (p === "/api/bug/get" && req.method === "GET") {
+        await ensureBugReports(env);
+        if (!me.isRoyal) return json({ error: "forbidden" }, 403);
+        const id = +url.searchParams.get("id") || 0;
+        const one = await env.DB.prepare("SELECT * FROM bug_reports WHERE id=?").bind(id).first();
+        return json({ report: one || null });
+      }
       if (p === "/api/reminders" && req.method === "GET") {
         await ensureReminders(env);
         const mine = await env.DB.prepare("SELECT id,title,body,due_at,channels,to_email,to_phone,repeat_kind,status,fired_at FROM reminders WHERE owner_email = ? AND status != 'cancelled' ORDER BY due_at ASC LIMIT 200").bind((me.email || "").toLowerCase()).all();
@@ -2661,7 +2685,7 @@ header.hdr2{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:flex-st
 .djbox::after,.seg::after{bottom:6px;right:6px;border-left:0;border-top:0;border-bottom-right-radius:4px;}
 .mi{border-color:rgba(var(--acc-rgb),.5)!important;}
 </style><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.31.0/tabler-icons.min.css"><style>/*FORUMSFIX*/.topmenu .mi{min-height:74px}.topmenu .mi .lb{font-size:12px!important;line-height:1.1!important;letter-spacing:.2px!important;white-space:normal!important;overflow-wrap:anywhere;hyphens:auto}.topmenu .pbuf{flex:0 0 72px!important}.topmenu .pbuf .pl{font-size:14px!important;letter-spacing:.5px!important}.topmenu .mi .em,.topmenu .mi .em i.ti,.topmenu .pbuf i.ti{font-size:26px!important}</style><style id="tcv5pass">.view[data-view="quotes"],.view[data-view="iam"],.view[data-view="control"],.view[data-view="king"],.view[data-view="launchpad"]{position:relative;}.view[data-view="quotes"]::before,.view[data-view="iam"]::before,.view[data-view="control"]::before,.view[data-view="king"]::before,.view[data-view="launchpad"]::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:16px;background:radial-gradient(120% 90% at 50% 120%,rgba(var(--acc-rgb),.16),transparent 60%),radial-gradient(90% 70% at 50% -8%,rgba(0,229,255,.10),transparent 60%),repeating-linear-gradient(0deg,transparent 0 38px,rgba(60,180,255,.09) 38px 39px),repeating-linear-gradient(90deg,transparent 0 38px,rgba(60,180,255,.06) 38px 39px);}.view[data-view="quotes"]>*,.view[data-view="iam"]>*,.view[data-view="control"]>*,.view[data-view="king"]>*,.view[data-view="launchpad"]>*{position:relative;z-index:1;}.view[data-view="quotes"] .card,.view[data-view="iam"] .card,.view[data-view="control"] .card,.view[data-view="king"] .card,.view[data-view="quotes"] .qcard,.view[data-view="control"] .catcard{position:relative;background:linear-gradient(160deg,rgba(10,16,34,.86),rgba(4,8,20,.92));border:1.5px solid rgba(0,229,255,.32);box-shadow:0 0 22px rgba(0,229,255,.10),0 0 1px rgba(0,229,255,.45) inset;backdrop-filter:blur(2px);}.view[data-view="quotes"] .card::before,.view[data-view="quotes"] .card::after,.view[data-view="iam"] .card::before,.view[data-view="iam"] .card::after,.view[data-view="control"] .card::before,.view[data-view="control"] .card::after,.view[data-view="king"] .card::before,.view[data-view="king"] .card::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--acc);pointer-events:none;filter:drop-shadow(0 0 4px var(--acc));}.view[data-view="quotes"] .card::before,.view[data-view="iam"] .card::before,.view[data-view="control"] .card::before,.view[data-view="king"] .card::before{top:7px;left:7px;border-right:0;border-bottom:0;}.view[data-view="quotes"] .card::after,.view[data-view="iam"] .card::after,.view[data-view="control"] .card::after,.view[data-view="king"] .card::after{bottom:7px;right:7px;border-left:0;border-top:0;}.view[data-view="quotes"] h2,.view[data-view="iam"] h2,.view[data-view="control"] h2,.view[data-view="king"] h2,.view[data-view="launchpad"] h2{color:#fff;text-shadow:0 0 14px rgba(0,229,255,.55);}.view[data-view="quotes"] .vhead,.view[data-view="iam"] .vhead,.view[data-view="control"] .vhead,.view[data-view="king"] .vhead,.view[data-view="launchpad"] .vhead{border-bottom-color:rgba(0,229,255,.25);}.view[data-view="quotes"] .sub,.view[data-view="iam"] .sub,.view[data-view="control"] .sub,.view[data-view="king"] .sub,.view[data-view="launchpad"] .sub{color:#9fc6e0;}.view[data-view="quotes"] .go,.view[data-view="iam"] .go,.view[data-view="control"] .go,.view[data-view="king"] .go,.view[data-view="launchpad"] .go{background:linear-gradient(135deg,#00e5ff,#b14bff);color:#04121f;border:0;font-weight:bold;box-shadow:0 0 16px rgba(0,229,255,.45);}.view[data-view="quotes"] .mini,.view[data-view="quotes"] .qbtn,.view[data-view="iam"] .mini,.view[data-view="iam"] .qbtn,.view[data-view="control"] .mini,.view[data-view="control"] .qbtn,.view[data-view="king"] .mini,.view[data-view="king"] .qbtn,.view[data-view="launchpad"] .mini,.view[data-view="launchpad"] .qbtn{background:rgba(8,12,28,.7);color:#bfe7ff;border:1px solid rgba(60,170,255,.45);}.view[data-view="quotes"] .mini:hover,.view[data-view="quotes"] .qbtn:hover,.view[data-view="iam"] .mini:hover,.view[data-view="iam"] .qbtn:hover,.view[data-view="control"] .mini:hover,.view[data-view="control"] .qbtn:hover,.view[data-view="king"] .mini:hover,.view[data-view="king"] .qbtn:hover,.view[data-view="launchpad"] .mini:hover,.view[data-view="launchpad"] .qbtn:hover{border-color:var(--acc);box-shadow:0 0 10px var(--acc-glow);}.view[data-view="quotes"] .qtext{color:#eaf6ff;text-shadow:0 0 10px rgba(0,229,255,.22);}.view[data-view="quotes"] .qauth{color:#cf9bff;}.view[data-view="quotes"] .qcard:hover{box-shadow:0 0 22px rgba(0,229,255,.22);border-color:rgba(0,229,255,.5);}.view[data-view="quotes"] .qheart{color:#9fb4c8;}.view[data-view="quotes"] .qheart.on{color:var(--acc);text-shadow:0 0 10px var(--acc-glow);}.view[data-view="quotes"] .nuke{filter:drop-shadow(0 0 4px var(--acc));}.view[data-view="quotes"] .qform input,.view[data-view="quotes"] .qform textarea{background:rgba(2,8,20,.75);border:1.5px solid rgba(0,229,255,.4);color:#eaf6ff;}.view[data-view="quotes"] .stamp{border-color:rgba(0,229,255,.4);color:#7fe9ff;}.view[data-view="control"] .cic{filter:drop-shadow(0 0 6px var(--acc));}.view[data-view="control"] .cnm{color:#eaf6ff;}.view[data-view="king"] .stamp{border-color:rgba(255,210,70,.5);color:#ffd24a;}.view[data-view="launchpad"] .card{border:1.5px solid rgba(0,229,255,.5)!important;box-shadow:0 0 30px rgba(var(--acc-rgb),.18),0 0 18px rgba(0,229,255,.16)!important;}.view[data-view="launchpad"] .card::before,.view[data-view="launchpad"] .card::after{content:"";position:absolute;width:18px;height:18px;border:2px solid var(--acc);z-index:3;pointer-events:none;filter:drop-shadow(0 0 5px var(--acc));}.view[data-view="launchpad"] .card::before{top:8px;left:8px;border-right:0;border-bottom:0;}.view[data-view="launchpad"] .card::after{bottom:8px;right:8px;border-left:0;border-top:0;}</style><style id="mobileEdge">/*MOBILE-EDGE v1*/@media(max-width:560px){.shell{padding-left:5px!important;padding-right:5px!important;padding-top:6px!important}.card{padding-left:12px;padding-right:12px;margin-bottom:12px}#bdWindow{left:4px!important;right:4px!important;width:auto!important;max-width:none!important}#bdWindow #bdHd{padding:7px 9px!important;gap:5px!important}#bdWindow #bdHd span{font-size:14.5px!important}#bdWindow #bdInp,#bdWindow input,#bdWindow textarea{font-size:15px!important;padding:8px 9px!important}#bdWindow #bdList,#bdWindow #bdList *{font-size:13.5px!important}#bdWindow #bdAi{height:24px!important;padding:0 8px!important}#bdWindow #bdMin{width:24px!important;height:24px!important}}</style></head><body><div id="bootveil"></div><div id="wrap">
-<header class="hdr2"><div class="hdMain tcbox"><span class="tcsheen"></span><div class="hdrow hdrow1"><h1 class="wm"><span class="wmC">Clemit</span> <span class="wmP">Pulse</span></h1><span class="tdiv"></span><div class="hero-greet" id="heroGreet">Good evening, <b>Boss</b>.</div><span class="honors"><span id="crownBadge" style="cursor:help;font-size:1.02rem"></span><span id="kingHon" class="kingHon"><span class="hWand" title="MyWand — the wizard's mark">🪄</span><span class="hShield" title="Protector of the family">🛡️</span><span class="hNum" title="The Third">Ⅲ</span></span></span><span class="role" id="role" style="display:none">...</span><span id="clock" style="display:none"></span></div><div class="wsep"></div><div class="hdrow hdrow2"><div class="hdQline" id="heroQline"><span class="hdQwrap" id="heroQwrap"><span class="hero-q" id="heroQ">&hellip;</span> <span class="hero-a" id="heroA"></span></span></div><div class="hero-sub" id="heroSub"></div></div></div><div class="hdR tcbox" style="gap:7px;padding:6px 9px;align-items:center"><span class="hdColor tcwrap" style="display:inline-flex;align-items:center;position:relative"><button id="themeSw" type="button" class="tcbtn" title="Choose your PULSE color" aria-label="Choose your PULSE color" onclick="var p=document.getElementById('tcpop');p.hidden=!p.hidden;if(!p.hidden){try{var hh=document.getElementById('tcHue');if(hh&&typeof lsHexToHue==='function')hh.value=lsHexToHue(getComputedStyle(document.documentElement).getPropertyValue('--acc').trim());}catch(e){}}"></button><div id="tcpop" class="tcpop" hidden><input type="range" min="0" max="360" id="tcHue" class="lpsld" oninput="if(typeof lsHslToHex==='function')themeSet(lsHslToHex(this.value,82,57),true)" style="width:184px;vertical-align:middle"></div></span><span style="display:inline-flex;flex-direction:row;align-items:center;gap:8px"><span style="display:inline-flex;flex-direction:row;align-items:center;gap:8px"><a href="/cdn-cgi/access/logout">Sign Out</a><button id="jpvReopen" type="button" onclick="var w=document.getElementById('jpvWrap');if(w&&!w.classList.contains('jpvHidden')){jpvClose();window.__jpvUserClosed=true;}else{window.__jpvUserClosed=false;phonePreviewMaybe();var W=document.getElementById('jpvWrap');if(W){var r=W.getBoundingClientRect();W.style.left=Math.max(8,Math.round((window.innerWidth-r.width)/2))+'px';W.style.top=Math.max(8,Math.round((window.innerHeight-r.height)/2))+'px';}}" title="Show / hide my phone preview" aria-label="Show or hide phone preview" style="display:none;background:none;border:none;color:inherit;cursor:pointer;padding:2px;line-height:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></button></span></span></div><span id="heroFav" style="display:none"></span></header>
+<header class="hdr2"><div class="hdMain tcbox"><span class="tcsheen"></span><div class="hdrow hdrow1"><h1 class="wm"><span class="wmC">Clemit</span> <span class="wmP">Pulse</span></h1><span class="tdiv"></span><div class="hero-greet" id="heroGreet">Good evening, <b>Boss</b>.</div><span class="honors"><span id="crownBadge" style="cursor:help;font-size:1.02rem"></span><span id="kingHon" class="kingHon"><span class="hWand" title="MyWand — the wizard's mark">🪄</span><span class="hShield" title="Protector of the family">🛡️</span><span class="hNum" title="The Third">Ⅲ</span></span></span><span class="role" id="role" style="display:none">...</span><span id="clock" style="display:none"></span></div><div class="wsep"></div><div class="hdrow hdrow2"><div class="hdQline" id="heroQline"><span class="hdQwrap" id="heroQwrap"><span class="hero-q" id="heroQ">&hellip;</span> <span class="hero-a" id="heroA"></span></span></div><div class="hero-sub" id="heroSub"></div></div></div><div class="hdR tcbox" style="gap:7px;padding:6px 9px;align-items:center"><span class="hdColor tcwrap" style="display:inline-flex;align-items:center;position:relative"><button id="themeSw" type="button" class="tcbtn" title="Choose your PULSE color" aria-label="Choose your PULSE color" onclick="var p=document.getElementById('tcpop');p.hidden=!p.hidden;if(!p.hidden){try{var hh=document.getElementById('tcHue');if(hh&&typeof lsHexToHue==='function')hh.value=lsHexToHue(getComputedStyle(document.documentElement).getPropertyValue('--acc').trim());}catch(e){}}"></button><div id="tcpop" class="tcpop" hidden><input type="range" min="0" max="360" id="tcHue" class="lpsld" oninput="if(typeof lsHslToHex==='function')themeSet(lsHslToHex(this.value,82,57),true)" style="width:184px;vertical-align:middle"></div></span><span style="display:inline-flex;flex-direction:row;align-items:center;gap:8px"><span style="display:inline-flex;flex-direction:row;align-items:center;gap:8px"><button type="button" class="pulseHdrBtn" onclick="notesOpenPanel()" title="Open your Personal Notes">📝 <span class="pulseHdrTxt">Notes</span></button><button type="button" class="pulseHdrBtn bug" onclick="PulseBug.open()" title="Report a bug">🐞 <span class="pulseHdrTxt">Report Bug</span></button><a href="/cdn-cgi/access/logout">Sign Out</a><button id="jpvReopen" type="button" onclick="var w=document.getElementById('jpvWrap');if(w&&!w.classList.contains('jpvHidden')){jpvClose();window.__jpvUserClosed=true;}else{window.__jpvUserClosed=false;phonePreviewMaybe();var W=document.getElementById('jpvWrap');if(W){var r=W.getBoundingClientRect();W.style.left=Math.max(8,Math.round((window.innerWidth-r.width)/2))+'px';W.style.top=Math.max(8,Math.round((window.innerHeight-r.height)/2))+'px';}}" title="Show / hide my phone preview" aria-label="Show or hide phone preview" style="display:none;background:none;border:none;color:inherit;cursor:pointer;padding:2px;line-height:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></button></span></span></div><span id="heroFav" style="display:none"></span></header>
 <div class="ministrip" id="ministrip"><div class="ms-player"><button id="msPlay" title="Play / Pause">&#9654;</button><button id="msNext" title="Next">&#9197;</button><span class="ms-title" id="msTitle">&mdash;</span></div><div class="ms-quote" id="msQuote"></div></div>
 
 <div class="shell">
@@ -3017,7 +3041,7 @@ function gateEkgRun(cv){
   requestAnimationFrame(fr);
 }
 function bootReveal(){var v=document.getElementById('bootveil');if(v&&!v.__g){v.__g=1;v.classList.add('gone');setTimeout(function(){if(v.parentNode)v.parentNode.removeChild(v);},800);}}
-async function load(){S=await (await fetch('/api/state')).json();if(S&&S.pending){renderLobby();return;}applyTheme();var __ac=null;try{__ac=new URLSearchParams(location.search).get('accent');}catch(e){}if(__ac&&/^#[0-9a-fA-F]{6}$/.test(__ac))themeSet(__ac,true);try{if(!window.__splashShown&&!ucfg().skipSplash&&!__ac&&!JPV_IN()&&!POP_MODE()&&typeof showLoginSplash==='function'){window.__splashShown=1;showLoginSplash();}}catch(e){}try{window.__songs=await (await fetch('/api/songs')).json();}catch(e){window.__songs=window.__songs||[];}window.HQ=(S.quotes&&S.quotes.quotes&&S.quotes.quotes.length)?S.quotes.quotes:HERO_Q;window.MQ=(S.movieQueue||[]);window.__libPL=(S.libPlaylists&&S.libPlaylists.length)?S.libPlaylists:window.__libPL;if(!window.__djLoaded&&S.songQueue&&S.songQueue.q){window.__djLoaded=true;dq=S.songQueue.q;dqi=(typeof S.songQueue.i==='number')?S.songQueue.i:-1;}if(S.rotationState&&typeof S.rotationState==='object')window.ROT=S.rotationState;document.getElementById('role').textContent=S.me.role;var __cb=document.getElementById('crownBadge');if(__cb){if(S.me.isKing){__cb.textContent='👑';__cb.style.opacity='1';__cb.title='You are the King of PULSE — final authority over the site and the line of succession.';}else if(S.me.inLine){__cb.textContent='👑';__cb.style.opacity='.6';__cb.title='You are in the Clemit line of succession. Should it ever be required, the duties of steward would fall to you — keep this family hub running and protect everyone’s materials. Your position in the line is private to the King.';}else{__cb.textContent='';__cb.removeAttribute('title');}}if(!window.__logged&&!JPV_IN()){window.__logged=true;audit('login','signed in','Session');}if(!window.heroReady){heroInit();window.heroReady=true;}else{heroFavUpd();}try{if(!window.__landed){window.__landed=1;var __ht=ucfg().homeTab;if(__ht){var __vis=tabs().map(function(t){return t[0];});if(__vis.indexOf(__ht)>=0)cur=__ht;}}}catch(e){}buildNav();render();if(!djReady){djInit();djReady=true;}gateMaybe();if(!JPV_IN())idleStart();try{window.__refSig=refSig(S);}catch(e){}phonePreviewMaybe();try{if(!POP_MODE())popOpenerInit();}catch(e){}try{popoutApply();}catch(e){}}
+async function load(){S=await (await fetch('/api/state')).json();if(S&&S.pending){renderLobby();return;}applyTheme();var __ac=null;try{__ac=new URLSearchParams(location.search).get('accent');}catch(e){}if(__ac&&/^#[0-9a-fA-F]{6}$/.test(__ac))themeSet(__ac,true);try{if(!window.__splashShown&&!ucfg().skipSplash&&!__ac&&!JPV_IN()&&!POP_MODE()&&typeof showLoginSplash==='function'){window.__splashShown=1;showLoginSplash();}}catch(e){}try{window.__songs=await (await fetch('/api/songs')).json();}catch(e){window.__songs=window.__songs||[];}window.HQ=(S.quotes&&S.quotes.quotes&&S.quotes.quotes.length)?S.quotes.quotes:HERO_Q;window.MQ=(S.movieQueue||[]);window.__libPL=(S.libPlaylists&&S.libPlaylists.length)?S.libPlaylists:window.__libPL;if(!window.__djLoaded&&S.songQueue&&S.songQueue.q){window.__djLoaded=true;dq=S.songQueue.q;dqi=(typeof S.songQueue.i==='number')?S.songQueue.i:-1;}if(S.rotationState&&typeof S.rotationState==='object')window.ROT=S.rotationState;document.getElementById('role').textContent=S.me.role;var __cb=document.getElementById('crownBadge');if(__cb){if(S.me.isKing){__cb.textContent='👑';__cb.style.opacity='1';__cb.title='You are the King of PULSE — final authority over the site and the line of succession.';}else{__cb.textContent='';__cb.removeAttribute('title');}}if(!window.__logged&&!JPV_IN()){window.__logged=true;audit('login','signed in','Session');}if(!window.heroReady){heroInit();window.heroReady=true;}else{heroFavUpd();}try{if(!window.__landed){window.__landed=1;var __ht=ucfg().homeTab;if(__ht){var __vis=tabs().map(function(t){return t[0];});if(__vis.indexOf(__ht)>=0)cur=__ht;}}}catch(e){}buildNav();render();if(!djReady){djInit();djReady=true;}gateMaybe();if(!JPV_IN())idleStart();try{window.__refSig=refSig(S);}catch(e){}phonePreviewMaybe();try{if(!POP_MODE())popOpenerInit();}catch(e){}try{popoutApply();}catch(e){}}
 function arcadeView(){var rows=[{title:'2048',genre:'Puzzle',source:'Free link',u:'https://play2048.co/'},{title:'Hextris',genre:'Arcade',source:'Free link',u:'https://hextris.io/'},{title:'Tetris (clone)',genre:'Classic',source:'Free link',u:'https://chvin.github.io/react-tetris/'},{title:'Snake',genre:'Classic',source:'Free link',u:'https://playsnake.org/'},{title:'Pac-Man (clone)',genre:'Arcade',source:'Free link',u:'https://freepacman.org/'},{title:'Asteroids',genre:'Arcade',source:'Free link',u:'https://freeasteroids.org/'},{title:'Open-Source Game Catalog',genre:'Catalog',source:'Directory',u:'https://osgameclones.com/'},{title:'itch.io Free HTML5 Games',genre:'Catalog',source:'Directory',u:'https://itch.io/games/free/html5'}];window.__games=rows;window.__cflist=rows;if(typeof window.__cfi!=='number'||window.__cfi>=rows.length)window.__cfi=0;var ico=function(g){g=(g||'').toLowerCase();if(g==='puzzle')return '\\uD83E\\uDDE9';if(g==='classic')return '\\uD83D\\uDD79';if(g==='catalog')return '\\uD83D\\uDCDA';if(g==='arcade')return '\\uD83D\\uDC7E';return '\\uD83C\\uDFAE';};var h='<div class="vhead"><h2>\\uD83C\\uDFAE Arcade</h2><span style="color:var(--dim);font-size:.8rem;margin-left:auto">the family game room</span></div>';h+='<p style="color:var(--dim);font-size:.85rem;margin:0 0 12px;">Free, legal games \\u2014 they open in a new tab. Tap a cover to center it, then \\u25B6 Play.</p>';h+='<div class="cflabels" id="cflabels">';rows.forEach(function(g,i){h+='<div class="cflabel" onclick="cfGo('+i+')"><div class="cfl-title">'+esc(g.title)+'</div><div class="cfl-stat cfl-field">'+esc(g.genre||'')+'</div></div>';});h+='</div>';h+='<div class="cf"><button class="cfnav cfprev" onclick="cfPrev()">\\u2039</button><div class="cfstage" id="cfstage">';rows.forEach(function(g,i){var hue=mHue(g.title);h+='<div class="cfc" onclick="cfClick(event,'+i+')"><div class="cfflip"><div class="cffront"><div class="cfposter" style="background:linear-gradient(150deg,hsl('+hue+',46%,30%),hsl('+((hue+40)%360)+',52%,15%))"><span class="cfinit">'+ico(g.genre)+'</span></div><div class="cfinfo"><div class="cfd-title2">'+esc(g.title)+'</div><div class="cfd-meta">'+esc(g.genre||'')+' \\u00b7 '+esc(g.source||'')+'</div><div class="cfd-btns"><span class="mbtn play" onclick="gameInfo('+i+')">\\u25B6 Play</span></div></div></div></div></div>';});h+='</div><button class="cfnav cfnext" onclick="cfNext()">\\u203a</button></div>';setTimeout(cfPaint,30);return h;}
 function subGo(p,id){window.__SUBNAV=window.__SUBNAV||{};window.__SUBNAV[p]=id;try{render();}catch(e){}}
 function subResolve(p,vis){window.__SUBNAV=window.__SUBNAV||{};var s=window.__SUBNAV[p];for(var i=0;i<vis.length;i++){if(vis[i][0]===s)return s;}return vis.length?vis[0][0]:null;}
@@ -4517,7 +4541,269 @@ setInterval(safeRefresh,20000);
   </div>
 </div></div>
 <div class="nqtoast" id="nqToast">Saved to Personal Notes</div>
-</body></html>`;
+<style>/* PULSE Report-Bug TCV styles. Escape-free (no backslashes). */
+.bugModal{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(2,4,10,.72);backdrop-filter:blur(6px);padding:14px;box-sizing:border-box}
+.bugCard{position:relative;width:min(560px,96vw);max-height:92vh;overflow:auto;background:linear-gradient(160deg,#0a0e1c 0%,#070912 100%);border:1px solid rgba(0,229,255,.45);border-radius:14px;box-shadow:0 0 0 1px rgba(177,75,255,.25),0 24px 70px rgba(0,0,0,.7),0 0 40px rgba(0,229,255,.12);color:#dfe9ff;font-family:inherit;padding:18px 18px 16px}
+.bugCard::before,.bugCard::after{content:"";position:absolute;width:16px;height:16px;border:2px solid #00e5ff;opacity:.7}
+.bugCard::before{top:8px;left:8px;border-right:0;border-bottom:0}
+.bugCard::after{bottom:8px;right:8px;border-left:0;border-top:0}
+.bugHead{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.bugTitle{font-size:1.18rem;font-weight:800;letter-spacing:.04em;color:#fff;text-shadow:0 0 10px rgba(0,229,255,.5)}
+.bugX{margin-left:auto;background:transparent;border:0;color:#9fb4d6;font-size:1.5rem;line-height:1;cursor:pointer}
+.bugX:hover{color:#ff2d55}
+.bugSub{font-size:.82rem;color:#9fb4d6;margin:2px 0 12px}
+.bugShotBox{position:relative;border:1px dashed rgba(0,229,255,.35);border-radius:10px;min-height:120px;display:flex;align-items:center;justify-content:center;background:rgba(0,229,255,.04);cursor:pointer;overflow:hidden;margin-bottom:12px}
+.bugShotBox img{width:100%;display:block}
+.bugShotStatus{position:absolute;bottom:6px;left:8px;right:8px;font-size:.72rem;color:#8fd9ff;background:rgba(3,6,14,.66);padding:3px 6px;border-radius:6px;text-align:center}
+.bugInfo{display:grid;grid-template-columns:1fr;gap:4px;margin-bottom:12px}
+.bugRow{display:flex;gap:8px;font-size:.78rem;border-bottom:1px solid rgba(120,150,200,.12);padding:3px 0}
+.bugK{color:#7fb0e0;min-width:64px;font-weight:600}
+.bugV{color:#cdddf5;word-break:break-all}
+.bugTa{width:100%;box-sizing:border-box;min-height:88px;resize:vertical;background:#05070f;border:1px solid rgba(120,150,200,.3);border-radius:9px;color:#eaf2ff;padding:10px;font-family:inherit;font-size:.92rem}
+.bugTa:focus{outline:0;border-color:#00e5ff;box-shadow:0 0 0 2px rgba(0,229,255,.2)}
+.bugActions{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.bugBtn{cursor:pointer;border-radius:9px;padding:9px 14px;font-size:.86rem;font-weight:700;font-family:inherit;border:1px solid transparent}
+.bugBtn.go{background:linear-gradient(135deg,#ff2d55,#b14bff);color:#fff;box-shadow:0 6px 18px rgba(255,45,85,.3)}
+.bugBtn.go:hover{filter:brightness(1.1)}
+.bugBtn.go:disabled{opacity:.6;cursor:default}
+.bugBtn.ghost{background:transparent;border-color:rgba(0,229,255,.4);color:#bfe6ff}
+.bugBtn.ghost:hover{background:rgba(0,229,255,.1)}
+.bugDone{text-align:center;padding:22px 8px}
+.bugDoneMark{font-size:2.6rem;color:#3affb0;text-shadow:0 0 18px rgba(58,255,176,.6);margin-bottom:8px}
+.bugReports{display:none;margin-top:14px;border-top:1px solid rgba(0,229,255,.25);padding-top:10px}
+.bugListHead{font-size:.78rem;color:#7fb0e0;margin-bottom:6px;font-weight:700}
+.bugLi{border:1px solid rgba(120,150,200,.18);border-radius:9px;padding:8px 10px;margin-bottom:7px;cursor:pointer;background:rgba(10,16,30,.6)}
+.bugLi:hover{border-color:rgba(0,229,255,.4)}
+.bugLiTop{display:flex;justify-content:space-between;gap:8px;font-size:.8rem}
+.bugLiWhen{color:#7f93b4;font-size:.72rem}
+.bugLiTxt{font-size:.82rem;color:#cdddf5;margin:3px 0}
+.bugLiMeta{font-size:.7rem;color:#7f93b4}
+.bugDetail{display:none;margin-top:8px;border-top:1px dashed rgba(120,150,200,.25);padding-top:8px}
+.bugDetUrl a{color:#5fd0ff;font-size:.76rem;word-break:break-all}
+.bugDetTxt{font-size:.86rem;color:#eaf2ff;margin:6px 0;white-space:pre-wrap}
+.bugDetMeta{font-size:.72rem;color:#9fb4d6}
+.bugDetUa{font-size:.66rem;color:#6f83a4;word-break:break-all;margin-top:4px}
+.bugDetShot{width:100%;margin-top:8px;border:1px solid rgba(0,229,255,.3);border-radius:8px}
+/* header buttons: ALWAYS visible, every user, desktop + phone (HARD RULE) */
+.pulseHdrBtn{display:inline-flex!important;align-items:center;gap:5px;cursor:pointer;border:1px solid rgba(0,229,255,.4);background:rgba(0,229,255,.07);color:#cdeeff;border-radius:8px;padding:5px 9px;font-size:.8rem;font-family:inherit;font-weight:600;white-space:nowrap}
+.pulseHdrBtn:hover{background:rgba(0,229,255,.16);border-color:#00e5ff}
+.pulseHdrBtn.bug{border-color:rgba(255,45,85,.45);background:rgba(255,45,85,.08);color:#ffd2dc}
+.pulseHdrBtn.bug:hover{background:rgba(255,45,85,.18);border-color:#ff2d55}
+@media(max-width:640px){.pulseHdrBtn{padding:5px 7px;font-size:.74rem}.pulseHdrBtn .pulseHdrTxt{display:none}}</style><script>/* PULSE Report-Bug client. ESCAPE-FREE by rule: contains NO backslash characters,
+   so it survives the one-big-template-literal page intact (the Notes-Event crash lesson). */
+(function(){
+  var SHOT = "";          // current screenshot data URL (jpeg)
+  var BUSY = false;
+
+  function el(id){ return document.getElementById(id); }
+
+  function bugSys(){
+    var ua = navigator.userAgent || "";
+    function has(s){ return ua.indexOf(s) >= 0; }
+    var os = "Unknown";
+    if (has("Windows NT 10")) os = "Windows 10/11";
+    else if (has("Windows")) os = "Windows";
+    else if (has("iPhone")) os = "iOS (iPhone)";
+    else if (has("iPad")) os = "iPadOS";
+    else if (has("Android")) os = "Android";
+    else if (has("Mac OS X")) os = "macOS";
+    else if (has("Linux")) os = "Linux";
+    var br = "Unknown";
+    if (has("Edg")) br = "Edge";
+    else if (has("OPR") || has("Opera")) br = "Opera";
+    else if (navigator.brave) br = "Brave";
+    else if (has("Chrome")) br = "Chrome";
+    else if (has("Firefox")) br = "Firefox";
+    else if (has("Safari")) br = "Safari";
+    var kind = (has("Mobi") || has("iPhone") || has("Android")) ? "Phone" : "Desktop";
+    return {
+      url: location.href,
+      ua: ua,
+      os: os,
+      browser: br,
+      kind: kind,
+      viewport: window.innerWidth + " x " + window.innerHeight
+    };
+  }
+
+  function loadH2C(cb){
+    if (window.html2canvas){ cb(true); return; }
+    var s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+    s.onload = function(){ cb(true); };
+    s.onerror = function(){ cb(false); };
+    document.head.appendChild(s);
+  }
+
+  function shrink(canvas, maxW, q){
+    var w = canvas.width, h = canvas.height;
+    if (w > maxW){ h = Math.round(h * (maxW / w)); w = maxW; }
+    var c2 = document.createElement("canvas");
+    c2.width = w; c2.height = h;
+    c2.getContext("2d").drawImage(canvas, 0, 0, w, h);
+    return c2.toDataURL("image/jpeg", q);
+  }
+
+  function setStatus(t){ var s = el("bugShotStatus"); if (s) s.textContent = t; }
+
+  function capture(){
+    var modal = el("bugModal");
+    setStatus("Capturing the screen...");
+    if (modal) modal.style.visibility = "hidden";
+    loadH2C(function(ok){
+      if (!ok){
+        if (modal) modal.style.visibility = "visible";
+        setStatus("Screenshot tool could not load. You can still send the report.");
+        return;
+      }
+      var scale = Math.min(1, 1100 / Math.max(1, window.innerWidth));
+      window.html2canvas(document.body, { scale: scale, backgroundColor: "#05060c", logging: false, useCORS: true })
+        .then(function(canvas){
+          var data = shrink(canvas, 1000, 0.5);
+          if (data.length > 320000) data = shrink(canvas, 850, 0.4);
+          if (data.length > 320000) data = shrink(canvas, 700, 0.32);
+          SHOT = data;
+          var img = el("bugShotImg");
+          if (img){ img.src = data; img.style.display = "block"; }
+          setStatus("Screenshot attached (" + Math.round(data.length / 1024) + " KB). Tap to retake.");
+          if (modal) modal.style.visibility = "visible";
+        })
+        .catch(function(){
+          if (modal) modal.style.visibility = "visible";
+          setStatus("Could not capture the screen. You can still send the report.");
+        });
+    });
+  }
+
+  function buildModal(){
+    if (el("bugModal")) return;
+    var info = bugSys();
+    var isRoyal = !!(window.S && S.me && (S.me.isRoyal || S.me.isKing));
+    var wrap = document.createElement("div");
+    wrap.id = "bugModal";
+    wrap.className = "bugModal";
+    var rows = ""
+      + row("Page", info.url)
+      + row("Device", info.kind + " / " + info.os)
+      + row("Browser", info.browser)
+      + row("Screen", info.viewport);
+    var royalBtn = isRoyal
+      ? "<button type='button' class='bugBtn ghost' onclick='PulseBug.viewReports()'>View reports</button>"
+      : "";
+    wrap.innerHTML =
+      "<div class='bugCard'>"
+      +   "<div class='bugHead'><span class='bugTitle'>Report a Bug</span>"
+      +     "<button type='button' class='bugX' onclick='PulseBug.close()' title='Close'>&times;</button></div>"
+      +   "<div class='bugSub'>Tell us what went wrong. We grab a screenshot and your device info automatically.</div>"
+      +   "<div class='bugShotBox' onclick='PulseBug.capture()' title='Tap to (re)capture'>"
+      +     "<img id='bugShotImg' alt='screenshot' style='display:none'>"
+      +     "<div id='bugShotStatus' class='bugShotStatus'>Preparing screenshot...</div>"
+      +   "</div>"
+      +   "<div class='bugInfo'>" + rows + "</div>"
+      +   "<textarea id='bugFeedback' class='bugTa' placeholder='What happened? What were you trying to do?'></textarea>"
+      +   "<div class='bugActions'>"
+      +     royalBtn
+      +     "<span style='flex:1'></span>"
+      +     "<button type='button' class='bugBtn ghost' onclick='PulseBug.close()'>Cancel</button>"
+      +     "<button type='button' class='bugBtn go' id='bugSend' onclick='PulseBug.submit()'>Send report</button>"
+      +   "</div>"
+      +   "<div id='bugReports' class='bugReports'></div>"
+      + "</div>";
+    document.body.appendChild(wrap);
+  }
+
+  function row(k, v){
+    return "<div class='bugRow'><span class='bugK'>" + esc(k) + "</span><span class='bugV'>" + esc(v) + "</span></div>";
+  }
+  function esc(s){
+    s = String(s == null ? "" : s);
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function open(){
+    buildModal();
+    SHOT = "";
+    var fb = el("bugFeedback"); if (fb) fb.value = "";
+    var img = el("bugShotImg"); if (img){ img.style.display = "none"; img.src = ""; }
+    var rep = el("bugReports"); if (rep){ rep.style.display = "none"; rep.innerHTML = ""; }
+    var m = el("bugModal"); if (m){ m.style.display = "flex"; m.style.visibility = "visible"; }
+    setTimeout(capture, 120);
+  }
+
+  function close(){ var m = el("bugModal"); if (m) m.style.display = "none"; }
+
+  function submit(){
+    if (BUSY) return;
+    var fb = el("bugFeedback");
+    var text = fb ? (fb.value || "").trim() : "";
+    if (!text){ if (fb){ fb.focus(); fb.style.borderColor = "#ff2d55"; } setStatus("Please add a few words first."); return; }
+    BUSY = true;
+    var btn = el("bugSend"); if (btn){ btn.disabled = true; btn.textContent = "Sending..."; }
+    var info = bugSys();
+    fetch("/api/bug/report", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        url: info.url, ua: info.ua, platform: info.kind + " / " + info.os,
+        browser: info.browser, viewport: info.viewport, feedback: text, shot: SHOT
+      })
+    }).then(function(r){ return r.json(); }).then(function(){
+      BUSY = false;
+      var card = document.querySelector("#bugModal .bugCard");
+      if (card) card.innerHTML = "<div class='bugDone'><div class='bugDoneMark'>&#10003;</div>"
+        + "<div class='bugTitle'>Thank you!</div>"
+        + "<div class='bugSub'>Your report reached the King. We are on it.</div>"
+        + "<button type='button' class='bugBtn go' onclick='PulseBug.close()'>Close</button></div>";
+    }).catch(function(){
+      BUSY = false;
+      if (btn){ btn.disabled = false; btn.textContent = "Send report"; }
+      setStatus("Could not send. Check your connection and try again.");
+    });
+  }
+
+  function viewReports(){
+    var rep = el("bugReports");
+    if (!rep) return;
+    rep.style.display = "block";
+    rep.innerHTML = "<div class='bugSub'>Loading reports...</div>";
+    fetch("/api/bug/list").then(function(r){ return r.json(); }).then(function(d){
+      var list = (d && d.reports) || [];
+      if (!list.length){ rep.innerHTML = "<div class='bugSub'>No bug reports yet.</div>"; return; }
+      var h = "<div class='bugListHead'>" + list.length + " report(s)</div>";
+      list.forEach(function(b){
+        var when = new Date(b.created_at || 0).toLocaleString();
+        h += "<div class='bugLi' onclick='PulseBug.openReport(" + b.id + ")'>"
+          + "<div class='bugLiTop'><b>" + esc(b.reporter_name || b.reporter_email || "someone") + "</b>"
+          + "<span class='bugLiWhen'>" + esc(when) + "</span></div>"
+          + "<div class='bugLiTxt'>" + esc((b.feedback || "").slice(0, 140)) + "</div>"
+          + "<div class='bugLiMeta'>" + esc(b.platform || "") + " &middot; " + esc(b.browser || "") + "</div>"
+          + "<div id='bugDetail" + b.id + "' class='bugDetail'></div></div>";
+      });
+      rep.innerHTML = h;
+    }).catch(function(){ rep.innerHTML = "<div class='bugSub'>Could not load reports.</div>"; });
+  }
+
+  function openReport(id){
+    var box = el("bugDetail" + id);
+    if (!box) return;
+    if (box.getAttribute("data-open") === "1"){ box.style.display = "none"; box.setAttribute("data-open", "0"); return; }
+    box.style.display = "block"; box.setAttribute("data-open", "1");
+    box.innerHTML = "<div class='bugSub'>Loading...</div>";
+    fetch("/api/bug/get?id=" + id).then(function(r){ return r.json(); }).then(function(d){
+      var b = d && d.report;
+      if (!b){ box.innerHTML = "<div class='bugSub'>Not found.</div>"; return; }
+      var h = "<div class='bugDetUrl'><a href='" + esc(b.url) + "' target='_blank' rel='noopener'>" + esc(b.url) + "</a></div>";
+      h += "<div class='bugDetTxt'>" + esc(b.feedback || "") + "</div>";
+      h += "<div class='bugDetMeta'>" + esc(b.platform || "") + " &middot; " + esc(b.browser || "") + " &middot; " + esc(b.viewport || "") + "</div>";
+      h += "<div class='bugDetUa'>" + esc(b.ua || "") + "</div>";
+      if (b.shot) h += "<img class='bugDetShot' src='" + b.shot + "' alt='screenshot'>";
+      box.innerHTML = h;
+    }).catch(function(){ box.innerHTML = "<div class='bugSub'>Could not load.</div>"; });
+  }
+
+  window.PulseBug = { open: open, close: close, capture: capture, submit: submit, viewReports: viewReports, openReport: openReport };
+  window.openBugModal = open;
+})();</script></body></html>`;
 export {
   index_default as default
 };
