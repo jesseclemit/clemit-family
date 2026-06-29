@@ -1,0 +1,54 @@
+if (p === "/api/linkcheck") {
+          var lu = ((new URL(req.url)).searchParams.get("u") || "").trim();
+          if (!/^https?:\/\//i.test(lu)) return json({ ok: false, error: "Only http/https links" });
+          if (/^https?:\/\/(localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|169\.254\.|::1|\[)/i.test(lu) || /\.(local|internal)(\/|$)/i.test(lu)) return json({ ok: false, error: "blocked host" });
+          try {
+            var __ac = new AbortController();
+            var __to = setTimeout(function(){ __ac.abort(); }, 7000);
+            var __lr = await fetch(lu, { method: "GET", redirect: "follow", signal: __ac.signal, headers: { "user-agent": "Mozilla/5.0 (PULSE link check)" } });
+            clearTimeout(__to);
+            var __ct = (__lr.headers.get("content-type") || "").toLowerCase();
+            return json({ ok: !!__lr.ok, status: __lr.status, contentType: __ct, isImage: __ct.indexOf("image/") === 0, finalUrl: __lr.url || lu });
+          } catch (e) { return json({ ok: false, error: String((e && e.message) || e) }); }
+        }
+        if (p === "/api/daymgr/event" && req.method === "POST") {
+          var dmEmailE = String((me && me.email) || "guest").toLowerCase();
+          if (!me || me.role === "guest" || dmEmailE === "guest") return json({ error: "no" }, 403);
+          var evb = await req.json();
+          var ttl = String((evb && evb.title) || "").trim().slice(0, 200);
+          var sdate = String((evb && evb.date) || "").trim();
+          if (!ttl) return json({ error: "Title is required" }, 400);
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(sdate)) return json({ error: "A start date is required" }, 400);
+          var dmKeyE = "daymgr:" + dmEmailE;
+          var rawE = await getSetting(env, dmKeyE);
+          var dE = null; try { dE = rawE ? JSON.parse(rawE) : null; } catch (e) { dE = null; }
+          if (!dE || typeof dE !== "object") dE = { tasks: [], ideas: [], shopping: [], events: [] };
+          var limStr = function(a, n, max){ return Array.isArray(a) ? a.slice(0, n).map(function(x){ return String(x).slice(0, max); }).filter(function(x){ return x; }) : []; };
+          var okCat = ["personal","medical","family","finance","appt"];
+          var evObj = {
+            id: (evb.id && String(evb.id).slice(0, 40)) || (Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
+            title: ttl,
+            date: sdate,
+            time: String((evb.time != null ? evb.time : "All day")).slice(0, 40) || "All day",
+            endDate: /^\d{4}-\d{2}-\d{2}$/.test(String(evb.endDate || "")) ? String(evb.endDate) : "",
+            endTime: String(evb.endTime || "").slice(0, 40),
+            cat: okCat.indexOf(String(evb.cat)) >= 0 ? String(evb.cat) : "personal",
+            recur: !!evb.recur,
+            links: limStr(evb.links, 12, 600),
+            images: limStr(evb.images, 12, 600),
+            src: "note"
+          };
+          var loc = String((evb.time2 != null ? evb.time2 : evb.location) || "").trim().slice(0, 200);
+          if (loc) evObj.time2 = loc;
+          var ev2 = (Array.isArray(dE.events) ? dE.events : []).filter(function(e){ return e && !e.g; });
+          var found = false;
+          ev2 = ev2.map(function(e){ if (e && e.id === evObj.id) { found = true; return evObj; } return e; });
+          if (!found) ev2.push(evObj);
+          if (ev2.length > 800) ev2 = ev2.slice(ev2.length - 800);
+          dE.events = ev2;
+          dE.tasks = Array.isArray(dE.tasks) ? dE.tasks.slice(0, 800) : [];
+          dE.ideas = Array.isArray(dE.ideas) ? dE.ideas.slice(0, 800) : [];
+          dE.shopping = Array.isArray(dE.shopping) ? dE.shopping.slice(0, 800) : [];
+          await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind(dmKeyE, JSON.stringify(dE)).run();
+          return json({ ok: true, id: evObj.id, event: evObj });
+        }
