@@ -4189,7 +4189,7 @@ function dinnerPlateBar(){var p=(S.dinnerPlates||0);var act=__plateTarget>0;
   h+='<b id="dpbNum" style="color:var(--gold,#ffd23d);font-size:1.15rem">'+(Math.round(p*10)/10)+'</b>';
   if(act){h+='<span style="margin-left:auto;font-size:.78rem;color:var(--acc)">Scaling meals to '+(Math.round(__plateTarget*10)/10)+' plates</span><button class="mini" onclick="dinnerClearScale()">&#10005; stop scaling</button>';}
   else{h+='<button class="go" style="margin-left:auto" onclick="dinnerApplyScale()">Apply effective plates to scale recipes</button>';}
-  h+='<span style="flex-basis:100%;font-size:.68rem;color:var(--dim)">Set who&#39;s coming in Control Panel &rarr; Dinner.</span>';
+  h+='<span style="flex-basis:100%;font-size:.68rem;color:var(--dim)">Set who&#39;s coming in Control Panel &rarr; Dinner.</span>';h+='</div>';
   return h;
 }
 function dinnerApplyScale(){var p=(S.dinnerPlates||0);if(p<=0){if(typeof gToast==='function')gToast('Pick who is coming first: Control Panel then Dinner.');return;}__plateTarget=p;try{localStorage.setItem('pulse.plateTarget',''+p);}catch(e){}if(typeof gToast==='function')gToast('Meals will now scale to '+(Math.round(p*10)/10)+' plates.');if(typeof render==='function')render();}
