@@ -4672,7 +4672,7 @@ function __pulseEntryEl(o){
  var nm=(typeof esc==='function')?esc((S&&S.me&&S.me.name)||'guest'):((S&&S.me&&S.me.name)||'guest');
  var isAdm=!!(S&&S.me&&(S.me.isAdmin||S.me.isOwner))&&!guest;
  var bn=(S&&S.gateBanner)?String(S.gateBanner):'';
- var P0='#b3253a';
+ var P0=(function(){try{var t=(ucfg()||{}).themeColor;if(t)return t;}catch(e){}try{if(typeof S!=='undefined'&&S&&S.themeColor)return S.themeColor;}catch(e){}return '#b3253a';})();
  var label=guest?'REQUEST ACCESS':'ENTER';
  var lead=guest?('Signed in as <b style="color:#ff8aa0">'+nm+'</b>. Request access and a family admin will wave you in.'):('Welcome back, <b style="color:#ff8aa0">'+nm+'</b>. Tap to enter.');
  var d=document.createElement('div');
