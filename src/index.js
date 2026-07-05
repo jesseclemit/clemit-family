@@ -1262,7 +1262,7 @@ var index_default = {
             const __b = await req.json();
             const __hex = String((__b && __b.hex) || "").trim();
             if (/^#[0-9a-fA-F]{6}$/.test(__hex)) {
-              await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("theme_color", __hex).run();
+              await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind("theme_color:" + meEmail, __hex).run();
             }
           } catch (e) {}
           return json({ ok: true });
@@ -1504,7 +1504,7 @@ let __letter = ""; try { __letter = (await getSetting(env, "king_letter")) || ""
         const __cr={forumRoster:__crRoster,presence:__crPres,reactions:__crReact};
         let __dispList = []; try { __dispList = JSON.parse((await getSetting(env, "dispensary_ok")) || "[]"); if (!Array.isArray(__dispList)) __dispList = []; } catch (e) { __dispList = []; }
         let __dispOk = isRoyal || (__dispList.map(function (x) { return ("" + x).toLowerCase(); }).indexOf((me.email || "").toLowerCase()) >= 0);
-        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "", digestOff: me.digest_off ? 1 : 0, cuts: __iamCuts[(me.email||"").toLowerCase()]||[], dispensaryOk: __dispOk }, king: __king, succession: __isKing ? __succ : null, iamSched: isRoyal ? __iamSched : null, iamCuts: isRoyal ? __iamCuts : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, groceryFavs, recipeFavs, foodFlags, rosterNames, dinnerMine, dinnerPlates, recipes, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, libPlaylists, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", themeColor: (await getSetting(env, "theme_color")) || "#2f9bff", forumGrants: isRoyal ? forumGrants : null, dispAllow: isRoyal ? __dispList : null, members: forumMembers, forumRoster: __cr.forumRoster, presence: __cr.presence, reactions: __cr.reactions, reads: __reads, mentions: __ment });
+        return json({ me: { name: me.name, role: me.role, isAdmin, isOwner: me.email === OWNER, isRoyal, isKing: __isKing, inLine: (!__isKing && __inLine), avatar: me.avatar || "", digestOff: me.digest_off ? 1 : 0, cuts: __iamCuts[(me.email||"").toLowerCase()]||[], dispensaryOk: __dispOk }, king: __king, succession: __isKing ? __succ : null, iamSched: isRoyal ? __iamSched : null, iamCuts: isRoyal ? __iamCuts : null, kingSeen: __isKing ? __kingSeen : 0, claim: __isKing ? __claim : null, kingLetter: __isKing ? __letter : null, groceryVisible, guestShare, grocery, groceryFavs, recipeFavs, foodFlags, rosterNames, dinnerMine, dinnerPlates, recipes, messages, rsvp, media, users, quotes, destroyedMovies: dmv, destroyLog: dlog, avatars, reviewQueue: rq, memberLists, listMembers: isAdmin ? listMembers : {}, movieReady, movieReq, movieQueue, recycleList, songQueue, rotationState, libPlaylists, householdOk, gateBanner: (await getSetting(env, "gate_banner")) || "", themeColor: (await getSetting(env, "theme_color:" + meEmail)) || (await getSetting(env, "theme_color")) || "#2f9bff", forumGrants: isRoyal ? forumGrants : null, dispAllow: isRoyal ? __dispList : null, members: forumMembers, forumRoster: __cr.forumRoster, presence: __cr.presence, reactions: __cr.reactions, reads: __reads, mentions: __ment });
       }
       if (p === "/api/king/succession" && req.method === "POST") {
   const __k = (await getSetting(env, "king")) || OWNER;
@@ -4660,7 +4660,7 @@ function controlOverview(){if(!(S.me.isAdmin||S.me.isRoyal))return '<div class="
 function ucfgKey(){return 'ucfg:'+((S.me&&S.me.email)||'anon');}
 function ucfg(){try{return JSON.parse(localStorage.getItem(ucfgKey())||'{}');}catch(e){return {};}}
 function ucfgSet(patch){var c=ucfg();for(var k in patch)c[k]=patch[k];try{localStorage.setItem(ucfgKey(),JSON.stringify(c));}catch(e){}return c;}
-function themeSet(hex,save){if(!/^#[0-9a-fA-F]{6}$/.test(hex))return;var h=hex.replace('#','');var r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);var br=function(x){return Math.round(x+(255-x)*0.5);};var rt=document.documentElement.style;rt.setProperty('--acc',hex);rt.setProperty('--acc-rgb',r+','+g+','+b);try{var __ifr=document.querySelectorAll('iframe');for(var __i=0;__i<__ifr.length;__i++){var __s=__ifr[__i].getAttribute('src')||'';if(__s.indexOf('/daymanager')>=0&&__ifr[__i].contentWindow)__ifr[__i].contentWindow.postMessage({pulseAcc:hex},'*');}}catch(e){}rt.setProperty('--acc-bright','rgb('+br(r)+','+br(g)+','+br(b)+')');rt.setProperty('--acc-glow','rgba('+r+','+g+','+b+',.55)');var sw=document.getElementById('themeSw');if(sw)sw.value=hex;if(save)ucfgSet({themeColor:hex});}
+function themeSet(hex,save){if(!/^#[0-9a-fA-F]{6}$/.test(hex))return;var h=hex.replace('#','');var r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);var br=function(x){return Math.round(x+(255-x)*0.5);};var rt=document.documentElement.style;rt.setProperty('--acc',hex);rt.setProperty('--acc-rgb',r+','+g+','+b);try{var __ifr=document.querySelectorAll('iframe');for(var __i=0;__i<__ifr.length;__i++){var __s=__ifr[__i].getAttribute('src')||'';if(__s.indexOf('/daymanager')>=0&&__ifr[__i].contentWindow)__ifr[__i].contentWindow.postMessage({pulseAcc:hex},'*');}}catch(e){}rt.setProperty('--acc-bright','rgb('+br(r)+','+br(g)+','+br(b)+')');rt.setProperty('--acc-glow','rgba('+r+','+g+','+b+',.55)');var sw=document.getElementById('themeSw');if(sw)sw.value=hex;if(save){ucfgSet({themeColor:hex});try{fetch('/api/theme-color',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({hex:hex})});}catch(e){}}}
 /* SINGLE ENTRY SCREEN (#pulseEntry) for ALL hosts - the ONLY splash/gate in the app. Do NOT add a separate portal or splash anywhere; a second copy is what caused the recurring two-gate problem. */
 function lpFeatureList(){return [["Library coverflow v6","2h","dj"],["Movie queue on mobile","1d","dj"],["New hero skins","1d","home"],["Email + SMS reminders","2d","admin"]];}
 function hidePulseEntry(){var d=document.getElementById('pulseEntry');if(d&&d.parentNode)d.parentNode.removeChild(d);}
@@ -4672,7 +4672,7 @@ function __pulseEntryEl(o){
  var nm=(typeof esc==='function')?esc((S&&S.me&&S.me.name)||'guest'):((S&&S.me&&S.me.name)||'guest');
  var isAdm=!!(S&&S.me&&(S.me.isAdmin||S.me.isOwner))&&!guest;
  var bn=(S&&S.gateBanner)?String(S.gateBanner):'';
- var P0='#b3253a';
+ var P0=(function(){try{return (ucfg().themeColor)||(typeof S!=='undefined'&&S&&S.themeColor)||'#b3253a';}catch(e){return '#b3253a';}})();
  var label=guest?'REQUEST ACCESS':'ENTER';
  var lead=guest?('Signed in as <b style="color:#ff8aa0">'+nm+'</b>. Request access and a family admin will wave you in.'):('Welcome back, <b style="color:#ff8aa0">'+nm+'</b>. Tap to enter.');
  var d=document.createElement('div');
