@@ -17,6 +17,8 @@ if (!target) { console.error('usage: node apply-health-update.mjs <src/index.js>
 
 const HTML = fs.readFileSync(join(HERE, '..', 'health-app.html'), 'utf8');
 if (!HTML || HTML.indexOf('<!DOCTYPE html>') < 0) { console.error('REFUSING: health-app.html missing or not HTML.'); process.exit(1); }
+if (!/<\/html>\s*$/.test(HTML)) { console.error('REFUSING: health-app.html looks truncated (no closing </html>).'); process.exit(1); }
+if (HTML.indexOf('How are we feeling today') < 0) { console.error('REFUSING: check-in panel missing from health-app.html.'); process.exit(1); }
 const B64 = Buffer.from(HTML, 'utf8').toString('base64');
 if (!/^[A-Za-z0-9+/=]+$/.test(B64)) { console.error('REFUSING: encoded page is not pure base64.'); process.exit(1); }
 
@@ -209,6 +211,54 @@ if (s.indexOf('/api/health/anatomy') < 0) {
 } else {
   console.log('routes: anatomy agent already present');
 }
+
+// 4) Daily check-in route — per-user mood + daily log at health:daily:<email>,
+//    with owner || King || grantee canView so an RN can review. Idempotent; before /api/karaoke.
+if (s.indexOf('/api/health/daily') < 0) {
+  const DAILY =
+'if (p === "/api/health/daily") {' + NL +
+'          var dEmail = String((me && me.email) || "guest").toLowerCase();' + NL +
+'          if (!me || me.role === "guest" || dEmail === "guest") return json({ error: "no" }, 403);' + NL +
+'          var dKing = String((await getSetting(env, "king")) || OWNER).toLowerCase();' + NL +
+'          var dAmKing = (dEmail === dKing);' + NL +
+'          var dGrantsFor = async function(owner){ var raw = await getSetting(env, "health:grants:" + String(owner).toLowerCase()); var a = []; try { a = raw ? JSON.parse(raw) : []; } catch (e) { a = []; } return Array.isArray(a) ? a : []; };' + NL +
+'          var dCanView = async function(owner){ var o = String(owner).toLowerCase(); if (dEmail === o || dAmKing) return true; var gr = await dGrantsFor(o); return gr.indexOf(dEmail) >= 0; };' + NL +
+'          var dTarget = (req.method === "POST") ? dEmail : String(url.searchParams.get("who") || dEmail).toLowerCase();' + NL +
+'          if (!(await dCanView(dTarget))) return json({ error: "forbidden" }, 403);' + NL +
+'          var dKey = "health:daily:" + dTarget;' + NL +
+'          var dRaw = await getSetting(env, dKey); var dObj = { days: {} };' + NL +
+'          try { dObj = dRaw ? JSON.parse(dRaw) : { days: {} }; } catch (e) { dObj = { days: {} }; }' + NL +
+'          if (!dObj || typeof dObj !== "object") dObj = { days: {} };' + NL +
+'          if (!dObj.days || typeof dObj.days !== "object") dObj.days = {};' + NL +
+'          if (req.method === "POST") {' + NL +
+'            var dBody = await req.json();' + NL +
+'            if (Array.isArray(dBody.areas)) dObj.areas = dBody.areas.slice(0, 80).map(function(x){ return String(x).slice(0, 40); }).filter(function(x){ return x; });' + NL +
+'            var dDay = String((dBody && dBody.day) || new Date().toISOString().slice(0, 10)).slice(0, 10);' + NL +
+'            if (dBody && dBody.del) { delete dObj.days[dDay]; }' + NL +
+'            else {' + NL +
+'              var dEnt = (dBody && dBody.entry) || {};' + NL +
+'              var dClean = {};' + NL +
+'              ["mood", "sleep", "energy", "pain", "water"].forEach(function(k){ if (dEnt[k] !== undefined && dEnt[k] !== null && dEnt[k] !== "" && isFinite(Number(dEnt[k]))) dClean[k] = Math.max(0, Math.min(100, Number(dEnt[k]))); });' + NL +
+'              ["bowel", "food", "painWhere", "meds", "moved", "note"].forEach(function(k){ if (dEnt[k] !== undefined && dEnt[k] !== null) dClean[k] = String(dEnt[k]).slice(0, 240); });' + NL +
+'              if (Array.isArray(dEnt.symptoms)) dClean.symptoms = dEnt.symptoms.slice(0, 20).map(function(x){ return String(x).slice(0, 40); });' + NL +
+'              if (Array.isArray(dEnt.pains)) dClean.pains = dEnt.pains.slice(0, 30).map(function(pp){ var lv = (pp && pp.level != null && pp.level !== "" && isFinite(Number(pp.level))) ? Math.max(0, Math.min(10, Number(pp.level))) : null; return { where: String((pp && pp.where) || "").slice(0, 40), level: lv }; }).filter(function(pp){ return pp.where; });' + NL +
+'              dClean.ts = new Date().toISOString();' + NL +
+'              dObj.days[dDay] = Object.assign({}, dObj.days[dDay] || {}, dClean);' + NL +
+'            }' + NL +
+'            var dKeys = Object.keys(dObj.days).sort();' + NL +
+'            if (dKeys.length > 1200) { dKeys.slice(0, dKeys.length - 1200).forEach(function(k){ delete dObj.days[k]; }); }' + NL +
+'            await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)").bind(dKey, JSON.stringify(dObj)).run();' + NL +
+'            return json({ ok: true, daily: dObj });' + NL +
+'          }' + NL +
+'          return json({ daily: dObj, email: dTarget });' + NL +
+'        }' + NL +
+'        ';
+  swap('if (p === "/api/karaoke") {', DAILY + 'if (p === "/api/karaoke") {', 'inject-daily');
+  console.log('routes: daily check-in injected');
+} else {
+  console.log('routes: daily check-in already present');
+}
+
 
 fs.writeFileSync(target, s);
 execSync('node --check ' + JSON.stringify(target), { stdio: 'inherit' });
