@@ -195,6 +195,144 @@
   .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(10,16,30,.95);border:1px solid var(--line2);color:#fff;padding:9px 16px;border-radius:8px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 0 20px var(--acc-glow)}
   .toast.show{opacity:1}
   @media(max-width:640px){ .mono th{width:116px} .bm-wrap{height:calc(100vh - 210px)} }
+  /* daily check-in */
+  .checkin{padding:0;margin:0 0 16px;overflow:hidden}
+  .ci-top{display:flex;flex-direction:column;align-items:stretch;gap:14px;padding:16px 18px;position:relative;
+    background:linear-gradient(120deg,rgba(0,229,255,.10),rgba(177,75,255,.06) 55%,var(--acc-glow));border-bottom:1px solid var(--line2)}
+  .ci-scan{position:absolute;inset:0;pointer-events:none;opacity:.5;border-radius:inherit;
+    background:repeating-linear-gradient(0deg,rgba(0,229,255,.05) 0,rgba(0,229,255,.05) 1px,transparent 1px,transparent 3px)}
+  .ci-greetrow{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+  .ci-hello{flex:1 1 260px;min-width:220px}
+  .ci-eyebrow{font-size:.66rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:5px}
+  .ci-title{font-size:1.3rem;color:#fff;letter-spacing:.3px;text-shadow:0 0 16px var(--acc-glow);margin-bottom:4px}
+  .ci-sub{font-size:.8rem;color:var(--muted);max-width:520px}
+  .ci-faces{display:flex;gap:8px;flex-wrap:wrap}
+  .ci-face{display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:transparent;cursor:pointer;padding:2px;width:56px;font-family:var(--font)}
+  .ci-face svg{width:42px;height:42px;border-radius:50%;background:rgba(4,8,16,.5);border:1px solid var(--line2);transition:.15s;filter:grayscale(.55) opacity(.85);padding:3px}
+  .ci-face .ci-flabel{font-size:.62rem;color:var(--dim);letter-spacing:.3px}
+  .ci-face:hover svg{border-color:var(--cyan);filter:none}
+  .ci-face.sel svg{border-color:var(--acc);box-shadow:0 0 16px var(--acc-glow);filter:none;transform:translateY(-2px)}
+  .ci-face.sel .ci-flabel{color:var(--ink);font-weight:700}
+
+  /* pain scale (under faces) */
+  .ci-painbar{position:relative;z-index:1;border-top:1px solid var(--line2);padding-top:12px}
+  .ci-painhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+  .ci-painhead .ci-hint{font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem}
+  .ci-addspot{border:1px solid var(--cyan);background:rgba(0,229,255,.08);color:var(--cyan);border-radius:20px;padding:4px 12px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .ci-addspot:hover{background:rgba(0,229,255,.18)}
+  .ci-spotmenu{display:none;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+  .ci-spotmenu.show{display:flex}
+  .ci-spotmenu button{border:1px solid var(--line2);background:rgba(4,8,16,.5);color:var(--ink);border-radius:20px;padding:5px 11px;font-size:.75rem;cursor:pointer;font-family:var(--font)}
+  .ci-spotmenu button:hover{border-color:var(--cyan)}
+  .ci-scale{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0}
+  .ci-sn{min-width:34px;height:32px;flex:1 1 auto;border:1px solid var(--line2);background:rgba(4,8,16,.5);color:var(--muted);border-radius:6px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:var(--font);transition:.12s}
+  .ci-sn:hover{border-color:var(--cyan);color:#fff;background:rgba(0,229,255,.12)}
+  .ci-sn.drop{border-color:var(--acc);background:var(--acc-glow);color:#fff}
+  .ci-areas{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+  .ci-pp{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:rgba(4,8,16,.5);color:var(--muted);border-radius:20px;padding:5px 11px;font-size:.8rem;cursor:grab;user-select:none;transition:.12s}
+  .ci-pp:hover{border-color:var(--cyan);color:var(--ink)}
+  .ci-pp.placed{background:rgba(4,8,16,.75);color:#fff}
+  .ci-pp.armed{box-shadow:0 0 0 2px var(--cyan);border-color:var(--cyan);color:#fff}
+  .ci-ppx{color:var(--acc);cursor:pointer;font-size:.8rem;font-weight:700;padding:0 2px;line-height:1}
+  .ci-ppx:hover{color:#fff}
+  .ci-addarea{border:1px dashed var(--cyan);background:transparent;color:var(--cyan);border-radius:20px;padding:5px 12px;font-size:.76rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .ci-addarea:hover{background:rgba(0,229,255,.10)}
+
+  .ci-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;padding:14px 16px}
+  .ci-tile{background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:10px 12px}
+  .ci-tile.ci-wide{grid-column:1/-1}
+  .ci-tk{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:8px}
+  .ci-tk .ci-ico{font-size:1rem;filter:drop-shadow(0 0 5px var(--acc-glow))}
+  .ci-seg{display:flex;gap:4px;flex-wrap:wrap}
+  .ci-seg button{flex:1 1 auto;min-width:42px;border:1px solid var(--line2);background:rgba(4,8,16,.5);color:var(--muted);border-radius:7px;padding:7px 6px;font-size:.76rem;font-weight:700;cursor:pointer;font-family:var(--font);transition:.12s}
+  .ci-seg button:hover{border-color:var(--cyan);color:var(--ink)}
+  .ci-seg button.on{background:linear-gradient(180deg,rgba(0,229,255,.20),rgba(0,120,160,.12));border-color:var(--acc);color:#fff;box-shadow:0 0 12px var(--acc-glow)}
+  .ci-step{display:flex;align-items:center;gap:10px}
+  .ci-step button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line2);background:rgba(0,229,255,.08);color:var(--cyan);font-size:1.15rem;font-weight:700;cursor:pointer;line-height:1;font-family:var(--font)}
+  .ci-step button:hover{background:rgba(0,229,255,.18)}
+  .ci-step .ci-num{font-size:1.3rem;font-weight:700;color:#fff;min-width:40px;text-align:center}
+  .ci-step .ci-unit{font-size:.72rem;color:var(--muted)}
+  .ci-toggle{display:flex;gap:6px}
+  .ci-toggle button{flex:1;border:1px solid var(--line2);background:rgba(4,8,16,.5);color:var(--muted);border-radius:7px;padding:8px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .ci-toggle button.on-yes{background:linear-gradient(180deg,rgba(57,255,136,.18),rgba(0,120,80,.10));border-color:var(--grn);color:#fff}
+  .ci-toggle button.on-no{background:rgba(255,59,84,.12);border-color:var(--acc);color:#fff}
+  .ci-vitrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ci-vitval{font-size:1.3rem;font-weight:700;color:#fff}
+  .ci-vitinput{width:82px;font-size:.86rem;padding:6px 8px}
+  .ci-vitbtn{border:1px solid var(--line2);background:rgba(0,229,255,.08);color:var(--cyan);border-radius:7px;padding:6px 11px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .ci-vitbtn:hover{background:rgba(0,229,255,.18)}
+  .ci-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .ci-chips button{border:1px solid var(--line2);background:rgba(4,8,16,.5);color:var(--muted);border-radius:20px;padding:5px 11px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:var(--font)}
+  .ci-chips button:hover{border-color:var(--cyan);color:var(--ink)}
+  .ci-chips button.on{background:rgba(255,205,70,.16);border-color:var(--amber);color:#fff}
+  .ci-note{width:100%}
+  .ci-foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--line2);background:rgba(6,10,20,.5)}
+  .ci-footr{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .ci-streak{font-size:.8rem;color:var(--muted)}
+  .ci-streak b{color:var(--cyan)}
+  .ci-saved{color:var(--grn);font-weight:700;font-size:.76rem}
+  .ci-dim{color:var(--dim);font-size:.76rem}
+  .ci-err{color:var(--acc);font-weight:700;font-size:.76rem}
+  .ci-save2{border:1px solid var(--acc);border-radius:8px;font-weight:700;font-size:.82rem;padding:9px 16px;cursor:pointer;color:#fff;background:linear-gradient(180deg,rgba(255,59,84,.9),rgba(190,30,55,.9));box-shadow:0 0 14px var(--acc-glow);font-family:var(--font)}
+  .ci-save2:hover{filter:brightness(1.12)}
+  .ci-histbtn{border:1px solid var(--cyan);background:rgba(0,229,255,.08);color:var(--cyan);border-radius:8px;padding:9px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .ci-histbtn:hover{background:rgba(0,229,255,.18)}
+  .ci-week{display:flex;gap:5px;flex-wrap:wrap;padding:0 16px 14px}
+  .ci-day{display:flex;flex-direction:column;align-items:center;gap:3px;width:30px}
+  .ci-dot{width:22px;height:22px;border-radius:50%;border:1px solid var(--line2);background:rgba(4,8,16,.5);display:flex;align-items:center;justify-content:center;font-size:.72rem;line-height:1}
+  .ci-dow{font-size:.58rem;color:var(--dim)}
+  @media(max-width:520px){ .ci-face{width:52px} .ci-face svg{width:38px;height:38px} .ci-title{font-size:1.15rem} }
+
+  /* history modal */
+  .ci-hist{position:fixed;inset:0;background:rgba(2,4,10,.86);backdrop-filter:blur(4px);z-index:9999;display:none;padding:18px;overflow:auto}
+  .ci-hist.show{display:block}
+  .ci-histwrap{max-width:900px;margin:0 auto;background:var(--panel);border:1px solid var(--line2);border-radius:14px;position:relative}
+  .ci-histhd{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line2);position:sticky;top:0;z-index:2;background:linear-gradient(180deg,rgba(12,20,38,.98),rgba(9,15,28,.94));border-radius:14px 14px 0 0}
+  .ci-histttl{font-size:1.2rem;color:#fff;font-weight:700;text-shadow:0 0 14px var(--acc-glow)}
+  .ci-histtoggle{display:flex;gap:4px}
+  .ci-histtoggle button{border:1px solid var(--line2);background:rgba(4,8,16,.5);color:var(--muted);border-radius:7px;padding:6px 13px;font-weight:700;font-size:.8rem;cursor:pointer;font-family:var(--font)}
+  .ci-histtoggle button.on{background:linear-gradient(180deg,rgba(0,229,255,.2),rgba(0,120,160,.12));border-color:var(--acc);color:#fff}
+  .ci-histclose{border:1px solid var(--line2);background:rgba(255,59,84,.14);color:#fff;border-radius:8px;width:34px;height:34px;font-size:1rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .ci-histbody{padding:16px 18px}
+  .ci-hc{background:var(--panel2);border:1px solid var(--line2);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  .ci-hc>summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .ci-hc>summary::-webkit-details-marker{display:none}
+  .ci-hcdate{font-weight:700;color:#fff;min-width:130px}
+  .ci-hface svg{width:26px;height:26px;vertical-align:middle;background:rgba(4,8,16,.5);border-radius:50%;padding:2px}
+  .ci-hcstats{padding:0 14px 12px;display:flex;flex-wrap:wrap;gap:8px}
+  .ci-hcsub{padding:2px 14px 2px;font-size:.66rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px}
+  .ci-stat{background:rgba(4,8,16,.6);border:1px solid var(--line);border-radius:20px;padding:4px 11px;font-size:.76rem;color:var(--muted)}
+  .ci-stat b{color:var(--cyan)}
+  .ci-histempty{color:var(--dim);text-align:center;padding:34px;font-size:.9rem}
+  /* right-side privacy drawer for the detailed loggers */
+  .ci-drawer{position:fixed;top:0;right:0;height:100%;width:272px;max-width:86vw;z-index:9998;transform:translateX(101%);transition:transform .25s ease;background:linear-gradient(180deg,rgba(10,16,30,.98),rgba(6,10,20,.99));border-left:1px solid var(--line2);box-shadow:-8px 0 30px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(8px)}
+  .ci-drawer.open{transform:translateX(0)}
+  .ci-drawerhd{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line2);font-size:.84rem;font-weight:700;color:#fff;letter-spacing:.5px;background:linear-gradient(180deg,rgba(20,30,54,.85),rgba(12,20,38,.6))}
+  .ci-drawerx{border:1px solid var(--line2);background:rgba(255,59,84,.16);color:#fff;border-radius:7px;width:30px;height:30px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .ci-drawerx:hover{background:rgba(255,59,84,.3)}
+  .ci-drawerbody{padding:12px;overflow-y:auto;flex:1}
+  .ci-drawertab{position:fixed;top:44%;right:0;z-index:9997;border:1px solid var(--line2);border-right:0;background:linear-gradient(180deg,rgba(20,30,54,.96),rgba(12,20,38,.96));color:var(--cyan);border-radius:12px 0 0 12px;padding:12px 8px;cursor:pointer;font-family:var(--font);font-weight:700;font-size:.62rem;letter-spacing:.4px;text-align:center;box-shadow:-4px 0 18px var(--acc-glow);transition:right .25s ease;display:flex;flex-direction:column;align-items:center;gap:5px;line-height:1.15}
+  .ci-drawertab:hover{color:#fff}
+  .ci-drawertab.open{right:272px}
+  .ci-drawertab .ci-tabico{font-size:1.15rem}
+  .ci-drawerback{position:fixed;inset:0;background:rgba(2,4,10,.5);z-index:9996;opacity:0;pointer-events:none;transition:opacity .2s}
+  .ci-drawerback.show{opacity:1;pointer-events:auto}
+  .ci-drawerbody .ci-tile{padding:7px 9px;margin-bottom:8px;border-radius:9px}
+  .ci-drawerbody .ci-tk{font-size:.6rem;margin-bottom:5px;gap:5px}
+  .ci-drawerbody .ci-tk .ci-ico{font-size:.85rem}
+  .ci-drawerbody .ci-seg{gap:3px}
+  .ci-drawerbody .ci-seg button{padding:4px 3px;font-size:.66rem;min-width:30px;border-radius:6px}
+  .ci-drawerbody .ci-toggle button{padding:5px;font-size:.68rem}
+  .ci-drawerbody .ci-step{gap:7px}
+  .ci-drawerbody .ci-step button{width:26px;height:26px;font-size:1rem;border-radius:6px}
+  .ci-drawerbody .ci-step .ci-num{font-size:1rem;min-width:26px}
+  .ci-drawerbody .ci-step .ci-unit{font-size:.64rem}
+  .ci-drawerbody .ci-vitrow{gap:6px}
+  .ci-drawerbody .ci-vitval{font-size:1rem}
+  .ci-drawerbody .ci-vitbtn{padding:4px 8px;font-size:.64rem}
+  .ci-drawerbody .ci-vitinput{width:62px;font-size:.72rem;padding:4px 6px}
+  @media(max-width:520px){ .ci-drawer{width:86vw} .ci-drawertab.open{right:86vw} }
+
 </style>
 </head>
 <body>
@@ -227,6 +365,10 @@
 
     <!-- OVERVIEW & PLAN -->
     <section class="panel active" id="panel-overview">
+
+      <!-- DAILY CHECK-IN -->
+      <section class="checkin holo" id="checkin"></section>
+
 
       <!-- BODY MAP + VITALS row -->
       <div class="bmrow">
@@ -431,6 +573,7 @@
     if (w && ht && ht.v > 0){ var bmi = Math.round(((w.v / (ht.v * ht.v)) * 703) * 10) / 10; h += '<div class="vbox"><div class="vlabel">BMI (derived)</div><div class="vval">' + bmi + '<span class="vunit">kg/m&#178;</span></div><div class="vdelta">weight &#247; height&#178;</div></div>'; }
     h += '<button class="vaddmetric" onclick="addMetric()">+ Add metric</button>';
     host.innerHTML = h;
+    if (typeof ciSyncVitals === "function") ciSyncVitals();
   }
 
   function toggleVForm(key){ var f = document.getElementById("vform-" + key); if (!f) return; if (f.classList.toggle("show")){ var t = document.getElementById("vt-" + key); if (t && !t.value) t.value = new Date().toISOString().slice(0, 10); var v = document.getElementById("vv-" + key); if (v) v.focus(); } }
@@ -648,11 +791,320 @@
     if (input) input.addEventListener("change", function(){ uploadFiles(input.files); input.value = ""; });
   }
 
+  // ---- Daily check-in (mood + log + pain map + history) ----
+  var CI_COLORS = ["#ff3b54", "#ff8a4b", "#ffcd46", "#00e5ff", "#39ff88"];
+  var CI_PAIN = ["#39ff88", "#39ff88", "#7fe08a", "#00e5ff", "#00e5ff", "#ffcd46", "#ffcd46", "#ff8a4b", "#ff8a4b", "#ff3b54", "#ff3b54"];
+  var CI_DEFAULT_AREAS = ["Back", "Hip", "Shoulder", "Knee", "Neck", "Head", "Belly", "Hands", "Feet", "Tooth"];
+  var ciCustomAreas = [];
+  var ciArmedArea = "";
+  var CI_TODAY = ymd(new Date());
+  var today = {};
+  var dailyDays = {};
+  var ciSaveTimer = null;
+  var ciHistGroup = "day";
+
+  function ymd(d){ var m = d.getMonth() + 1, day = d.getDate(); return d.getFullYear() + "-" + (m < 10 ? "0" + m : m) + "-" + (day < 10 ? "0" + day : day); }
+  function greetWord(){ var h = new Date().getHours(); if (h < 12) return "Good morning"; if (h < 18) return "Good afternoon"; return "Good evening"; }
+  function prettyDate(){ try { return new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }); } catch (e) { return CI_TODAY; } }
+  function ciFilled(e){ if (!e) return false; for (var k in e){ if (k !== "ts" && e.hasOwnProperty(k)) return true; } return false; }
+  function ciPainColor(l){ l = parseInt(l, 10); if (isNaN(l) || l < 0) l = 0; if (l > 10) l = 10; return CI_PAIN[l]; }
+
+  function faceSvg(level){
+    var col = CI_COLORS[level - 1] || "#9fc6e0";
+    var mouth;
+    if (level >= 5) mouth = "M12,25 Q21,35 30,25";
+    else if (level === 4) mouth = "M13,26 Q21,32 29,26";
+    else if (level === 3) mouth = "M13,28 L29,28";
+    else if (level === 2) mouth = "M13,29 Q21,25 29,29";
+    else mouth = "M13,30 Q21,23 29,30";
+    return '<svg viewBox="0 0 42 42" fill="none">' +
+      '<circle cx="15.5" cy="17" r="2.2" fill="' + col + '"></circle>' +
+      '<circle cx="26.5" cy="17" r="2.2" fill="' + col + '"></circle>' +
+      '<path d="' + mouth + '" stroke="' + col + '" stroke-width="2.4" stroke-linecap="round" fill="none"></path></svg>';
+  }
+
+  function segHtml(field, icon, label, opts, cls){
+    var cur = today[field];
+    var b = opts.map(function(o){ var on = (String(cur) === String(o.v)) ? "on" : ""; return '<button type="button" class="' + on + '" onclick="ciSeg(this,\'' + field + '\',\'' + o.v + '\')">' + o.label + '</button>'; }).join("");
+    return '<div class="ci-tile ' + (cls || "") + '"><div class="ci-tk"><span class="ci-ico">' + icon + '</span>' + esc(label) + '</div><div class="ci-seg">' + b + '</div></div>';
+  }
+  function stepTile(field, icon, label, unit, min, max){
+    var v = parseInt(today[field] || 0, 10); if (isNaN(v)) v = 0;
+    return '<div class="ci-tile"><div class="ci-tk"><span class="ci-ico">' + icon + '</span>' + esc(label) + '</div>' +
+      '<div class="ci-step"><button type="button" onclick="ciStep(\'' + field + '\',-1,' + min + ',' + max + ')">&minus;</button>' +
+      '<span class="ci-num" id="ci-num-' + field + '">' + v + '</span><span class="ci-unit">' + esc(unit) + '</span>' +
+      '<button type="button" onclick="ciStep(\'' + field + '\',1,' + min + ',' + max + ')">+</button></div></div>';
+  }
+  function togTile(field, icon, label){
+    var y = (today[field] === "yes") ? "on-yes" : ""; var n = (today[field] === "no") ? "on-no" : "";
+    return '<div class="ci-tile"><div class="ci-tk"><span class="ci-ico">' + icon + '</span>' + esc(label) + '</div>' +
+      '<div class="ci-toggle"><button type="button" class="' + y + '" onclick="ciTog(this,\'' + field + '\',\'yes\')">Yes</button>' +
+      '<button type="button" class="' + n + '" onclick="ciTog(this,\'' + field + '\',\'no\')">Not yet</button></div></div>';
+  }
+  function ciVitalTile(metric, icon, label, unit){
+    var m = (window.vitals && vitals.metrics) ? vitals.metrics[metric] : null;
+    var rs = (m && m.readings) || []; var latest = rs.length ? rs[rs.length - 1] : null;
+    var val = latest ? (latest.v + " " + unit) : "not set";
+    return '<div class="ci-tile"><div class="ci-tk"><span class="ci-ico">' + icon + '</span>' + esc(label) + '</div>' +
+      '<div class="ci-vitrow"><span class="ci-vitval" id="ci-vit-' + metric + '">' + esc(String(val)) + '</span>' +
+      '<input class="ci-vitinput" id="ci-vitin-' + metric + '" type="number" step="any" placeholder="' + esc(unit) + '" style="display:none">' +
+      '<button type="button" class="ci-vitbtn" id="ci-vitbtn-' + metric + '" onclick="ciVitEdit(\'' + metric + '\',\'' + esc(label) + '\',\'' + esc(unit) + '\')">Update</button></div></div>';
+  }
+  function symptomTile(){
+    var syms = ["Nausea", "Dizzy", "Palpitations", "Headache", "Heartburn", "Swelling", "Short of breath", "Poor appetite"];
+    var cur = today.symptoms || [];
+    var chips = syms.map(function(s){ var on = (cur.indexOf(s) >= 0) ? "on" : ""; return '<button type="button" class="' + on + '" onclick="ciChip(this,\'' + s + '\')">' + esc(s) + '</button>'; }).join("");
+    return '<div class="ci-tile ci-wide"><div class="ci-tk"><span class="ci-ico">&#9888;&#65039;</span>Anything off? (tap any that fit)</div><div class="ci-chips">' + chips + '</div></div>';
+  }
+  function noteTile(){
+    return '<div class="ci-tile ci-wide"><div class="ci-tk"><span class="ci-ico">&#128221;</span>Note</div>' +
+      '<input class="ci-note" id="ci-note" type="text" maxlength="240" placeholder="Anything worth remembering about today? (optional)" value="' + esc(today.note || "") + '" oninput="today.note=this.value; scheduleSave();"></div>';
+  }
+
+  function renderCheckin(){
+    var host = document.getElementById("checkin"); if (!host) return;
+    if (!today) today = {};
+    var moods = [["5", "Great"], ["4", "Good"], ["3", "Okay"], ["2", "Low"], ["1", "Rough"]];
+    var faces = moods.map(function(m){ var sel = (String(today.mood) === m[0]) ? " sel" : ""; return '<button type="button" class="ci-face' + sel + '" onclick="ciMood(this,\'' + m[0] + '\')">' + faceSvg(parseInt(m[0], 10)) + '<span class="ci-flabel">' + m[1] + '</span></button>'; }).join("");
+    var top = '<div class="ci-top"><div class="ci-scan"></div>' +
+      '<div class="ci-greetrow"><div class="ci-hello"><span class="ci-eyebrow">' + greetWord() + " &middot; " + esc(prettyDate()) + '</span>' +
+        '<div class="ci-title">How are we feeling today?</div>' +
+        '<div class="ci-sub">One tap each &mdash; no wrong answers. This is just for you, and it quietly builds your picture over time.</div></div>' +
+        '<div class="ci-faces">' + faces + '</div></div>' +
+      '<div class="ci-painbar"><div class="ci-painhead"><span>&#129657; Pain</span><span class="ci-hint">tap where it hurts, then a number &mdash; or drag it onto a number</span></div>' +
+        '<div class="ci-scale" id="ci-scale"></div>' +
+        '<div class="ci-areas" id="ci-areas"></div></div>' +
+      '</div>';
+    var grid = '<div class="ci-grid">' + symptomTile() + noteTile() + '</div>';
+    var foot = '<div class="ci-foot"><div class="ci-streak" id="ci-streak"></div>' +
+      '<div class="ci-footr"><button type="button" class="ci-histbtn" onclick="ciOpenHist()">&#128202; History</button>' +
+      '<button type="button" class="ci-histbtn" onclick="ciToggleDrawer()">&#128203; Daily log</button>' +
+      '<span id="ci-savedstate"></span>' +
+      '<button type="button" class="ci-save2" onclick="saveDailyNow()">Save today</button></div></div>' +
+      '<div class="ci-week" id="ci-week"></div>';
+    host.innerHTML = top + grid + foot;
+    ciRenderPain(); renderStreak(); renderWeek(); ciMountDrawer();
+  }
+
+  // ---- right-side privacy drawer (the detailed loggers) ----
+  function ciDrawerTiles(){
+    return segHtml("sleep", "&#128564;", "Sleep", [{ v: "1", label: "Rough" }, { v: "2", label: "Meh" }, { v: "3", label: "OK" }, { v: "4", label: "Good" }, { v: "5", label: "Great" }]) +
+      segHtml("energy", "&#9889;", "Energy", [{ v: "1", label: "Empty" }, { v: "2", label: "Low" }, { v: "3", label: "OK" }, { v: "4", label: "Good" }, { v: "5", label: "High" }]) +
+      segHtml("bowel", "&#128701;", "Bowels", [{ v: "none", label: "None" }, { v: "good", label: "Good" }, { v: "loose", label: "Loose" }, { v: "hard", label: "Hard" }]) +
+      segHtml("food", "&#127869;", "Ate", [{ v: "none", label: "None" }, { v: "light", label: "Light" }, { v: "normal", label: "Normal" }, { v: "heavy", label: "Heavy" }]) +
+      stepTile("water", "&#128167;", "Water", "cups", 0, 30) +
+      togTile("meds", "&#128138;", "Meds taken") +
+      togTile("moved", "&#127939;", "Moved") +
+      ciVitalTile("weight", "&#9878;&#65039;", "Weight", "lb") +
+      ciVitalTile("height", "&#128207;", "Height", "in");
+  }
+  function ciMountDrawer(){
+    var d = document.getElementById("ci-drawer");
+    if (!d){
+      d = document.createElement("div"); d.id = "ci-drawer"; d.className = "ci-drawer"; document.body.appendChild(d);
+      var back = document.createElement("div"); back.id = "ci-drawerback"; back.className = "ci-drawerback"; back.onclick = ciCloseDrawer; document.body.appendChild(back);
+      var tab = document.createElement("button"); tab.id = "ci-drawertab"; tab.className = "ci-drawertab"; tab.type = "button"; tab.onclick = ciToggleDrawer;
+      tab.innerHTML = '<span class="ci-tabico">&#128203;</span><span>Daily<br>log</span>'; document.body.appendChild(tab);
+      document.addEventListener("keydown", function(ev){ if (ev.key === "Escape" || ev.keyCode === 27) ciCloseDrawer(); });
+    }
+    d.innerHTML = '<div class="ci-drawerhd"><span>&#128203; Daily log</span><button type="button" class="ci-drawerx" title="Close (Esc)" onclick="ciCloseDrawer()">&#10005;</button></div>' +
+      '<div class="ci-drawerbody">' + ciDrawerTiles() + '</div>';
+    ciSyncVitals();
+  }
+  function ciToggleDrawer(){ var d = document.getElementById("ci-drawer"); if (!d) return; var open = d.classList.toggle("open"); var b = document.getElementById("ci-drawerback"); if (b) b.classList.toggle("show", open); var t = document.getElementById("ci-drawertab"); if (t) t.classList.toggle("open", open); }
+  function ciCloseDrawer(){ var d = document.getElementById("ci-drawer"); if (d) d.classList.remove("open"); var b = document.getElementById("ci-drawerback"); if (b) b.classList.remove("show"); var t = document.getElementById("ci-drawertab"); if (t) t.classList.remove("open"); }
+
+  // ---- pain: always-visible body-part list; + adds a custom area ----
+  function ciAreaList(){
+    var seen = {}, out = [];
+    CI_DEFAULT_AREAS.concat(ciCustomAreas || []).forEach(function(a){ var k = String(a).toLowerCase(); if (a && !seen[k]){ seen[k] = 1; out.push(a); } });
+    (today.pains || []).forEach(function(p){ var k = String(p.where).toLowerCase(); if (p.where && !seen[k]){ seen[k] = 1; out.push(p.where); } });
+    return out;
+  }
+  function ciLevelOf(area){ var arr = today.pains || []; for (var i = 0; i < arr.length; i++){ if (String(arr[i].where).toLowerCase() === String(area).toLowerCase()) return arr[i].level; } return null; }
+  function ciSetLevel(area, lvl){ if (!today.pains) today.pains = []; for (var i = 0; i < today.pains.length; i++){ if (String(today.pains[i].where).toLowerCase() === String(area).toLowerCase()){ today.pains[i].level = lvl; return; } } today.pains.push({ where: area, level: lvl }); }
+  function ciClearArea(area){ if (!today.pains) return; today.pains = today.pains.filter(function(p){ return String(p.where).toLowerCase() !== String(area).toLowerCase(); }); }
+
+  function ciRenderPain(){
+    var sc = document.getElementById("ci-scale");
+    if (sc){ var h = ""; for (var i = 0; i <= 10; i++){ h += '<button type="button" class="ci-sn" onclick="ciAssign(' + i + ')" ondragover="ciDragOver(event)" ondragleave="ciDragLeave(event)" ondrop="ciDrop(event,' + i + ')">' + i + '</button>'; } sc.innerHTML = h; }
+    var host = document.getElementById("ci-areas"); if (!host) return;
+    var list = ciAreaList();
+    var chips = list.map(function(area, i){
+      var lvl = ciLevelOf(area); var placed = (lvl !== null && lvl !== undefined);
+      var arm = (ciArmedArea && ciArmedArea.toLowerCase() === String(area).toLowerCase()) ? " armed" : "";
+      var body = placed ? (' <b style="color:' + ciPainColor(lvl) + '">' + lvl + '</b> <b class="ci-ppx" onclick="event.stopPropagation();ciClearAreaIdx(' + i + ')">&#10005;</b>') : "";
+      return '<span class="ci-pp' + (placed ? " placed" : "") + arm + '" draggable="true" ondragstart="ciDragStartIdx(event,' + i + ')" onclick="ciArmAreaIdx(' + i + ')" title="tap, then a number — or drag onto a number">' + esc(area) + body + '</span>';
+    }).join("");
+    host.innerHTML = chips + '<button type="button" class="ci-addarea" onclick="ciAddArea()">+ add area</button>';
+  }
+  function ciArmAreaIdx(i){ var a = ciAreaList()[i]; if (a == null) return; ciArmedArea = (ciArmedArea && ciArmedArea.toLowerCase() === String(a).toLowerCase()) ? "" : a; ciRenderPain(); }
+  function ciClearAreaIdx(i){ var a = ciAreaList()[i]; if (a == null) return; ciClearArea(a); if (ciArmedArea && ciArmedArea.toLowerCase() === String(a).toLowerCase()) ciArmedArea = ""; ciRenderPain(); scheduleSave(); }
+  function ciAssign(n){ if (!ciArmedArea){ toast("Tap where it hurts first, then a number"); return; } ciSetLevel(ciArmedArea, n); ciArmedArea = ""; ciRenderPain(); scheduleSave(); }
+  function ciDragStartIdx(e, i){ var a = ciAreaList()[i] || ""; ciArmedArea = a; try { e.dataTransfer.setData("text/plain", a); e.dataTransfer.effectAllowed = "move"; } catch (err) {} }
+  function ciDragOver(e){ e.preventDefault(); try { e.dataTransfer.dropEffect = "move"; } catch (err) {} e.currentTarget.classList.add("drop"); }
+  function ciDragLeave(e){ e.currentTarget.classList.remove("drop"); }
+  function ciDrop(e, n){ e.preventDefault(); e.currentTarget.classList.remove("drop"); var a = ""; try { a = e.dataTransfer.getData("text/plain"); } catch (err) {} if (!a) a = ciArmedArea; if (!a) return; ciSetLevel(a, n); ciArmedArea = ""; ciRenderPain(); scheduleSave(); }
+  function ciAddArea(){ var w = window.prompt("Add a pain area (e.g. Tooth, Jaw, Elbow, Wrist):"); if (!w) return; w = String(w).slice(0, 40).replace(/\s+/g, " ").trim(); if (!w) return; var exists = false, k = w.toLowerCase(); ciAreaList().forEach(function(a){ if (String(a).toLowerCase() === k) exists = true; }); if (!exists) ciCustomAreas.push(w); ciArmedArea = w; ciRenderPain(); scheduleSave(); }
+
+  // ---- weight / height (writes to vitals store) ----
+  function ciVitEdit(metric, label, unit){
+    var inp = document.getElementById("ci-vitin-" + metric); var btn = document.getElementById("ci-vitbtn-" + metric); if (!inp) return;
+    if (inp.style.display === "none"){ inp.style.display = "inline-block"; inp.focus(); if (btn) btn.textContent = "Save"; return; }
+    var v = parseFloat(inp.value); if (!isFinite(v)){ inp.focus(); return; }
+    fetch("/api/health/vitals", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ add: { metric: metric, label: label, unit: unit, v: v, t: CI_TODAY } }) })
+      .then(function(r){ return r.json(); }).then(function(d){ if (d && d.ok){ window.vitals = d.vitals || window.vitals; if (typeof renderVitals === "function") renderVitals(); var sp = document.getElementById("ci-vit-" + metric); if (sp) sp.textContent = v + " " + unit; inp.style.display = "none"; if (btn) btn.textContent = "Update"; toast("Saved"); } else { toast((d && d.error) || "Save failed"); } })
+      .catch(function(){ toast("Save failed"); });
+  }
+  function ciSyncVitals(){
+    ["weight", "height"].forEach(function(metric){
+      var sp = document.getElementById("ci-vit-" + metric); if (!sp) return;
+      var m = (window.vitals && vitals.metrics) ? vitals.metrics[metric] : null;
+      var rs = (m && m.readings) || []; var latest = rs.length ? rs[rs.length - 1] : null;
+      var unit = (metric === "weight") ? "lb" : "in";
+      sp.textContent = latest ? (latest.v + " " + unit) : "not set";
+    });
+  }
+
+  function ciMood(btn, val){ today.mood = val; var bs = btn.parentNode.querySelectorAll(".ci-face"); for (var i = 0; i < bs.length; i++) bs[i].classList.remove("sel"); btn.classList.add("sel"); scheduleSave(); }
+  function ciSeg(btn, field, val){ today[field] = val; var bs = btn.parentNode.querySelectorAll("button"); for (var i = 0; i < bs.length; i++) bs[i].classList.remove("on"); btn.classList.add("on"); scheduleSave(); }
+  function ciStep(field, delta, min, max){ var v = parseInt(today[field] || 0, 10); if (isNaN(v)) v = 0; v += delta; if (v < min) v = min; if (v > max) v = max; today[field] = String(v); var el = document.getElementById("ci-num-" + field); if (el) el.textContent = v; scheduleSave(); }
+  function ciTog(btn, field, val){ today[field] = val; var bs = btn.parentNode.querySelectorAll("button"); for (var i = 0; i < bs.length; i++) bs[i].classList.remove("on-yes", "on-no"); btn.classList.add(val === "yes" ? "on-yes" : "on-no"); scheduleSave(); }
+  function ciChip(btn, sym){ if (!today.symptoms) today.symptoms = []; var i = today.symptoms.indexOf(sym); if (i >= 0){ today.symptoms.splice(i, 1); btn.classList.remove("on"); } else { today.symptoms.push(sym); btn.classList.add("on"); } scheduleSave(); }
+
+  function streakCount(){
+    var d = new Date(); var k = ymd(d);
+    if (!(dailyDays[k] && ciFilled(dailyDays[k]))) d.setDate(d.getDate() - 1);
+    var n = 0; for (;;){ var kk = ymd(d); if (dailyDays[kk] && ciFilled(dailyDays[kk])){ n++; d.setDate(d.getDate() - 1); } else break; if (n > 3660) break; }
+    return n;
+  }
+  function renderStreak(){
+    var el = document.getElementById("ci-streak"); if (!el) return;
+    var n = streakCount(); var total = 0; for (var k in dailyDays){ if (dailyDays.hasOwnProperty(k) && ciFilled(dailyDays[k])) total++; }
+    if (n >= 2) el.innerHTML = "&#128293; <b>" + n + "</b> days in a row &middot; " + total + " logged";
+    else if (total > 0) el.innerHTML = "<b>" + total + "</b> day" + (total === 1 ? "" : "s") + " logged &middot; keep it going";
+    else el.innerHTML = "First check-in &mdash; welcome aboard. Tap a face to start.";
+  }
+  function renderWeek(){
+    var el = document.getElementById("ci-week"); if (!el) return;
+    var dow = ["S", "M", "T", "W", "T", "F", "S"]; var d = new Date(); d.setDate(d.getDate() - 13); var html = "";
+    for (var i = 0; i < 14; i++){ var k = ymd(d); var e = dailyDays[k]; var mood = (e && e.mood) ? parseInt(e.mood, 10) : 0;
+      var inner = mood ? ('<span style="color:' + (CI_COLORS[mood - 1] || "#9fc6e0") + '">&#9679;</span>') : (ciFilled(e) ? "&#183;" : "");
+      var ist = (k === CI_TODAY) ? ' style="border-color:var(--cyan);box-shadow:0 0 8px var(--acc-glow)"' : "";
+      html += '<div class="ci-day"><div class="ci-dot"' + ist + ' title="' + k + '">' + inner + '</div><div class="ci-dow">' + dow[d.getDay()] + '</div></div>';
+      d.setDate(d.getDate() + 1);
+    }
+    el.innerHTML = html;
+  }
+
+  function setSavedState(st){ var el = document.getElementById("ci-savedstate"); if (!el) return; if (st === "saving"){ el.textContent = "Saving…"; el.className = "ci-dim"; } else if (st === "saved"){ el.innerHTML = "&#10003; Saved"; el.className = "ci-saved"; } else if (st === "err"){ el.textContent = "Save failed"; el.className = "ci-err"; } else { el.textContent = ""; el.className = ""; } }
+  function scheduleSave(){ ciCheckRoll(); setSavedState("saving"); if (ciSaveTimer) clearTimeout(ciSaveTimer); ciSaveTimer = setTimeout(commitDaily, 700); }
+  function commitDaily(){
+    if (ciSaveTimer){ clearTimeout(ciSaveTimer); ciSaveTimer = null; }
+    today.ts = new Date().toISOString();
+    fetch("/api/health/daily", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ day: CI_TODAY, entry: today, areas: ciCustomAreas }) })
+      .then(function(r){ return r.json(); }).then(function(d){ if (d && d.ok){ dailyDays = (d.daily && d.daily.days) || dailyDays; if (d.daily && Array.isArray(d.daily.areas)) ciCustomAreas = d.daily.areas; setSavedState("saved"); renderStreak(); renderWeek(); } else { setSavedState("err"); } })
+      .catch(function(){ setSavedState("err"); });
+  }
+  function saveDailyNow(){ commitDaily(); toast("Saved today's check-in"); }
+  function ciCheckRoll(){ var now = ymd(new Date()); if (now !== CI_TODAY){ CI_TODAY = now; today = {}; var t = dailyDays[CI_TODAY]; if (t){ for (var k in t){ if (t.hasOwnProperty(k)) today[k] = t[k]; } } ciArmedArea = ""; renderCheckin(); } }
+
+  function loadDaily(){
+    fetch("/api/health/daily").then(function(r){ return r.json(); }).then(function(d){
+      dailyDays = (d && d.daily && d.daily.days) || {};
+      ciCustomAreas = (d && d.daily && Array.isArray(d.daily.areas)) ? d.daily.areas : [];
+      today = {}; var t = dailyDays[CI_TODAY]; if (t){ for (var k in t){ if (t.hasOwnProperty(k)) today[k] = t[k]; } }
+      renderCheckin();
+    }).catch(function(){ renderCheckin(); });
+  }
+
+  // ---- history (day / month / year) ----
+  function ciDaysList(){ var arr = []; for (var k in dailyDays){ if (dailyDays.hasOwnProperty(k) && ciFilled(dailyDays[k])) arr.push([k, dailyDays[k]]); } arr.sort(function(a, b){ return a[0] < b[0] ? 1 : (a[0] > b[0] ? -1 : 0); }); return arr; }
+  function ciNiceDate(k){ var p = k.split("-"); var mo = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return mo[parseInt(p[1], 10) - 1] + " " + parseInt(p[2], 10) + ", " + p[0]; }
+  function ciMonthName(k){ var p = k.split("-"); var mo = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; return mo[parseInt(p[1], 10) - 1] + " " + p[0]; }
+  function ciStat(label, val){ return '<span class="ci-stat">' + esc(label) + ' <b>' + esc(String(val)) + '</b></span>'; }
+  function ciPainText(e){ if (!Array.isArray(e.pains)) return ""; return e.pains.filter(function(x){ return x.level !== null && x.level !== undefined; }).map(function(x){ return x.where + " " + x.level; }).join(", "); }
+
+  function ciAgg(entries){
+    var out = { days: entries.length };
+    function avg(f){ var s = 0, c = 0; entries.forEach(function(e){ if (e[f] != null && e[f] !== "" && isFinite(Number(e[f]))){ s += Number(e[f]); c++; } }); return c ? (Math.round(s / c * 10) / 10) : null; }
+    out.mood = avg("mood"); out.sleep = avg("sleep"); out.energy = avg("energy"); out.water = avg("water");
+    var loc = {}, painDays = 0, mxSum = 0, mxN = 0, meds = 0, moved = 0, bowel = {}, food = {}, sym = {};
+    entries.forEach(function(e){
+      if (Array.isArray(e.pains) && e.pains.length){ var mx = 0, any = false; e.pains.forEach(function(p){ if (p.level != null){ any = true; if (p.level > mx) mx = p.level; if (!loc[p.where]) loc[p.where] = { sum: 0, c: 0 }; loc[p.where].sum += p.level; loc[p.where].c++; } }); if (any){ painDays++; mxSum += mx; mxN++; } }
+      if (e.meds === "yes") meds++; if (e.moved === "yes") moved++;
+      if (e.bowel) bowel[e.bowel] = (bowel[e.bowel] || 0) + 1;
+      if (e.food) food[e.food] = (food[e.food] || 0) + 1;
+      if (Array.isArray(e.symptoms)) e.symptoms.forEach(function(s){ sym[s] = (sym[s] || 0) + 1; });
+    });
+    out.loc = loc; out.painDays = painDays; out.painAvgMax = mxN ? (Math.round(mxSum / mxN * 10) / 10) : null;
+    out.meds = meds; out.moved = moved; out.bowel = bowel; out.food = food; out.sym = sym;
+    return out;
+  }
+  function ciDayCard(k, e){
+    var moodFace = e.mood ? faceSvg(parseInt(e.mood, 10)) : "";
+    var painTxt = ciPainText(e);
+    var stats = [];
+    if (e.sleep) stats.push(ciStat("Sleep", e.sleep + "/5"));
+    if (e.energy) stats.push(ciStat("Energy", e.energy + "/5"));
+    if (painTxt) stats.push(ciStat("Pain", painTxt));
+    if (e.bowel) stats.push(ciStat("Bowels", e.bowel));
+    if (e.food) stats.push(ciStat("Ate", e.food));
+    if (e.water) stats.push(ciStat("Water", e.water + " cups"));
+    if (e.meds) stats.push(ciStat("Meds", e.meds === "yes" ? "taken" : "not yet"));
+    if (e.moved) stats.push(ciStat("Moved", e.moved === "yes" ? "yes" : "no"));
+    if (Array.isArray(e.symptoms) && e.symptoms.length) stats.push(ciStat("Symptoms", e.symptoms.join(", ")));
+    var note = e.note ? ('<div class="ci-stat" style="flex:1 1 100%">&#128221; ' + esc(e.note) + '</div>') : "";
+    var chip = painTxt ? ('<span class="ci-stat">&#129657; ' + esc(painTxt) + '</span>') : "";
+    return '<details class="ci-hc"><summary><span class="ci-hface">' + moodFace + '</span><span class="ci-hcdate">' + ciNiceDate(k) + '</span>' + chip + '</summary><div class="ci-hcstats">' + (stats.join("") || '<span class="ci-stat">logged</span>') + note + '</div></details>';
+  }
+  function ciGroupCard(title, entries){
+    var a = ciAgg(entries);
+    var stats = [ciStat("Days logged", a.days)];
+    if (a.mood != null) stats.push(ciStat("Avg mood", a.mood + "/5"));
+    if (a.sleep != null) stats.push(ciStat("Avg sleep", a.sleep + "/5"));
+    if (a.energy != null) stats.push(ciStat("Avg energy", a.energy + "/5"));
+    if (a.painDays) stats.push(ciStat("Pain days", a.painDays + (a.painAvgMax != null ? (" · avg " + a.painAvgMax) : "")));
+    if (a.water != null) stats.push(ciStat("Avg water", a.water + " cups"));
+    stats.push(ciStat("Meds taken", a.meds + "/" + a.days));
+    stats.push(ciStat("Active days", a.moved + "/" + a.days));
+    var locs = Object.keys(a.loc).sort(function(x, y){ return a.loc[y].c - a.loc[x].c; });
+    var locHtml = locs.length ? ('<div class="ci-hcsub">Pain by location</div><div class="ci-hcstats">' + locs.map(function(w){ var L = a.loc[w]; return ciStat(w, "avg " + (Math.round(L.sum / L.c * 10) / 10) + " · " + L.c + "×"); }).join("") + '</div>') : "";
+    var syms = Object.keys(a.sym).sort(function(x, y){ return a.sym[y] - a.sym[x]; });
+    var symHtml = syms.length ? ('<div class="ci-hcsub">Symptoms</div><div class="ci-hcstats">' + syms.map(function(s){ return ciStat(s, a.sym[s] + "×"); }).join("") + '</div>') : "";
+    return '<details class="ci-hc" open><summary><span class="ci-hcdate">' + esc(title) + '</span><span class="ci-stat"><b>' + a.days + '</b> days</span></summary><div class="ci-hcstats">' + stats.join("") + '</div>' + locHtml + symHtml + '</details>';
+  }
+  function renderHist(){
+    var m = document.getElementById("ci-hist"); if (!m) return;
+    var days = ciDaysList();
+    var head = '<div class="ci-histwrap"><div class="ci-histhd"><div class="ci-histttl">&#128202; Health history</div>' +
+      '<div class="ci-histtoggle">' +
+        '<button class="' + (ciHistGroup === "day" ? "on" : "") + '" onclick="ciHistSet(\'day\')">By day</button>' +
+        '<button class="' + (ciHistGroup === "month" ? "on" : "") + '" onclick="ciHistSet(\'month\')">By month</button>' +
+        '<button class="' + (ciHistGroup === "year" ? "on" : "") + '" onclick="ciHistSet(\'year\')">By year</button>' +
+      '</div><button class="ci-histclose" onclick="ciCloseHist()">&#10005;</button></div><div class="ci-histbody">';
+    var body;
+    if (!days.length){ body = '<div class="ci-histempty">No check-ins logged yet. Your daily entries will build here — one record per day.</div>'; }
+    else if (ciHistGroup === "day"){ body = days.map(function(d){ return ciDayCard(d[0], d[1]); }).join(""); }
+    else {
+      var groups = {}, order = [];
+      days.forEach(function(d){ var key = (ciHistGroup === "month") ? d[0].slice(0, 7) : d[0].slice(0, 4); if (!groups[key]){ groups[key] = []; order.push(key); } groups[key].push(d[1]); });
+      body = order.map(function(key){ return ciGroupCard((ciHistGroup === "month") ? ciMonthName(key) : key, groups[key]); }).join("");
+    }
+    m.innerHTML = head + body + "</div></div>";
+  }
+  function ciOpenHist(){ var m = document.getElementById("ci-hist"); if (!m){ m = document.createElement("div"); m.id = "ci-hist"; m.className = "ci-hist"; m.addEventListener("click", function(e){ if (e.target === m) ciCloseHist(); }); document.body.appendChild(m); } m.classList.add("show"); ciHistGroup = "day"; renderHist(); }
+  function ciCloseHist(){ var m = document.getElementById("ci-hist"); if (m) m.classList.remove("show"); }
+  function ciHistSet(g){ ciHistGroup = g; renderHist(); }
+
+  setInterval(function(){ try { ciCheckRoll(); } catch (e) {} }, 60000);
+
   buildTopics();
   loadAll();
   (function(){ try { if (localStorage.getItem("bmwin_collapsed") === "1"){ var w = document.getElementById("bmWin"); if (w) w.classList.add("collapsed"); } } catch (e) {} })();
   loadBodyMap();
   loadVitals();
+  loadDaily();
   wireDrop("dropzone", "fileInput");
   wireDrop("dropzone2", "fileInput2");
   refreshRecords();
