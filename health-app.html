@@ -6,7 +6,7 @@
 <title>Clemit Family Health</title>
 <style>
   :root{
-    --acc:#ff3b54; --acc-glow:rgba(255,59,84,.32);
+    --acc:#ff3b54; --acc-rgb:255,59,84; --acc-glow:rgba(var(--acc-rgb),.32);
     --cyan:#00e5ff; --violet:#b14bff; --amber:#ffcd46; --grn:#39ff88;
     --ink:#eaf6ff; --muted:#9fc6e0; --dim:#6f8db0;
     --bg:#04060f; --panel:rgba(10,16,30,.72); --panel2:rgba(14,22,40,.6);
@@ -92,7 +92,7 @@
   .vform.show{display:flex}
   .vform .vfrow{display:flex;gap:6px}
   .vform input{font-size:.82rem;padding:6px 8px}
-  .vform .vsave{border:1px solid var(--acc);background:linear-gradient(180deg,rgba(255,59,84,.9),rgba(190,30,55,.9));color:#fff;font-weight:700;border-radius:7px;padding:6px 10px;font-size:.78rem;cursor:pointer}
+  .vform .vsave{border:1px solid var(--acc);background:linear-gradient(180deg,rgba(var(--acc-rgb),.92),rgba(var(--acc-rgb),.55));color:#fff;font-weight:700;border-radius:7px;padding:6px 10px;font-size:.78rem;cursor:pointer}
   .vhist{margin-top:6px}
   .vhist summary{font-size:.68rem;color:var(--cyan);cursor:pointer;list-style:none}
   .vhist summary::-webkit-details-marker{display:none}
@@ -108,7 +108,7 @@
   .reconcile-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.22);border-radius:10px;padding:14px 16px;margin-bottom:14px}
   .reconcile-bar p{font-size:.86rem;color:var(--muted);flex:1;min-width:220px}
   .btn{border:1px solid var(--acc);border-radius:8px;font-weight:700;font-size:.86rem;padding:10px 18px;cursor:pointer;color:#fff;
-    background:linear-gradient(180deg,rgba(255,59,84,.9),rgba(190,30,55,.9));box-shadow:0 0 16px var(--acc-glow);letter-spacing:.3px}
+    background:linear-gradient(180deg,rgba(var(--acc-rgb),.92),rgba(var(--acc-rgb),.55));box-shadow:0 0 16px var(--acc-glow);letter-spacing:.3px}
   .btn:hover{filter:brightness(1.12)}
   .btn.teal{background:linear-gradient(180deg,rgba(0,180,160,.9),rgba(0,120,110,.9));border-color:rgba(0,229,255,.5);box-shadow:0 0 16px rgba(0,229,255,.25)}
   .btn:disabled{opacity:.5;cursor:default}
@@ -255,7 +255,7 @@
   .ci-toggle{display:flex;gap:6px}
   .ci-toggle button{flex:1;border:1px solid var(--line2);background:rgba(4,8,16,.5);color:var(--muted);border-radius:7px;padding:8px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:var(--font)}
   .ci-toggle button.on-yes{background:linear-gradient(180deg,rgba(57,255,136,.18),rgba(0,120,80,.10));border-color:var(--grn);color:#fff}
-  .ci-toggle button.on-no{background:rgba(255,59,84,.12);border-color:var(--acc);color:#fff}
+  .ci-toggle button.on-no{background:rgba(var(--acc-rgb),.12);border-color:var(--acc);color:#fff}
   .ci-vitrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .ci-vitval{font-size:1.3rem;font-weight:700;color:#fff}
   .ci-vitinput{width:82px;font-size:.86rem;padding:6px 8px}
@@ -273,7 +273,7 @@
   .ci-saved{color:var(--grn);font-weight:700;font-size:.76rem}
   .ci-dim{color:var(--dim);font-size:.76rem}
   .ci-err{color:var(--acc);font-weight:700;font-size:.76rem}
-  .ci-save2{border:1px solid var(--acc);border-radius:8px;font-weight:700;font-size:.82rem;padding:9px 16px;cursor:pointer;color:#fff;background:linear-gradient(180deg,rgba(255,59,84,.9),rgba(190,30,55,.9));box-shadow:0 0 14px var(--acc-glow);font-family:var(--font)}
+  .ci-save2{border:1px solid var(--acc);border-radius:8px;font-weight:700;font-size:.82rem;padding:9px 16px;cursor:pointer;color:#fff;background:linear-gradient(180deg,rgba(var(--acc-rgb),.92),rgba(var(--acc-rgb),.55));box-shadow:0 0 14px var(--acc-glow);font-family:var(--font)}
   .ci-save2:hover{filter:brightness(1.12)}
   .ci-histbtn{border:1px solid var(--cyan);background:rgba(0,229,255,.08);color:var(--cyan);border-radius:8px;padding:9px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:var(--font)}
   .ci-histbtn:hover{background:rgba(0,229,255,.18)}
@@ -292,7 +292,7 @@
   .ci-histtoggle{display:flex;gap:4px}
   .ci-histtoggle button{border:1px solid var(--line2);background:rgba(4,8,16,.5);color:var(--muted);border-radius:7px;padding:6px 13px;font-weight:700;font-size:.8rem;cursor:pointer;font-family:var(--font)}
   .ci-histtoggle button.on{background:linear-gradient(180deg,rgba(0,229,255,.2),rgba(0,120,160,.12));border-color:var(--acc);color:#fff}
-  .ci-histclose{border:1px solid var(--line2);background:rgba(255,59,84,.14);color:#fff;border-radius:8px;width:34px;height:34px;font-size:1rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .ci-histclose{border:1px solid var(--line2);background:rgba(var(--acc-rgb),.14);color:#fff;border-radius:8px;width:34px;height:34px;font-size:1rem;font-weight:700;cursor:pointer;font-family:var(--font)}
   .ci-histbody{padding:16px 18px}
   .ci-hc{background:var(--panel2);border:1px solid var(--line2);border-radius:10px;margin-bottom:10px;overflow:hidden}
   .ci-hc>summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -308,8 +308,8 @@
   .ci-drawer{position:fixed;top:0;right:0;height:100%;width:272px;max-width:86vw;z-index:9998;transform:translateX(101%);transition:transform .25s ease;background:linear-gradient(180deg,rgba(10,16,30,.98),rgba(6,10,20,.99));border-left:1px solid var(--line2);box-shadow:-8px 0 30px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(8px)}
   .ci-drawer.open{transform:translateX(0)}
   .ci-drawerhd{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line2);font-size:.84rem;font-weight:700;color:#fff;letter-spacing:.5px;background:linear-gradient(180deg,rgba(20,30,54,.85),rgba(12,20,38,.6))}
-  .ci-drawerx{border:1px solid var(--line2);background:rgba(255,59,84,.16);color:#fff;border-radius:7px;width:30px;height:30px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:var(--font)}
-  .ci-drawerx:hover{background:rgba(255,59,84,.3)}
+  .ci-drawerx{border:1px solid var(--line2);background:rgba(var(--acc-rgb),.16);color:#fff;border-radius:7px;width:30px;height:30px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .ci-drawerx:hover{background:rgba(var(--acc-rgb),.3)}
   .ci-drawerbody{padding:12px;overflow-y:auto;flex:1}
   .ci-drawertab{position:fixed;top:44%;right:0;z-index:9997;border:1px solid var(--line2);border-right:0;background:linear-gradient(180deg,rgba(20,30,54,.96),rgba(12,20,38,.96));color:var(--cyan);border-radius:12px 0 0 12px;padding:12px 8px;cursor:pointer;font-family:var(--font);font-weight:700;font-size:.62rem;letter-spacing:.4px;text-align:center;box-shadow:-4px 0 18px var(--acc-glow);transition:right .25s ease;display:flex;flex-direction:column;align-items:center;gap:5px;line-height:1.15}
   .ci-drawertab:hover{color:#fff}
@@ -505,7 +505,9 @@
   var state = { findings: [], plan: null };
 
   var ACCENT = "";
-  try { var c = new URLSearchParams(location.search).get("c"); if (c) { ACCENT = c; document.documentElement.style.setProperty("--acc", c); } } catch (e) {}
+  function accApply(c){ try { document.documentElement.style.setProperty("--acc", c); var m = /^#([0-9a-fA-F]{6})$/.exec(String(c).trim()); if (m) { var n = parseInt(m[1], 16); document.documentElement.style.setProperty("--acc-rgb", ((n>>16)&255)+","+((n>>8)&255)+","+(n&255)); } } catch (e) {} }
+  try { var c = new URLSearchParams(location.search).get("c"); if (c) { ACCENT = c; accApply(c); } } catch (e) {}
+  window.addEventListener("message", function (ev) { var d = ev && ev.data; if (d && d.pulseAcc) { ACCENT = String(d.pulseAcc); accApply(ACCENT); try { if (bmLoaded) { var bf = document.getElementById("bmFrame"); if (bf) bf.src = anaUrl(); } } catch (e) {} } });
 
   // ---- Body Map (Holo-Scan anatomy) ----
   var ANATOMY_URL = "https://anatomy.clemit.dev/";
